@@ -17,9 +17,16 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.TranslateAnimation;
+import android.widget.HorizontalScrollView;
+import android.graphics.Color;
 
 public abstract class DroidLogicOverlayView extends FrameLayout {
     private static final String TAG = "DroidLogicOverlayView";
+    private static final float SCOLL_V = 0.2f;
 
     protected ImageView mImageView;
     protected ImageView mTuningImageView;
@@ -28,6 +35,8 @@ public abstract class DroidLogicOverlayView extends FrameLayout {
     protected TextView mEasTextView;
     protected TextView mTeletextNumber;
     protected ImageView mDoblyVisionImageView;
+    protected HorizontalScrollView mEasScrollView;
+    protected TranslateAnimation mRigthToLeftAnim;
 
     public DroidLogicOverlayView(Context context) {
         this(context, null);
@@ -85,21 +94,53 @@ public abstract class DroidLogicOverlayView extends FrameLayout {
         mTextView.setText(resId);
     }
 
-    public void setTextForEas(CharSequence text){
-        if (mEasTextView != null) {
-            mEasTextView.setText(text);
+    public void setTextForEas(String text){
+        mEasTextView.setText(text);
+        mEasTextView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mEasScrollView.setBackgroundColor(Color.BLACK);
+                    if (mEasScrollView.getWidth() < mEasTextView.getWidth()) {
+                        Log.i(TAG,"scroll");
+                        startEasAnimation(true);
+                    }else {
+                        Log.i(TAG,"not scroll");
+                        startEasAnimation(false);
+                    }
+                }
+            });
+    }
+
+    private void startEasAnimation(boolean isScroll) {
+        if (isScroll)
+            mRigthToLeftAnim = new TranslateAnimation(mEasScrollView.getWidth(), -mEasTextView.getWidth(), 0, 0);
+        else
+            mRigthToLeftAnim = new TranslateAnimation((mEasScrollView.getWidth()-mEasTextView.getWidth())/2, (mEasScrollView.getWidth()-mEasTextView.getWidth())/2, 0, 0);
+
+        mRigthToLeftAnim.setRepeatCount(Animation.INFINITE);
+        mRigthToLeftAnim.setInterpolator(new LinearInterpolator());
+        mRigthToLeftAnim.setDuration((long) ((mEasScrollView.getWidth() + mEasTextView.getWidth()) / SCOLL_V));
+        mEasTextView.startAnimation(mRigthToLeftAnim);
+    }
+
+    public boolean isEasTextShown() {
+        return mEasScrollView.isShown();
+    }
+
+    public void setEasTextVisibility(boolean visible) {
+        if (visible) {
+            mEasTextView.setVisibility(VISIBLE);
+            mEasScrollView.setVisibility(VISIBLE);
+        }else {
+            mEasScrollView.setBackgroundColor(Color.TRANSPARENT);
+            mEasTextView.setVisibility(GONE);
+            mEasScrollView.setVisibility(GONE);
         }
     }
 
     public void setTextForTeletextNumber(CharSequence text){
         if (mTeletextNumber != null) {
             mTeletextNumber.setText(text);
-        }
-    }
-
-    public void setEasTextVisibility(boolean visible) {
-        if (mEasTextView != null) {
-            mEasTextView.setVisibility(visible ? VISIBLE : GONE);
         }
     }
 
@@ -128,4 +169,5 @@ public abstract class DroidLogicOverlayView extends FrameLayout {
         mTextView = null;
         mSubtitleView = null;
     }
+
 }
