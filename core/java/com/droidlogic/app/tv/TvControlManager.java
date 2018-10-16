@@ -6605,4 +6605,14 @@ public class TvControlManager {
         }
         return -1;
     }
+
+    public void GetIwattRegs() {
+        synchronized (mLock) {
+            try {
+                mProxy.getIwattRegs();
+            } catch (RemoteException e) {
+                Log.e(TAG, "GetIwattRegs:" + e);
+            }
+        }
+    }
 }
