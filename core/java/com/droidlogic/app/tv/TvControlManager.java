@@ -747,6 +747,116 @@ public class TvControlManager {
         return "";
     }
 
+    public String getTvDefaultCountry() {
+        synchronized (mLock) {
+            try {
+                return mProxy.getTvDefaultCountry();
+            } catch (RemoteException e) {
+                Log.e(TAG, "getTvDefaultCountry:" + e);
+            }
+        }
+        return "";
+    }
+
+    public String GetTvCountryNameById(String country_code) {
+        synchronized (mLock) {
+            try {
+                return mProxy.getTvCountryName(country_code);
+            } catch (RemoteException e) {
+                Log.e(TAG, "GetTvCountryName:" + e);
+            }
+        }
+        return "";
+    }
+
+    public String GetTvSearchMode(String country_code) {
+        synchronized (mLock) {
+            try {
+                return mProxy.getTvSearchMode(country_code);
+            } catch (RemoteException e) {
+                Log.e(TAG, "GetTvSearchMode:" + e);
+            }
+        }
+        return "";
+    }
+
+    public boolean GetTvDtvSupport(String country_code) {
+        synchronized (mLock) {
+            try {
+                return mProxy.getTvDtvSupport(country_code);
+            } catch (RemoteException e) {
+                Log.e(TAG, "GetTvDtvSupport:" + e);
+            }
+        }
+        return false;
+    }
+
+    public String GetTvDtvSystem(String country_code) {
+        synchronized (mLock) {
+            try {
+                return mProxy.getTvDtvSystem(country_code);
+            } catch (RemoteException e) {
+                Log.e(TAG, "GetTvDtvSystem:" + e);
+            }
+        }
+        return "";
+    }
+
+    public boolean GetTvAtvSupport(String country_code) {
+        synchronized (mLock) {
+            try {
+                return mProxy.getTvAtvSupport(country_code);
+            } catch (RemoteException e) {
+                Log.e(TAG, "GetTvAtvSupport:" + e);
+            }
+        }
+        return false;
+    }
+
+    public String GetTvAtvColorSystem(String country_code) {
+        synchronized (mLock) {
+            try {
+                return mProxy.getTvAtvColorSystem(country_code);
+            } catch (RemoteException e) {
+                Log.e(TAG, "GetTvAtvColorSystem:" + e);
+            }
+        }
+        return "";
+    }
+
+    public String GetTvAtvSoundSystem(String country_code) {
+        synchronized (mLock) {
+            try {
+                return mProxy.getTvAtvSoundSystem(country_code);
+            } catch (RemoteException e) {
+                Log.e(TAG, "GetTvAtvSoundSystem:" + e);
+            }
+        }
+        return "";
+    }
+
+    public String GetTvAtvMinMaxFreq(String country_code) {
+        synchronized (mLock) {
+            try {
+                return mProxy.getTvAtvMinMaxFreq(country_code);
+            } catch (RemoteException e) {
+                Log.e(TAG, "GetTvAtvMinMaxFreq:" + e);
+            }
+        }
+        return "";
+    }
+
+    public boolean GetTvAtvStepScan(String country_code) {
+        synchronized (mLock) {
+            try {
+                return mProxy.getTvAtvStepScan(country_code);
+            } catch (RemoteException e) {
+                Log.e(TAG, "GetTvAtvStepScan:" + e);
+            }
+        }
+        return false;
+    }
+
     public int SetTvCountry(String country) {
         synchronized (mLock) {
             try {
