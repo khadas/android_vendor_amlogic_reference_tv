@@ -1848,6 +1848,23 @@ public class TvDataBaseManager {
         return program;
     }
 
+    public Program getProgramByStartTime(Uri channelUri, long starttime) {
+        Uri uri = TvContract.buildProgramsUriForChannel(channelUri);
+        List<Program> channel_programs = getPrograms(uri);
+        Program program = null;
+        int j = 0;
+        for (j = 0; j < channel_programs.size(); j++) {
+            program = channel_programs.get(j);
+            if (starttime == program.getStartTimeUtcMillis()) {
+                break;
+            }
+        }
+        if (j == channel_programs.size())
+            program = null;
+
+        return program;
+    }
+
     public int deleteProgram(ChannelInfo channel) {
         return deleteProgram(channel.getId());
     }

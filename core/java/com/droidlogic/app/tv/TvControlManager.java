@@ -4428,19 +4428,22 @@ public class TvControlManager {
         public String rating_region_name;
         public String dimensions_name;
         public String rating_value_text;
+        public int status = 0;
     }
 
-    public RrtSearchInfo SearchRrtInfo(int rating_region_id, int dimension_id, int value_id) {
+    public RrtSearchInfo SearchRrtInfo(int rating_region_id, int dimension_id, int value_id, int programid) {
         synchronized (mLock) {
             RrtSearchInfo info = new RrtSearchInfo();
             try {
-                RRTSearchInfo tempInfo= mProxy.searchRrtInfo(rating_region_id, dimension_id, value_id);
+                RRTSearchInfo tempInfo= mProxy.searchRrtInfo(rating_region_id, dimension_id, value_id, programid);
                 info.rating_region_name = tempInfo.RatingRegionName;
                 info.dimensions_name = tempInfo.DimensionsName;
                 info.rating_value_text = tempInfo.RatingValueText;
-                Log.d(TAG, "rating_region_name: " + info.dimensions_name);
-                Log.d(TAG, "dimensions_name: " + info.rating_region_name);
-                Log.d(TAG, "rating_value_text: " + info.rating_value_text);
+                info.status = tempInfo.status;
+                Log.d(TAG, "programid=" + programid + ", rating_region_name: " + info.dimensions_name);
+                Log.d(TAG, "programid=" + programid + ",dimensions_name: " + info.rating_region_name);
+                Log.d(TAG, "programid=" + programid + ",rating_value_text: " + info.rating_value_text);
+                Log.d(TAG, "programid=" + programid + ",status: " + info.status);
 
                 return info;
             } catch (RemoteException e) {
