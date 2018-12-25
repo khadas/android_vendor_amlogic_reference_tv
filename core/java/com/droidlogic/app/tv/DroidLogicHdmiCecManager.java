@@ -198,28 +198,32 @@ public class DroidLogicHdmiCecManager {
                     return false;
                 }
             } else if (deviceId == 0) {
-                setDeviceIdForCec(deviceId);
-                Log.d(TAG, "change to home, continue");
+                Log.d(TAG, "deviceSelect(0) when in hdmi channel, continue");
             } else {
                 Log.d(TAG, "deviceId is invalid, return");
                 return false;
             }
-        } else if(mSelectDeviceId == 0) {
-            Log.d(TAG, "It is current at home, do nothing, return");
-            return false;
         } else {
-            /*if com.droidlogic.tvinput crash and add hdmidevice, should not select device
-            * hot plug should not be affected
-            */
-            if (mSelectDeviceId < 0 && deviceId != 0) {
-                Log.d(TAG, "mSelectDeviceId is -1, return");
-                return false;
+            if (deviceId == 0) {
+               Log.d(TAG, "deviceSelect(0) when in home or non hdmi channel, continue");
+            } else {
+                if (mSelectDeviceId == 0) {
+                    Log.d(TAG, "It is current at home or non hdmi channel.");
+                    return false;
+                } else {
+                    Log.d(TAG, "mSelectDeviceId is -1, return");
+                    return false;
+                }
             }
         }
+
         synchronized (mLock) {
             mSelectDeviceId = deviceId;
             mSelectLogicAddr = logicAddr;
             mSelectPhyAddr = phyAddr;
+        }
+        if (deviceId == 0) {
+            setDeviceIdForCec(deviceId);
         }
         Log.d(TAG, "TvClient deviceSelect begin, logicAddr: " + logicAddr);
         mHandler.removeMessages(HDMI_DEVICE_SELECT);

@@ -549,12 +549,19 @@ public class DroidLogicTvInputService extends TvInputService implements
     }
 
     protected  boolean setSurfaceInService(Surface surface, TvInputBaseSession session ) {
-        Log.d(TAG, "setSurfaceInService,session:"+session);
+        Log.d(TAG, "setSurfaceInService,session: " + session);
 
         if (surface == null && session != null) {
             session.hideUI();
         }
-
+        int currentDeviceId = 0;
+        DroidLogicHdmiCecManager hdmi_cec = DroidLogicHdmiCecManager.getInstance(this);
+        currentDeviceId = hdmi_cec.getInputSourceDeviceId();
+        if (currentDeviceId < DroidLogicTvUtils.DEVICE_ID_HDMI1
+                || currentDeviceId > DroidLogicTvUtils.DEVICE_ID_HDMI4) {
+            selectHdmiDevice(0, 0, 0);
+            Log.d(TAG, "deviceSelect(0) when change to non hdmi channel.");
+        }
         Message message = mSessionHandler.obtainMessage();
         message.what = MSG_DO_SET_SURFACE;
         synchronized(this) {
