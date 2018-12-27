@@ -94,6 +94,7 @@ public:
     int vdinUpdateForPQ(int32_t gameStatus, int32_t pcStatus, int32_t autoSwitchFlag);
     int setWssStatus(int status);
     int setDeviceIdForCec(int DeviceId);
+    int getTvRunStatus(void);
 
 private:
     class TvServerHidlCallback : public ITvServerCallback {

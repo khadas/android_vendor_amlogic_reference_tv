@@ -254,6 +254,10 @@ int TvServerHidlClient::setDeviceIdForCec(int DeviceId) {
     return mTvServer->setDeviceIdForCec(DeviceId);
 }
 
+int TvServerHidlClient::getTvRunStatus(void) {
+    return mTvServer->getTvRunStatus();
+}
+
 // callback from tv service
 Return<void> TvServerHidlClient::TvServerHidlCallback::notifyCallback(const TvHidlParcel& hidlParcel)
 {

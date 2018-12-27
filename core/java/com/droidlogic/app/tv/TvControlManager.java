@@ -968,8 +968,34 @@ public class TvControlManager {
         return -1;
     }
 
+    public enum TvRunStatus {
+        TV_STATUS_INIT_ED(-1),
+        TV_STATUS_OPEN_ED(0),
+        TV_STATUS_START_ED(1),
+        TV_STATUS_RESUME_ED(2),
+        TV_STATUS_PAUSE_ED(3),
+        TV_STATUS_STOP_ED(4),
+        TV_STATUS_CLOSE_ED(5);
+        private int val;
+
+        TvRunStatus(int val) {
+            this.val = val;
+        }
+
+        public int toInt() {
+            return this.val;
+        }
+    }
+
     public int GetTvRunStatus() {
-        return sendCmd(GET_TV_STATUS);
+        synchronized (mLock) {
+            try {
+                return mProxy.getTvRunStatus();
+            } catch (RemoteException e) {
+                Log.e(TAG, "GetTvRunStatus:" + e);
+            }
+        }
+        return -1;
     }
 
     /**
