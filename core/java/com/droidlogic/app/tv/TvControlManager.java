@@ -4102,25 +4102,11 @@ public class TvControlManager {
     }
 
     public void startAutoBacklight() {
-        synchronized (mLock) {
-            try {
-                mProxy.startAutoBacklight();
-            } catch (RemoteException e) {
-                Log.e(TAG, "startAutoBacklight:" + e);
-            }
-        }
-        //sendCmd(START_AUTO_BACKLIGHT);
+        Log.i(TAG, "interface removed");
     }
 
     public void stopAutoBacklight() {
-        synchronized (mLock) {
-            try {
-                mProxy.stopAutoBacklight();
-            } catch (RemoteException e) {
-                Log.e(TAG, "stopAutoBacklight:" + e);
-            }
-        }
-        //sendCmd(STOP_AUTO_BACKLIGHT);
+        Log.i(TAG, "interface removed");
     }
 
     /**
@@ -5710,19 +5696,7 @@ public class TvControlManager {
      * @Return: 0 success, -1 fail
      */
     public int StartUpgradeFBC(String file_name, int mode, int upgrade_blk_size) {
-        libtv_log_open();
-        Parcel cmd = Parcel.obtain();
-        Parcel r = Parcel.obtain();
-        int tmpRet;
-        cmd.writeInt(FACTORY_FBC_UPGRADE);
-        cmd.writeString(file_name);
-        cmd.writeInt(mode);
-        cmd.writeInt(upgrade_blk_size);
-        sendCmdToTv(cmd, r);
-        tmpRet = r.readInt();
-        cmd.recycle();
-        r.recycle();
-        return tmpRet;
+        return 0;
     }
 
     /**
