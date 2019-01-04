@@ -334,6 +334,9 @@ public class DroidLogicTvUtils
     public static final String TV_SEARCH_COUNTRY = "tv_country";
     public static final String TV_SEARCH_TYPE = "tv_search_type";
     public static final String TV_SEARCH_TYPE_CHANGED = "tv_search_type_changed";
+    public static final String TV_SEARCH_INPUTID = "tv_search_inputid";
+    public static final String TV_CURRENT_INPUTID = "tv_current_inputid";
+    public static final String TV_SEARCH_INPUTID_CHANGED = "tv_search_inputid_changed";
     public static final String ATV_CHANNEL_INDEX = "atv_channel_index";
     public static final String DTV_CHANNEL_INDEX = "dtv_channel_index";
     public static final String TV_INPUT_ID = "tv_input_id";
@@ -416,6 +419,40 @@ public class DroidLogicTvUtils
 
     public static int getSearchType(Context mContext) {
         return TvControlDataManager.getInstance(mContext).getInt(mContext.getContentResolver(), TV_SEARCH_TYPE, 0);
+    }
+
+    public static void setSearchInputId(Context mContext, String value, boolean ispassthrough) {
+        Log.d(TAG, "setSearchInputId = " + value);
+        if (!ispassthrough && !TextUtils.equals(getSearchInputId(mContext), value)) {
+            Log.d(TAG, "setSearchInputId inputid was changed");
+            TvControlDataManager.getInstance(mContext).putInt(mContext.getContentResolver(), TV_SEARCH_INPUTID_CHANGED, 1);
+        }
+        TvControlDataManager.getInstance(mContext).putString(mContext.getContentResolver(), TV_SEARCH_INPUTID, value);
+    }
+
+    public static int getSearchInputIdChangeStatus(Context mContext) {
+        return TvControlDataManager.getInstance(mContext).getInt(mContext.getContentResolver(), TV_SEARCH_INPUTID_CHANGED, 0);
+    }
+
+    public static void setCurrentInputId(Context mContext, String value) {
+        Log.d(TAG, "setCurrentInputId = " + value);
+        TvControlDataManager.getInstance(mContext).putString(mContext.getContentResolver(), TV_CURRENT_INPUTID, value);
+    }
+
+    public static String getCurrentInputId(Context mContext) {
+        return TvControlDataManager.getInstance(mContext).getString(mContext.getContentResolver(), TV_CURRENT_INPUTID);
+    }
+
+    public static boolean isDroidLogicInput(String inputid) {
+        if (inputid != null && inputid.startsWith("com.droidlogic.tvinput")) {
+            return true;
+        }
+        return false;
+    }
+
+    public static String getSearchInputId(Context mContext) {
+        String inputid = TvControlDataManager.getInstance(mContext).getString(mContext.getContentResolver(), TV_SEARCH_INPUTID);
+        return inputid;
     }
 
     public static boolean isATV(Context mContext) {

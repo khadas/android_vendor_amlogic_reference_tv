@@ -1190,8 +1190,11 @@ public class TvDataBaseManager {
     public class SortComparator implements Comparator<ChannelInfo> {
         @Override
         public int compare(ChannelInfo a, ChannelInfo b) {
-            if (a.getDisplayNumber() == null)
+            if (a.getDisplayNumber() == null) {
                 return -1;
+            } else if (b.getDisplayNumber() == null) {
+                return 1;
+            }
             return a.getDisplayNumber().compareTo(b.getDisplayNumber());
         }
     }

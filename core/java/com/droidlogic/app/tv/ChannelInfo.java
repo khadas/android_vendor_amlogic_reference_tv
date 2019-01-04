@@ -258,13 +258,14 @@ public class ChannelInfo {
                 type = cursor.getType(index);
                 if (type == Cursor.FIELD_TYPE_BLOB) {
                     //youtube iptv database in this column is blob. Add it for the future.
-                    byte[] data = cursor.getBlob(0);
-                    Log.d(TAG,"cursor is blob, return null");
-                    return null;
+                    byte[] data = cursor.getBlob(index);
+                    //Log.d(TAG,"cursor is blob, return null");
+                    Log.d(TAG,"cursor is blob, set value to null");
+                    value = null;//return null;
                 } else if (type == Cursor.FIELD_TYPE_STRING)
                     value = cursor.getString(index);
                 else
-                    return null;
+                    value = null;//return null;
             } catch (SQLiteException e) {
                 Log.d(TAG,"SQLiteException:"+e);
                 return null;
@@ -301,46 +302,46 @@ public class ChannelInfo {
                 builder.setAudioExts(null);
                 builder.setAudioLangs(null);
             }
-            if (parsedMap.get(KEY_VFMT) != null)
+            if (parsedMap != null && parsedMap.get(KEY_VFMT) != null)
                 builder.setVfmt(Integer.parseInt(parsedMap.get(KEY_VFMT)));
-            if (parsedMap.get(KEY_FREQUENCY) != null)
+            if (parsedMap != null && parsedMap.get(KEY_FREQUENCY) != null)
                 builder.setFrequency(Integer.parseInt(parsedMap.get(KEY_FREQUENCY)));
-            if (parsedMap.get(KEY_BAND_WIDTH) != null)
+            if (parsedMap != null && parsedMap.get(KEY_BAND_WIDTH) != null)
                 builder.setBandwidth(Integer.parseInt(parsedMap.get(KEY_BAND_WIDTH)));
-            if (parsedMap.get(KEY_SYMBOL_RATE) != null)
+            if (parsedMap != null && parsedMap.get(KEY_SYMBOL_RATE) != null)
                 builder.setSymbolRate(Integer.parseInt(parsedMap.get(KEY_SYMBOL_RATE)));
-            if (parsedMap.get(KEY_MODULATION) != null)
+            if (parsedMap != null && parsedMap.get(KEY_MODULATION) != null)
                 builder.setModulation(Integer.parseInt(parsedMap.get(KEY_MODULATION)));
-            if (parsedMap.get(KEY_FE_PARAS) != null)
+            if (parsedMap != null && parsedMap.get(KEY_FE_PARAS) != null)
                 builder.setFEParas(parsedMap.get(KEY_FE_PARAS));
-            if (parsedMap.get(KEY_VIDEO_PID) != null)
+            if (parsedMap != null && parsedMap.get(KEY_VIDEO_PID) != null)
                 builder.setVideoPid(Integer.parseInt(parsedMap.get(KEY_VIDEO_PID)));
-            if (parsedMap.get(KEY_PCR_ID) != null)
+            if (parsedMap != null && parsedMap.get(KEY_PCR_ID) != null)
                 builder.setPcrPid(Integer.parseInt(parsedMap.get(KEY_PCR_ID)));
-            if (parsedMap.get(KEY_CONTENT_RATINGS) != null)
+            if (parsedMap != null && parsedMap.get(KEY_CONTENT_RATINGS) != null)
                 builder.setContentRatings(DroidLogicTvUtils.TvString.fromString(parsedMap.get(KEY_CONTENT_RATINGS)));
-            if (parsedMap.get(KEY_SIGNAL_TYPE) != null)
+            if (parsedMap != null && parsedMap.get(KEY_SIGNAL_TYPE) != null)
                 builder.setSignalType(DroidLogicTvUtils.TvString.fromString(parsedMap.get(KEY_SIGNAL_TYPE)));
-            if (parsedMap.get(KEY_AUDIO_TRACK_INDEX) != null)
+            if (parsedMap != null && parsedMap.get(KEY_AUDIO_TRACK_INDEX) != null)
                 builder.setAudioTrackIndex(Integer.parseInt(parsedMap.get(KEY_AUDIO_TRACK_INDEX)));
-            if (parsedMap.get(KEY_AUDIO_OUTPUT_MODE) != null)
+            if (parsedMap != null && parsedMap.get(KEY_AUDIO_OUTPUT_MODE) != null)
                 builder.setAudioOutPutMode(Integer.parseInt(parsedMap.get(KEY_AUDIO_OUTPUT_MODE)));
-            if (parsedMap.get(KEY_AUDIO_COMPENSATION) != null)
+            if (parsedMap != null && parsedMap.get(KEY_AUDIO_COMPENSATION) != null)
                 builder.setAudioCompensation(Integer.parseInt(parsedMap.get(KEY_AUDIO_COMPENSATION)));
-            if (parsedMap.get(KEY_AUDIO_CHANNEL) != null)
+            if (parsedMap != null && parsedMap.get(KEY_AUDIO_CHANNEL) != null)
                 builder.setAudioChannel(Integer.parseInt(parsedMap.get(KEY_AUDIO_CHANNEL)));
-            if (parsedMap.get(KEY_IS_FAVOURITE) != null)
+            if (parsedMap != null && parsedMap.get(KEY_IS_FAVOURITE) != null)
                 builder.setIsFavourite(parsedMap.get(KEY_IS_FAVOURITE).equals("1") ? true : false);
-            if (parsedMap.get(KEY_VIDEO_STD) != null)
+            if (parsedMap != null && parsedMap.get(KEY_VIDEO_STD) != null)
                 builder.setVideoStd(Integer.parseInt(parsedMap.get(KEY_VIDEO_STD)));
-            if (parsedMap.get(KEY_AUDIO_STD) != null)
+            if (parsedMap != null && parsedMap.get(KEY_AUDIO_STD) != null)
                 builder.setAudioStd(Integer.parseInt(parsedMap.get(KEY_AUDIO_STD)));
-            if (parsedMap.get(KEY_IS_AUTO_STD) != null)
+            if (parsedMap != null && parsedMap.get(KEY_IS_AUTO_STD) != null)
                 builder.setIsAutoStd(Integer.parseInt(parsedMap.get(KEY_IS_AUTO_STD)));
-            if (parsedMap.get(KEY_FINE_TUNE) != null)
+            if (parsedMap != null && parsedMap.get(KEY_FINE_TUNE) != null)
                 builder.setFineTune(Integer.parseInt(parsedMap.get(KEY_FINE_TUNE)));
 
-            if (parsedMap.get(KEY_SUBT_PIDS) != null) {
+            if (parsedMap != null && parsedMap.get(KEY_SUBT_PIDS) != null) {
                 String[] str_subtPids = parsedMap.get(KEY_SUBT_PIDS).replace("[", "").replace("]", "").split(",");
                 int subtNumber = (str_subtPids[0].compareTo("null") == 0)? 0 : str_subtPids.length;
                 if (subtNumber > 0) {
@@ -373,34 +374,34 @@ public class ChannelInfo {
                 }
             }
 
-            if (parsedMap.get(KEY_SUBT_TRACK_INDEX) != null)
+            if (parsedMap != null && parsedMap.get(KEY_SUBT_TRACK_INDEX) != null)
                 builder.setSubtitleTrackIndex(Integer.parseInt(parsedMap.get(KEY_SUBT_TRACK_INDEX)));
 
-            if (parsedMap.get(KEY_MULTI_NAME) != null)
+            if (parsedMap != null && parsedMap.get(KEY_MULTI_NAME) != null)
                 builder.setDisplayNameMulti(DroidLogicTvUtils.TvString.fromString(parsedMap.get(KEY_MULTI_NAME)));
 
-            if (parsedMap.get(KEY_FREE_CA) != null)
+            if (parsedMap != null && parsedMap.get(KEY_FREE_CA) != null)
                 builder.setFreeCa(Integer.parseInt(parsedMap.get(KEY_FREE_CA)));
-            if (parsedMap.get(KEY_SCRAMBLED) != null)
+            if (parsedMap != null && parsedMap.get(KEY_SCRAMBLED) != null)
                 builder.setScrambled(Integer.parseInt(parsedMap.get(KEY_SCRAMBLED)));
-            if (parsedMap.get(KEY_SDT_VERSION) != null)
+            if (parsedMap != null && parsedMap.get(KEY_SDT_VERSION) != null)
                 builder.setSdtVersion(Integer.parseInt(parsedMap.get(KEY_SDT_VERSION)));
 
-            if (parsedMap.get(KEY_MAJOR_NUM) != null)
+            if (parsedMap != null && parsedMap.get(KEY_MAJOR_NUM) != null)
                 builder.setMajorChannelNumber(Integer.parseInt(parsedMap.get(KEY_MAJOR_NUM)));
-            if (parsedMap.get(KEY_MINOR_NUM) != null)
+            if (parsedMap != null && parsedMap.get(KEY_MINOR_NUM) != null)
                 builder.setMinorChannelNumber(Integer.parseInt(parsedMap.get(KEY_MINOR_NUM)));
-            if (parsedMap.get(KEY_SOURCE_ID) != null)
+            if (parsedMap != null && parsedMap.get(KEY_SOURCE_ID) != null)
                 builder.setSourceId(Integer.parseInt(parsedMap.get(KEY_SOURCE_ID)));
-            if (parsedMap.get(KEY_ACCESS_CONTROL) != null)
+            if (parsedMap != null && parsedMap.get(KEY_ACCESS_CONTROL) != null)
                 builder.setAccessControled(Integer.parseInt(parsedMap.get(KEY_ACCESS_CONTROL)));
-            if (parsedMap.get(KEY_HIDDEN) != null)
+            if (parsedMap != null && parsedMap.get(KEY_HIDDEN) != null)
                 builder.setHidden(Integer.parseInt(parsedMap.get(KEY_HIDDEN)));
-            if (parsedMap.get(KEY_HIDE_GUIDE) != null)
+            if (parsedMap != null && parsedMap.get(KEY_HIDE_GUIDE) != null)
                 builder.setHideGuide(Integer.parseInt(parsedMap.get(KEY_HIDE_GUIDE)));
-            if (parsedMap.get(KEY_VCT) != null)
+            if (parsedMap != null && parsedMap.get(KEY_VCT) != null)
                 builder.setVct(parsedMap.get(KEY_VCT));
-            if (parsedMap.get(KEY_EITV) != null) {
+            if (parsedMap != null && parsedMap.get(KEY_EITV) != null) {
                 String[] svs = parsedMap.get(KEY_EITV).replace("[", "").replace("]", "").split(",");
                 int vn = (svs[0].compareTo("null") == 0)? 0 : svs.length;
                 if (vn > 0) {
@@ -410,9 +411,9 @@ public class ChannelInfo {
                     builder.setEitVersions(vs);
                 }
             }
-            if (parsedMap.get(KEY_PROGRAMS_IN_PAT) != null)
+            if (parsedMap != null && parsedMap.get(KEY_PROGRAMS_IN_PAT) != null)
                 builder.setProgramsInPat(Integer.parseInt(parsedMap.get(KEY_PROGRAMS_IN_PAT)));
-            if (parsedMap.get(KEY_PAT_TS_ID) != null)
+            if (parsedMap != null && parsedMap.get(KEY_PAT_TS_ID) != null)
                 builder.setPatTsId(Integer.parseInt(parsedMap.get(KEY_PAT_TS_ID)));
         }
 
