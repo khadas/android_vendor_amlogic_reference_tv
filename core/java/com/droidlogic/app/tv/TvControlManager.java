@@ -658,7 +658,6 @@ public class TvControlManager {
             mEventHandler = null;
             Log.e(TAG, "looper is null, so can not do anything");
         }
-        mHALCallback = new HALCallback(this);
         //native_setup(new WeakReference<TvControlManager>(this));
 
         try {
@@ -681,7 +680,7 @@ public class TvControlManager {
 
     // Callback when the UsbPort status is changed by the kernel.
     // Mostly due a command sent by the remote Usb device.
-    private HALCallback mHALCallback;
+    private HALCallback mHALCallback = null;
 
     // Notification object used to listen to the start of the tvserver daemon.
     private final ServiceNotification mServiceNotification = new ServiceNotification();
@@ -699,7 +698,6 @@ public class TvControlManager {
             try {
                 mProxy = ITvServer.getService();
                 mProxy.linkToDeath(new DeathRecipient(), TVSERVER_DEATH_COOKIE);
-                mProxy.setCallback(mHALCallback, ConnectType.TYPE_EXTEND);
             } catch (NoSuchElementException e) {
                 Log.e(TAG, "connectToProxy: tvserver HIDL service not found."
                         + " Did the service fail to start?", e);
@@ -709,6 +707,18 @@ public class TvControlManager {
         }
 
         Log.i(TAG, "connect to tvserve HIDL service success");
+    }
+
+    private void initHalCallback () {
+        try {
+            mHALCallback = new HALCallback(this);
+            mProxy.setCallback(mHALCallback, ConnectType.TYPE_EXTEND);
+        } catch (NoSuchElementException e) {
+            Log.e(TAG, "connectToProxy: tvserver HIDL service not found."
+                        + " Did the service fail to start?", e);
+        } catch (RemoteException e) {
+            Log.e(TAG, "connectToProxy: tvserver HIDL service not responding", e);
+        }
     }
 
     public String getSupportInputDevices() {
@@ -4213,16 +4223,25 @@ public class TvControlManager {
 
     public void setSubtitleUpdateListener(SubtitleUpdateListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mSubtitleListener = l;
     }
     //scanner
     public void setScannerListener(ScannerEventListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mScannerListener = l;
     }
 
     public void setStorDBListener(StorDBEventListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mStorDBListener = l;
         if (l == null)
             Log.i(TAG,"setStorDBListener null");
@@ -4230,6 +4249,9 @@ public class TvControlManager {
 
     public void setScanningFrameStableListener(ScanningFrameStableListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mScanningFrameStableListener = l;
     }
 
@@ -4406,6 +4428,9 @@ public class TvControlManager {
     //epg
     public void setEpgListener(EpgEventListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mEpgListener = l;
     }
 
@@ -4426,6 +4451,9 @@ public class TvControlManager {
 
     //rrt
     public void SetRRT5SourceUpdateListener(RRT5SourceUpdateListener l) {
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mRrtListener = l;
     }
 
@@ -4480,6 +4508,9 @@ public class TvControlManager {
     }
 
     public void setEasListener(EasEventListener l) {
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mEasListener = l;
     }
     public interface EasEventListener {
@@ -4499,6 +4530,9 @@ public class TvControlManager {
 
     public void setGetVframBMPListener(VframBMPEventListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mVframBMPListener = l;
     }
 
@@ -6007,6 +6041,9 @@ public class TvControlManager {
 
     public void SetAudioEventListener (AudioEventListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mAudioListener  = l;
     }
 
@@ -6016,16 +6053,25 @@ public class TvControlManager {
 
     public void SetAVPlaybackListener(AVPlaybackListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mAVPlaybackListener = l;
     }
 
     public void SetSigInfoChangeListener(TvInSignalInfo.SigInfoChangeListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mSigInfoChangeLister = l;
     }
 
     public void SetSigChannelSearchListener(TvInSignalInfo.SigChannelSearchListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mSigChanSearchListener = l;
     }
 
@@ -6039,6 +6085,9 @@ public class TvControlManager {
 
     public void SetSourceConnectListener(StatusSourceConnectListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mSourceConnectChangeListener = l;
     }
 
@@ -6048,6 +6097,9 @@ public class TvControlManager {
 
     public void SetHDMIRxCECListener(HDMIRxCECListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mHDMIRxCECListener = l;
     }
 
@@ -6057,11 +6109,17 @@ public class TvControlManager {
 
     public void SetUpgradeFBCListener(UpgradeFBCListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mUpgradeFBCListener = l;
     }
 
     public void SetStatus3DChangeListener(Status3DChangeListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mStatus3DChangeListener = l;
     }
 
@@ -6071,6 +6129,9 @@ public class TvControlManager {
 
     public void SetAdcCalibrationListener(AdcCalibrationListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mAdcCalibrationListener = l;
     }
 
@@ -6080,6 +6141,9 @@ public class TvControlManager {
 
     public void SetSourceSwitchListener(SourceSwitchListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mSourceSwitchListener = l;
     }
 
@@ -6089,6 +6153,9 @@ public class TvControlManager {
 
     public void SetChannelSelectListener(ChannelSelectListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mChannelSelectListener = l;
     }
 
@@ -6099,6 +6166,9 @@ public class TvControlManager {
 
     public void SetSerialCommunicationListener(SerialCommunicationListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mSerialCommunicationListener = l;
     }
 
@@ -6108,6 +6178,9 @@ public class TvControlManager {
 
     public void SetCloseCaptionListener(CloseCaptionListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mCloseCaptionListener = l;
     }
 
@@ -6346,6 +6419,9 @@ public class TvControlManager {
     private RecorderEventListener mRecorderEventListener = null;
     public void SetRecorderEventListener(RecorderEventListener l) {
         libtv_log_open();
+        if (mHALCallback == null) {
+            initHalCallback();
+        }
         mRecorderEventListener = l;
     }
 
