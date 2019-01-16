@@ -6391,15 +6391,14 @@ public class TvControlManager {
      * @param enable true/fase means enable/disable
      */
     public int setLcdEnable(boolean enable) {
-        Parcel cmd = Parcel.obtain();
-        Parcel r = Parcel.obtain();
-        cmd.writeInt(SET_LCD_ENABLE);
-        cmd.writeInt(enable ? 1 : 0);
-        sendCmdToTv(cmd, r);
-        int ret = r.readInt();
-        cmd.recycle();
-        r.recycle();
-        return ret;
+        synchronized (mLock) {
+            try {
+                return mProxy.setLcdEnable(enable ? 1 : 0);
+            } catch (RemoteException e) {
+                Log.e(TAG, "setLcdEnable:" + e);
+            }
+        }
+        return -1;
     }
 
     // frontend event

@@ -95,6 +95,7 @@ public:
     int setWssStatus(int status);
     int setDeviceIdForCec(int DeviceId);
     int getTvRunStatus(void);
+    int setLcdEnable(int32_t enable);
 
 private:
     class TvServerHidlCallback : public ITvServerCallback {

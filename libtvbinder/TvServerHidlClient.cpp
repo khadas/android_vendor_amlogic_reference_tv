@@ -258,6 +258,10 @@ int TvServerHidlClient::getTvRunStatus(void) {
     return mTvServer->getTvRunStatus();
 }
 
+int TvServerHidlClient::setLcdEnable(int32_t enable) {
+    return mTvServer->setLcdEnable(enable);
+}
+
 // callback from tv service
 Return<void> TvServerHidlClient::TvServerHidlCallback::notifyCallback(const TvHidlParcel& hidlParcel)
 {
