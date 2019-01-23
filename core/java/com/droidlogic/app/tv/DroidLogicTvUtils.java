@@ -332,7 +332,13 @@ public class DroidLogicTvUtils
     public static final String ALL_CHANNELS_NUMBER = "all_channels_number";
     public static final String DTV_TYPE_SWITCHED = "dtv_type_switched";
     public static final String TV_SEARCH_COUNTRY = "tv_country";
+    public static final String TV_SEARCH_MODE = "tv_search_mode";
+    public static final String TV_SEARCH_MODE_MANUAL = "manual";
+    public static final String TV_SEARCH_MODE_AUTO = "auto";
+    public static final String TV_SEARCH_MODE_NIT = "nit";
     public static final String TV_SEARCH_TYPE = "tv_search_type";
+    public static final String TV_SEARCH_ORDER = "tv_search_order";
+    public static final String TV_SEARCH_ATV_DTV_MODE= "search_atv_dtv_flag";
     public static final String TV_SEARCH_TYPE_CHANGED = "tv_search_type_changed";
     public static final String TV_SEARCH_INPUTID = "tv_search_inputid";
     public static final String TV_CURRENT_INPUTID = "tv_current_inputid";
@@ -349,6 +355,8 @@ public class DroidLogicTvUtils
     public static final int TV_SEARCH_DVBC_QAM64 = 3;
     public static final int TV_SEARCH_DVBC_QAM128 = 4;
     public static final int TV_SEARCH_DVBC_QAM256 = 5;
+    public static final String TV_SEARCH_DVBC_SYMBOL_RATE = "search_dvbc_symbol_rate";
+    public static final int TV_SEARCH_DVBC_SYMBOL_RATE_DEFAULT = 6875000;
 
     public static final int VIDEO_UNAVAILABLE_REASON_NODATA = 5;
 
