@@ -454,7 +454,7 @@ public class DroidLogicTvUtils
                         break;
                     }
                 }
-                // ATSC need be shown first
+                // ATSC need be show first
                 if (i <= TvScanConfig.TV_SEARCH_TYPE_ATSC_T_INDEX) {
                     type = TvScanConfig.TV_SEARCH_TYPE.get(i);
                 } else {
