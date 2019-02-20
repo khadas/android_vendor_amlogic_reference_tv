@@ -2869,23 +2869,14 @@ public class TvControlManager {
      * @Return: 0 success, -1 fail
      */
     public int SSMSaveMacAddress(int data_buf[]) {
-        libtv_log_open();
-        int i = 0, tmp_buf_size = 0, ret = 0;
-        Parcel cmd = Parcel.obtain();
-        Parcel r = Parcel.obtain();
-        cmd.writeInt(SSM_SAVE_MAC_ADDR);
-
-        tmp_buf_size = data_buf.length;
-        cmd.writeInt(tmp_buf_size);
-        for (i = 0; i < tmp_buf_size; i++) {
-            cmd.writeInt(data_buf[i]);
+        synchronized (mLock) {
+            try {
+                return mProxy.saveMacAddress(data_buf);
+            } catch (RemoteException e) {
+                Log.e(TAG, "SSMSaveMacAddress:" + e);
+            }
         }
-
-        sendCmdToTv(cmd, r);
-        ret = r.readInt();
-        cmd.recycle();
-        r.recycle();
-        return ret;
+        return -1;
     }
 
     /**
@@ -2895,23 +2886,20 @@ public class TvControlManager {
      * @Return: 0 success, -1 fail
      */
     public int SSMReadMacAddress(int data_buf[]) {
-        libtv_log_open();
-        int i = 0, tmp_buf_size = 0, ret = 0;
-        Parcel cmd = Parcel.obtain();
-        Parcel r = Parcel.obtain();
-        cmd.writeInt(SSM_READ_MAC_ADDR);
-        sendCmdToTv(cmd, r);
-
-        tmp_buf_size = r.readInt();
-
-        for (i = 0; i < tmp_buf_size; i++) {
-            data_buf[i] = r.readInt();
+        synchronized (mLock) {
+            try {
+                mProxy.readMacAddress((int ret, final int[] v) -> {
+                                if (Result.OK == ret) {
+                                    for (int i = 0; i < 6; i++)
+                                        data_buf[i] = v[i];
+                                }
+                            });
+                return 0;
+            } catch (RemoteException e) {
+                Log.e(TAG, "SSMReadMacAddress:" + e);
+            }
         }
-
-        ret = r.readInt();
-        cmd.recycle();
-        r.recycle();
-        return ret;
+        return -1;
     }
 
     /**
