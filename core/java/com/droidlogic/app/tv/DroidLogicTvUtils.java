@@ -342,6 +342,7 @@ public class DroidLogicTvUtils
     public static final String TV_SEARCH_INPUTID = "tv_search_inputid";
     public static final String TV_CURRENT_INPUTID = "tv_current_inputid";
     public static final String TV_SEARCH_INPUTID_CHANGED = "tv_search_inputid_changed";
+    public static final String TV_DROIDLOGIC_PACKAGE = "com.droidlogic.tvinput";
     public static final String ATV_CHANNEL_INDEX = "atv_channel_index";
     public static final String DTV_CHANNEL_INDEX = "dtv_channel_index";
     public static final String TV_INPUT_ID = "tv_input_id";
@@ -1066,7 +1067,8 @@ public class DroidLogicTvUtils
         try {
             jsonObject = new JSONObject(jsonString);
         } catch (JSONException e) {
-            throw new RuntimeException("Json parse fail: ["+jsonString+"]", e);
+            Log.e(TAG, "Json parse fail: ["+jsonString+"]" + e.getMessage());
+            return null;
         }
 
         Iterator it = jsonObject.keys();
