@@ -1547,6 +1547,7 @@ public class DroidLogicTvUtils
                 continue;
 
             int isDigitalCC = c.optInt("bdig", -1);
+            int decoder_param = c.optInt("private_data", -1);
             if (isDigitalCC == 1) {
                 int serviceNumber = c.optInt("sn", -1);
                 int easyReader = c.optInt("bwasy", 0);
@@ -1555,7 +1556,7 @@ public class DroidLogicTvUtils
                     = new ChannelInfo.Subtitle(ChannelInfo.Subtitle.TYPE_DTV_CC,
                                         ChannelInfo.Subtitle.CC_CAPTION_SERVICE1 + serviceNumber - 1,
                                         ChannelInfo.Subtitle.TYPE_DTV_CC,
-                                        0,
+                                        decoder_param,
                                         (easyReader == 0 ? 0x80 : 0) | (wideAspectRatio == 0 ? 0x40 : 0),
                                         c.optString("lng", ""),
                                         count++);
