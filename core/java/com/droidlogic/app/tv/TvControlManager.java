@@ -4026,10 +4026,10 @@ public class TvControlManager {
     }
 
     //enable: 0  is disable , 1  is enable.      when enable it , can black video for switching program
-    public int setBlackoutEnable(int enable){
+    public int setBlackoutEnable(int enable, int isSave){
         synchronized (mLock) {
             try {
-                return mProxy.setBlackoutEnable(enable);
+                return mProxy.setBlackoutEnable(enable, isSave);
             } catch (RemoteException e) {
                 Log.e(TAG, "setBlackoutEnable:" + e);
             }
@@ -4038,12 +4038,12 @@ public class TvControlManager {
     }
 
     //ref to setBlackoutEnable fun
-    public int getBlackoutEnalbe() {
+    public int getBlackoutEnable() {
         synchronized (mLock) {
             try {
                 return mProxy.getBlackoutEnable();
             } catch (RemoteException e) {
-                Log.e(TAG, "getBlackoutEnalbe:" + e);
+                Log.e(TAG, "getBlackoutEnable:" + e);
             }
         }
         return 0;
