@@ -138,6 +138,11 @@ public class TvControlManager {
     public static final int AUDIO_STANDARD_NICAM_BG     = 0x08;
     public static final int AUDIO_STANDARD_NICAM_L      = 0x09;
     public static final int AUDIO_STANDARD_NICAM_DK     = 0x0A;
+    public static final int AUDIO_STANDARD_MONO_BG      = 0x12;
+    public static final int AUDIO_STANDARD_MONO_DK      = 0x13;
+    public static final int AUDIO_STANDARD_MONO_I       = 0x14;
+    public static final int AUDIO_STANDARD_MONO_M       = 0x15;
+    public static final int AUDIO_STANDARD_MONO_L       = 0x16;
 
     //A2 auido mode
     public static final int AUDIO_OUTMODE_A2_MONO       = 0;
