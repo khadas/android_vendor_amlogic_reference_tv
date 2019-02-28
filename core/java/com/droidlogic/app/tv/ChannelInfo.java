@@ -1447,6 +1447,7 @@ public class ChannelInfo {
         public static final int TYPE_DTV_CC = 4;
         public static final int TYPE_ATV_CC = 5;
         public static final int TYPE_DTV_TELETEXT_IMG = 6;
+        public static final int TYPE_ISDB_SUB = 7;
 
         public static final int CC_CAPTION_DEFAULT = 0;
         /*NTSC CC channels*/
