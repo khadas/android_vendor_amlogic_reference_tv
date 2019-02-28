@@ -214,6 +214,7 @@ public class DroidLogicTvUtils
     public static final String ACTION_LIVETV_PROGRAM_APPOINTED = "droidlogic.intent.action.livetv_appointed_program";
     public static final String KEY_LIVETV_PROGRAM_APPOINTED = "livetv_appointed_program";
     public static final String KEY_ENABLE_NOSIGNAL_TIMEOUT = "enable_nosignal_timeout";
+    public static final String PROP_DISABLE_NOSIGNAL_TIMEOUT_FUNCTION = "persist.tv.disable.nosig.timeout";
     public static final String KEY_ENABLE_SUSPEND_TIMEOUT = "enable_suspend_timeout";
 
     public static final String ACTION_ATV_AUTO_SCAN = "atv_auto_scan";
