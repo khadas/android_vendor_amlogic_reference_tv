@@ -85,7 +85,7 @@ TvServerHidlClient::TvServerHidlClient(tv_connect_type_t type): mType(type)
 {
     mTvServer = getTvService();
     mTvServerHidlCallback = new TvServerHidlCallback(this);
-    mTvServer->setCallback(mTvServerHidlCallback, static_cast<ConnectType>(type));
+    //mTvServer->setCallback(mTvServerHidlCallback, static_cast<ConnectType>(type));
 }
 
 TvServerHidlClient::~TvServerHidlClient()
@@ -104,7 +104,7 @@ void TvServerHidlClient::reconnect()
     mTvServer.clear();
     //reconnect to server
     mTvServer = getTvService();
-    mTvServer->setCallback(mTvServerHidlCallback, static_cast<ConnectType>(mType));
+    //mTvServer->setCallback(mTvServerHidlCallback, static_cast<ConnectType>(mType));
 }
 
 void TvServerHidlClient::disconnect()
@@ -155,6 +155,7 @@ status_t TvServerHidlClient::processCmd(const Parcel &p, Parcel *r __unused)
 
 void TvServerHidlClient::setListener(const sp<TvListener> &listener)
 {
+    mTvServer->setCallback(mTvServerHidlCallback, static_cast<ConnectType>(mType));
     mListener = listener;
 }
 
