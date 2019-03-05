@@ -526,7 +526,7 @@ public class DroidLogicTvUtils
 
     public static String getTvSearchTypeSys(Context mContext) {
         String colorSys = TvControlDataManager.getInstance(mContext).getString(mContext.getContentResolver(), ATSC_TV_SEARCH_SYS);
-        if (TextUtils.isEmpty(colorSys) || !TvScanConfig.TV_SOUND_SYS.contains(colorSys)) {
+        if (TextUtils.isEmpty(colorSys) || !TvScanConfig.TV_COLOR_SYS.contains(colorSys)) {
             ArrayList<String> clrSysList = TvScanConfig.GetTvAtvColorSystemList(getCountry(mContext));
             colorSys = clrSysList.get(0);
             Log.i(TAG, "getTvSearchTypeSys null, set default color system:" + colorSys);
