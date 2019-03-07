@@ -297,6 +297,10 @@ public class DroidLogicTvUtils
     public static final int SEARCH_TYPE_DTV_INDEX2 = 2;
     public static final int SEARCH_TYPE_DTV_INDEX3 = 3;
 
+    //tif private command action
+    public static final String ACTION_TIF_BEFORE_TUNE = "tif_before_tune";
+    public static final String ACTION_TIF_AFTER_TUNE = "tif_after_tune";
+
     public static final String SYSTEM_CAPTION_STYLE_ENABLE = "accessibility_captioning_style_enabled";
 
     /**
