@@ -1062,9 +1062,39 @@ public class DroidLogicTvUtils
         }
         return stringBuilder.toString();
     }
+
     public static String mapToJson(Map<String, String> map) {
         return mapToJson(null, map);
     }
+
+    //add escape character "\""
+    public static String mapToJsonAdd(String name, Map<String, String> map) {
+        StringBuilder stringBuilder = new StringBuilder();
+        boolean has_member = false;
+
+        if (!map.isEmpty()) {
+            if ((name != null) && !name.isEmpty())
+                stringBuilder.append("\"").append(name).append("\":");
+
+            stringBuilder.append("{");
+            for (String key : map.keySet()) {
+                if (has_member)
+                    stringBuilder.append(",");
+
+                String value = map.get(key);
+                stringBuilder.append("\"")
+                    .append((key != null ? key : ""))
+                    .append("\":")
+                    .append("\"")
+                    .append(value != null ? value : "")
+                    .append("\"");
+                has_member = true;
+            }
+            stringBuilder.append("}");
+        }
+        return stringBuilder.toString();
+    }
+
     public static Map<String, String> jsonToMap(String jsonString) {
         if (jsonString == null || jsonString.length() == 0)
             return null;

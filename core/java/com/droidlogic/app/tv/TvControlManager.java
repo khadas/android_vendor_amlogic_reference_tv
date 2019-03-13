@@ -5043,7 +5043,7 @@ public class TvControlManager {
         }
 
         public String toString(String name) {
-            return DroidLogicTvUtils.mapToJson(name, mParas);
+            return DroidLogicTvUtils.mapToJsonAdd(name, mParas);
         }
         public String toString() {
             return toString(null);
@@ -5064,6 +5064,7 @@ public class TvControlManager {
         public static final String K_AFC = "afc";
         public static final String K_VFMT = "vfmt";
         public static final String K_SOUNDSYS = "soundsys";
+        public static final String K_LANGUAGE = "language";
 
         public FEParas() { super(); }
         public FEParas(String paras) { super(paras); }
@@ -5110,6 +5111,9 @@ public class TvControlManager {
         }
         public int getAudioOutPutMode() {
             return getInt(K_SOUNDSYS, -1);
+        }
+        public String getLanguage() {
+            return getString(K_LANGUAGE);
         }
         public FEParas setMode(TvMode mode) {
             set(K_MODE, mode.getMode());
@@ -5161,6 +5165,10 @@ public class TvControlManager {
         }
         public FEParas setAudioOutPutMode(int mode) {
             set(K_SOUNDSYS, mode);
+            return this;
+        }
+        public FEParas setLanguage(String language) {
+            set(K_LANGUAGE, language);
             return this;
         }
     }
