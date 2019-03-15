@@ -1135,6 +1135,36 @@ public class TvControlManager {
         return -1;
     }
 
+    public enum TvAction {
+        TV_ACTION_NULL(0),
+        TV_ACTION_IN_VDIN(1),
+        TV_ACTION_STOPING(2),
+        TV_ACTION_SCANNING(4),
+        TV_ACTION_PLAYING(8),
+        TV_ACTION_RECORDING(16),
+        TV_ACTION_SOURCE_SWITCHING(32);
+        private int val;
+
+        TvAction(int val) {
+            this.val = val;
+        }
+
+        public int toInt() {
+            return this.val;
+        }
+    }
+
+    public int GetTvAction() {
+        synchronized (mLock) {
+            try {
+                return mProxy.getTvAction();
+            } catch (RemoteException e) {
+                Log.e(TAG, "GetTvAction:" + e);
+            }
+        }
+        return -1;
+    }
+
     /**
      * @Function: GetHotPlugDetect
      * @Description: Get hotplug detect enable status
