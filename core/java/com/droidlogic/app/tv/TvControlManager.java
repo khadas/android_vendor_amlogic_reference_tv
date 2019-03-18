@@ -874,6 +874,18 @@ public class TvControlManager {
         return -1;
     }
 
+    public int SetTvCurrentLanguage(String lang) {
+        synchronized (mLock) {
+            try {
+                 mProxy.setCurrentLanguage(lang);
+                 return 0;
+            } catch (RemoteException e) {
+                Log.e(TAG, "SetTvCurrentLanguage:" + e);
+            }
+        }
+        return -1;
+    }
+
     /**
      * @Function: GetCurrentSignalInfo
      * @Description: Get current signal infomation
@@ -3865,6 +3877,7 @@ public class TvControlManager {
     public int DtvScan(int mode, int type, int freq, int para1, int para2) {
         synchronized (mLock) {
             try {
+                mProxy.setCurrentLanguage(TvMultilingualText.getLocalLang());
                 return mProxy.dtvScan(mode, type, freq, freq, para1, para2);
             } catch (RemoteException e) {
                 Log.e(TAG, "DtvScan:" + e);
@@ -3910,6 +3923,7 @@ public class TvControlManager {
     public int AtvAutoScan(int videoStd, int audioStd, int storeType, int procMode) {
         synchronized (mLock) {
             try {
+                mProxy.setCurrentLanguage(TvMultilingualText.getLocalLang());
                 return mProxy.atvAutoScan(videoStd, audioStd, storeType, procMode);
             } catch (RemoteException e) {
                 Log.e(TAG, "AtvAutoScan:" + e);
@@ -3947,6 +3961,7 @@ public class TvControlManager {
             int audioStd) {
         synchronized (mLock) {
             try {
+                mProxy.setCurrentLanguage(TvMultilingualText.getLocalLang());
                 return mProxy.atvMunualScan(startFreq, endFreq, videoStd, audioStd);
             } catch (RemoteException e) {
                 Log.e(TAG, "AtvManualScan:" + e);
@@ -5323,6 +5338,7 @@ public class TvControlManager {
     public int TvScan(FEParas fe, ScanParas scan) {
         synchronized (mLock) {
             try {
+                mProxy.setCurrentLanguage(TvMultilingualText.getLocalLang());
                 return mProxy.Scan(fe.toString(), scan.toString());
             } catch (RemoteException e) {
                 Log.e(TAG, "TvScan:" + e);
