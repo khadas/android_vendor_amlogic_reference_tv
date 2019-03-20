@@ -14,14 +14,18 @@ import android.database.Cursor;
 import android.media.tv.TvContentRating;
 import android.media.tv.TvContract;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.sql.Blob;
+import java.sql.SQLException;
 
 /**
  * A convenience class to create and insert program information into the database.
  */
 public final class Program implements Comparable<Program> {
+    private static final String TAG = "Program";
     public static final long INVALID_LONG_VALUE = -1;
     public static final int INVALID_INT_VALUE = -1;
 
@@ -437,7 +441,25 @@ public final class Program implements Comparable<Program> {
         }
         index = cursor.getColumnIndex(TvContract.Programs.COLUMN_INTERNAL_PROVIDER_DATA);
         if (index >= 0 && !cursor.isNull(index)) {
-            builder.setInternalProviderData(cursor.getString(index));
+            String strValue = null;
+            if (cursor.getType(index) == Cursor.FIELD_TYPE_STRING) {
+                strValue = cursor.getString(index);
+            } else if (cursor.getType(index) == Cursor.FIELD_TYPE_BLOB) {
+                byte[] blobValue = cursor.getBlob(index);
+                if (blobValue != null) {
+                    try {
+                        strValue = new String(blobValue);
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        Log.d(TAG, "blob to String Exception = " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+                Log.d(TAG, "blob to String = " + strValue);
+            } else {
+                Log.d(TAG, "COLUMN_INTERNAL_PROVIDER_DATA other type = " + cursor.getType(index));
+            }
+            builder.setInternalProviderData(strValue);
         }
         index = cursor.getColumnIndex(TvContract.Programs.COLUMN_INTERNAL_PROVIDER_FLAG1);
         if (index >= 0) {
