@@ -365,6 +365,7 @@ public class DroidLogicTvUtils
     public static final int TV_SEARCH_DVBC_QAM64 = 3;
     public static final int TV_SEARCH_DVBC_QAM128 = 4;
     public static final int TV_SEARCH_DVBC_QAM256 = 5;
+    public static final int TV_SEARCH_DVBC_QAMAUTO = 6;
     public static final String TV_SEARCH_DVBC_SYMBOL_RATE = "search_dvbc_symbol_rate";
     public static final int TV_SEARCH_DVBC_SYMBOL_RATE_DEFAULT = 6875000;
 
