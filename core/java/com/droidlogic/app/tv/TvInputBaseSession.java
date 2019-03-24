@@ -114,14 +114,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
 
     public void doRelease() {
         Log.d(TAG, "doRelease,session:"+this);
-        setOverlayViewEnabled(false);
         mContext.unregisterReceiver(mBroadcastReceiver);
-
-        if (mOverlayView != null) {
-            mOverlayView.releaseResource();
-            mOverlayView = null;
-        }
-        //doAppPrivateCmd(DroidLogicTvUtils.ACTION_STOP_TV, null);
     }
 
     public void doAppPrivateCmd(String action, Bundle bundle) {}
@@ -226,6 +219,11 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     public void onRelease() {
         if (mSessionHandler == null)
             return;
+        setOverlayViewEnabled(false);
+        if (mOverlayView != null) {
+            mOverlayView.releaseResource();
+            mOverlayView = null;
+        }
         Message msg = mSessionHandler.obtainMessage(MSG_DO_RELEASE);
         msg.sendToTarget();
     }
