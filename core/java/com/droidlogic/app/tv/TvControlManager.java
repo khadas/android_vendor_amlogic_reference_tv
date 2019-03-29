@@ -648,12 +648,12 @@ public class TvControlManager {
         }
     }
 
-    public static TvControlManager getInstance() {
+    public static synchronized TvControlManager getInstance() {
         if (null == mInstance) mInstance = new TvControlManager();
         return mInstance;
     }
 
-    public TvControlManager() {
+    private TvControlManager() {
         Looper looper = Looper.myLooper();
         if (looper != null) {
             mEventHandler = new EventHandler(looper);
@@ -679,6 +679,8 @@ public class TvControlManager {
         String LogFlg = TvMiscConfigGet(OPEN_TV_LOG_FLG, "");
         if ("log_open".equals(LogFlg))
             tvLogFlg =true;
+
+        Log.e(TAG, "Instance");
     }
 
     private static final int TVSERVER_DEATH_COOKIE = 1000;
