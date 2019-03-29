@@ -53,11 +53,13 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     private static final boolean DEBUG = true;
     private static final String TAG = "TvInputBaseSession";
 
-    private static final int MSG_DO_PRI_CMD = 9;
-    protected static final int MSG_SUBTITLE_SHOW = 10;
-    protected static final int MSG_SUBTITLE_HIDE = 11;
-    protected static final int MSG_DO_RELEASE = 12;
-    protected static final int MSG_AUDIO_MUTE = 13;
+    private static final int    MSG_DO_PRI_CMD              = 9;
+    protected static final int  MSG_SUBTITLE_SHOW           = 10;
+    protected static final int  MSG_SUBTITLE_HIDE           = 11;
+    protected static final int  MSG_DO_RELEASE              = 12;
+    protected static final int  MSG_AUDIO_MUTE              = 13;
+
+    protected static final int TVINPUT_BASE_DELAY_SEND_MSG  = 10; // Filter message within 10ms, only the last message is processed
     private Context mContext;
     public int mId;
     private String mInputId;
@@ -112,6 +114,11 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         return mDeviceId;
     }
 
+    public void sendSessionMessage(int cmd) {
+        Message msg = mSessionHandler.obtainMessage(cmd);
+        mSessionHandler.removeMessages(msg.what);
+        msg.sendToTarget();
+    }
     public void doRelease() {
         Log.d(TAG, "doRelease,session:"+this);
         mContext.unregisterReceiver(mBroadcastReceiver);
@@ -132,10 +139,10 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         }
         if (DEBUG)
             Log.d(TAG, "onSetStreamVolume volume = " + volume);
-
         Message msg = mSessionHandler.obtainMessage(MSG_AUDIO_MUTE);
-        msg.arg1= (int)volume;
-        msg.sendToTarget();
+        msg.arg1 = (int)volume;
+        mSessionHandler.removeMessages(msg.what);
+        mSessionHandler.sendMessageDelayed(msg, TVINPUT_BASE_DELAY_SEND_MSG);
     }
 
     @Override
@@ -146,6 +153,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         if (mSessionHandler == null)
             return;
         Message msg = mSessionHandler.obtainMessage(MSG_DO_PRI_CMD);
+        mSessionHandler.removeMessages(msg.what);
         msg.setData(data);
         msg.obj = action;
         msg.sendToTarget();
@@ -225,6 +233,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
             mOverlayView = null;
         }
         Message msg = mSessionHandler.obtainMessage(MSG_DO_RELEASE);
+        mSessionHandler.removeMessages(msg.what);
         msg.sendToTarget();
     }
 
@@ -261,8 +270,6 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     public boolean handleMessage(Message msg) {
         if (DEBUG)
             Log.d(TAG, "handleMessage, msg.what=" + msg.what);
-
-        mSessionHandler.removeMessages(msg.what);
 
         switch (msg.what) {
             case MSG_DO_PRI_CMD:
