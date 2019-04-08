@@ -91,7 +91,7 @@ public class DroidLogicTvInputService extends TvInputService implements
     private static final int MSG_DO_SET_SURFACE = 3;
     private static int mSelectPort = -1;
     private static String ACCESSIBILITY_CAPTIONING_PRESET = "accessibility_captioning_preset";
-    private Surface mSurface;
+    protected Surface mSurface;
     protected int ACTION_FAILED = -1;
     protected int ACTION_SUCCESS = 1;
     protected int ACTION_PENDING = 0;
@@ -717,7 +717,7 @@ public class DroidLogicTvInputService extends TvInputService implements
         if (mHardware != null && mConfigs.length > 0) {
             if (mSurface == null) {
                 return ACTION_PENDING;
-            } else if (mSurface != null && mSurface.isValid())
+            } else {
                 return ACTION_SUCCESS;
             //mHardware.setSurface(mSurface, mConfigs[0]);
             /*if ((mDeviceId >= DroidLogicTvUtils.DEVICE_ID_HDMI1)
