@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 
 public class ChannelInfo {
     private static final String TAG = "ChannelInfo";
+    private static final boolean DEBUG = false;
 
     public static final String COLUMN_LCN = Channels.COLUMN_INTERNAL_PROVIDER_FLAG2;
     public static final String COLUMN_LCN1 = Channels.COLUMN_INTERNAL_PROVIDER_FLAG3;
@@ -264,14 +265,14 @@ public class ChannelInfo {
                     //youtube iptv database in this column is blob. Add it for the future.
                     byte[] data = cursor.getBlob(index);
                     //Log.d(TAG,"cursor is blob, return null");
-                    Log.d(TAG,"cursor is blob, set value to null");
+                    if (DEBUG) Log.i(TAG,"cursor is blob, set value to null");
                     value = null;//return null;
                 } else if (type == Cursor.FIELD_TYPE_STRING)
                     value = cursor.getString(index);
                 else
                     value = null;//return null;
             } catch (SQLiteException e) {
-                Log.d(TAG,"SQLiteException:"+e);
+                if (DEBUG) Log.d(TAG,"SQLiteException:"+e);
                 return null;
             }
             Map<String, String> parsedMap = DroidLogicTvUtils.jsonToMap(value);

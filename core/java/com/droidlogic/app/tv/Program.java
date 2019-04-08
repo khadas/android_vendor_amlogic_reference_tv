@@ -26,6 +26,7 @@ import java.sql.SQLException;
  */
 public final class Program implements Comparable<Program> {
     private static final String TAG = "Program";
+    private static final boolean DEBUG = false;
     public static final long INVALID_LONG_VALUE = -1;
     public static final int INVALID_INT_VALUE = -1;
 
@@ -451,13 +452,13 @@ public final class Program implements Comparable<Program> {
                         strValue = new String(blobValue);
                     } catch (Exception e) {
                         // TODO Auto-generated catch block
-                        Log.d(TAG, "blob to String Exception = " + e.getMessage());
+                        if (DEBUG) Log.e(TAG, "blob to String Exception = " + e.getMessage());
                         e.printStackTrace();
                     }
                 }
-                Log.d(TAG, "blob to String = " + strValue);
+                if (DEBUG) Log.d(TAG, "blob to String = " + strValue);
             } else {
-                Log.d(TAG, "COLUMN_INTERNAL_PROVIDER_DATA other type = " + cursor.getType(index));
+                if (DEBUG) Log.d(TAG, "COLUMN_INTERNAL_PROVIDER_DATA other type = " + cursor.getType(index));
             }
             builder.setInternalProviderData(strValue);
         }
