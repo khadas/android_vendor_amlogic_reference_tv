@@ -719,6 +719,7 @@ public class DroidLogicTvInputService extends TvInputService implements
                 return ACTION_PENDING;
             } else {
                 return ACTION_SUCCESS;
+            }
             //mHardware.setSurface(mSurface, mConfigs[0]);
             /*if ((mDeviceId >= DroidLogicTvUtils.DEVICE_ID_HDMI1)
                     && (mDeviceId <= DroidLogicTvUtils.DEVICE_ID_HDMI4)) {
