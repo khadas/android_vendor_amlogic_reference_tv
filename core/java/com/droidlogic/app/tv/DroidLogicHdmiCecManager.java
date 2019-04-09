@@ -223,16 +223,18 @@ public class DroidLogicHdmiCecManager {
         if (deviceId == 0) {
             setDeviceIdForCec(deviceId);
         }
+
+        if (deviceId != 0 && logicAddr == 0) {
+            //Message message = mHandler.obtainMessage(REMOVE_DEVICE_SELECT, 0, 0);
+            //mHandler.sendMessageDelayed(message, SHORTDELAYMILIS);
+            Log.d(TAG, "plugout at current channel,should not deviceSelect(0), return");
+            return false;
+        }
         Log.d(TAG, "TvClient deviceSelect begin, logicAddr: " + logicAddr);
         mHandler.removeMessages(HDMI_DEVICE_SELECT);
         Message msg = mHandler.obtainMessage(HDMI_DEVICE_SELECT, logicAddr, 0);
         int delayTime = (deviceId == 0) ? LONGDELAYMILIS : DELAYMILIS;
         mHandler.sendMessageDelayed(msg, delayTime);
-        if (deviceId != 0 && logicAddr == 0) {
-           /* the second <Report Physical Address> should be filtered*/
-            Message message = mHandler.obtainMessage(REMOVE_DEVICE_SELECT, 0, 0);
-            mHandler.sendMessageDelayed(message, SHORTDELAYMILIS);
-        }
         return true;
     }
 
