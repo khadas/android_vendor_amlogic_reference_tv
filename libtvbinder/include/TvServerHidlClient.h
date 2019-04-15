@@ -100,6 +100,7 @@ public:
     int setLcdEnable(int32_t enable);
     int readMacAddress(char *value);
     int saveMacAddress(const char *value);
+    int setSameSourceEnable(int isEnable);
 
 private:
     class TvServerHidlCallback : public ITvServerCallback {

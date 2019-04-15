@@ -6642,4 +6642,16 @@ public class TvControlManager {
             }
         }
     }
+
+    public int SetSameSourceEnable(int IsEnable) {
+        synchronized (mLock) {
+            try {
+                return mProxy.setSameSourceEnable(IsEnable);
+            } catch (RemoteException e) {
+                Log.e(TAG, "SetSameSourceEnable:" + e);
+            }
+        }
+
+        return -1;
+    }
 }

@@ -288,6 +288,11 @@ int TvServerHidlClient::saveMacAddress(const char *data_buf) {
 
     return mTvServer->saveMacAddress(value);
 }
+
+int TvServerHidlClient::setSameSourceEnable(int isEnable) {
+    return mTvServer->setSameSourceEnable(isEnable);
+}
+
 // callback from tv service
 Return<void> TvServerHidlClient::TvServerHidlCallback::notifyCallback(const TvHidlParcel& hidlParcel)
 {
