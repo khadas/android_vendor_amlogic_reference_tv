@@ -95,6 +95,10 @@ public class AudioEffectManager {
     public static final int SET_AGC_SOURCE_ID       = 16;
     public static final int SET_VIRTUAL_URROUND     = 17;
 
+    public static final int EFFECT_BASS_DEFAULT     = 50;   // 0 - 100
+    public static final int EFFECT_TREBLE_DEFAULT   = 50;   // 0 - 100
+    public static final int EFFECT_BALANCE_DEFAULT  = 50;   // 0 - 100
+
     private static AudioEffectManager mInstance;
 
     public static AudioEffectManager getInstance(Context context) {
