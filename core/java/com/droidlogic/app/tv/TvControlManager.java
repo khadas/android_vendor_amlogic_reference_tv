@@ -717,14 +717,16 @@ public class TvControlManager {
     }
 
     private void initHalCallback () {
-        try {
-            mHALCallback = new HALCallback(this);
-            mProxy.setCallback(mHALCallback, ConnectType.TYPE_EXTEND);
-        } catch (NoSuchElementException e) {
-            Log.e(TAG, "connectToProxy: tvserver HIDL service not found."
-                        + " Did the service fail to start?", e);
-        } catch (RemoteException e) {
-            Log.e(TAG, "connectToProxy: tvserver HIDL service not responding", e);
+        synchronized (mLock) {
+            try {
+                mHALCallback = new HALCallback(this);
+                mProxy.setCallback(mHALCallback, ConnectType.TYPE_EXTEND);
+            } catch (NoSuchElementException e) {
+                Log.e(TAG, "connectToProxy: tvserver HIDL service not found."
+                      + " Did the service fail to start?", e);
+            } catch (RemoteException e) {
+                Log.e(TAG, "connectToProxy: tvserver HIDL service not responding", e);
+            }
         }
     }
 

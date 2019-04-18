@@ -203,7 +203,7 @@ public class TvDataBaseManager {
                     break;
                 }
             }
-            if (ret != UPDATE_SUCCESS)
+            if ((ret != UPDATE_SUCCESS) && (cursor != null))
                 ret = cursor.getCount();
         } catch (Exception e) {
             //TODO
@@ -261,7 +261,7 @@ public class TvDataBaseManager {
                     break;
                 }
             }
-            if (ret != UPDATE_SUCCESS)
+            if ((ret != UPDATE_SUCCESS) && (cursor != null))
                 ret = cursor.getCount();
         } catch (Exception e) {
             //TODO
@@ -318,7 +318,7 @@ public class TvDataBaseManager {
                     break;
                 }
             }
-            if (ret != UPDATE_SUCCESS)
+            if ((ret != UPDATE_SUCCESS) && (cursor != null))
                 ret = cursor.getCount();
         } catch (Exception e) {
             //TODO
@@ -751,7 +751,7 @@ public class TvDataBaseManager {
     }
 
     public void moveChannel (ChannelInfo sourceChannel, ChannelInfo targetChannel) {
-        if ( sourceChannel == null ||  sourceChannel == null
+        if ( sourceChannel == null ||  targetChannel == null
                 || targetChannel.getNumber() == sourceChannel.getNumber())
             return;
 
@@ -1268,7 +1268,9 @@ public class TvDataBaseManager {
                     ret = cursor.getCount();
                 }
             }
-            cursor.close();
+            if (cursor != null) {
+                cursor.close();
+            }
         } catch (Exception e) {
             //TODO
         } finally {
@@ -1335,7 +1337,7 @@ public class TvDataBaseManager {
                 }
             }
 
-            if (ret != UPDATE_SUCCESS)
+            if ((ret != UPDATE_SUCCESS) && (cursor != null))
                 ret = cursor.getCount();
 
         } catch (Exception e) {
