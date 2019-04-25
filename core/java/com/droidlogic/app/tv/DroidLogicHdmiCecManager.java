@@ -12,8 +12,8 @@ package com.droidlogic.app.tv;
 import android.content.Context;
 import android.hardware.hdmi.HdmiControlManager;
 import android.hardware.hdmi.HdmiDeviceInfo;
-import android.hardware.hdmi.HdmiTvClient;
-import android.hardware.hdmi.HdmiTvClient.SelectCallback;
+import android.hardware.hdmi.HdmiSwitchClient;
+import android.hardware.hdmi.HdmiSwitchClient.SelectCallback;
 import android.provider.Settings;
 import android.provider.Settings.Global;
 import android.util.Log;
@@ -24,13 +24,16 @@ import java.util.List;
 import java.util.ArrayList;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemProperties;
+import android.text.TextUtils;
+import java.util.Collections;
 
 public class DroidLogicHdmiCecManager {
     private static final String TAG = "DroidLogicHdmiCecManager";
 
     private static Context mContext;
     private HdmiControlManager mHdmiControlManager;
-    private HdmiTvClient mTvClient;
+    private HdmiSwitchClient mSwitchClient = null;
     private int mSelectDeviceId = -1;
     private int mSelectLogicAddr = -1;
     private int mSelectPhyAddr = -1;
@@ -51,14 +54,16 @@ public class DroidLogicHdmiCecManager {
     private static final int HDMI_PORT_SELECT = 3 << 16;
     private static final int REMOVE_DEVICE_SELECT = 4 << 16;
     private static final int SEND_KEY_EVENT  = 5 << 16;
-    private int DEV_TYPE_AUDIO_SYSTEM = 5;
-    private int DEV_TYPE_TUNER = 3;
+    private static final int DEV_TYPE_TV = 0;
+    private static final int DEV_TYPE_TUNER = 3;
+    private static final int DEV_TYPE_AUDIO_SYSTEM = 5;
     public static final int POWER_STATUS_UNKNOWN = -1;
     public static final int POWER_STATUS_ON = 0;
     public static final int POWER_STATUS_STANDBY = 1;
     public static final int POWER_STATUS_TRANSIENT_TO_ON = 2;
     public static final int POWER_STATUS_TRANSIENT_TO_STANDBY = 3;
     private static final String HDMI_CONTROL_ENABLED = "hdmi_control_enabled";
+    static final String PROPERTY_VENDOR_DEVICE_TYPE = "ro.vendor.platform.hdmi.device_type";
 
     private final Handler mHandler = new Handler () {
         @Override
@@ -76,12 +81,12 @@ public class DroidLogicHdmiCecManager {
                     portSelect((int)msg.arg1);
                     break;
                 case SEND_KEY_EVENT:
-                    if (mTvClient == null) {
-                        Log.d(TAG, "mHandler sendKeyEvent fail, mTvClient is null ?: " + (mTvClient == null));
+                    if (mSwitchClient == null) {
+                        Log.d(TAG, "mHandler sendKeyEvent fail, mSwitchClient is null ?: " + (mSwitchClient == null));
                     }
-                    if (mTvClient != null) {
+                    if (mSwitchClient != null) {
                         Log.d(TAG, "mHandler sendKeyEvent, keyCode: " + msg.arg1 + " isPressed: " + msg.arg2);
-                        mTvClient.sendKeyEvent((int)msg.arg1, (((int)msg.arg2 == 1) ?  true : false));
+                        mSwitchClient.sendKeyEvent((int)msg.arg1, (((int)msg.arg2 == 1) ?  true : false));
                     }
                     break;
                 case REMOVE_DEVICE_SELECT:
@@ -105,15 +110,37 @@ public class DroidLogicHdmiCecManager {
         mContext = context;
         mHdmiControlManager = (HdmiControlManager) context.getSystemService(Context.HDMI_CONTROL_SERVICE);
 
-        if (mHdmiControlManager != null)
-            mTvClient = mHdmiControlManager.getTvClient();
-
+        if (mHdmiControlManager != null) {
+            List<Integer> mDeviceTypes;
+            mDeviceTypes = getIntList(SystemProperties.get(PROPERTY_VENDOR_DEVICE_TYPE));
+            for (int type : mDeviceTypes) {
+                if (type == DEV_TYPE_TV
+                    || type == DEV_TYPE_TUNER
+                    || type == DEV_TYPE_AUDIO_SYSTEM) {
+                    mSwitchClient = mHdmiControlManager.getSwitchClient();
+                }
+            }
+        }
 
         if (mTvInputManager == null)
             mTvInputManager = (TvInputManager) context.getSystemService(Context.TV_INPUT_SERVICE);
 
         mTvControlDataManager = TvControlDataManager.getInstance(mContext);
         mTvControlManager = TvControlManager.getInstance();
+    }
+
+    protected static List<Integer> getIntList(String string) {
+        ArrayList<Integer> list = new ArrayList<>();
+        TextUtils.SimpleStringSplitter splitter = new TextUtils.SimpleStringSplitter(',');
+        splitter.setString(string);
+        for (String item : splitter) {
+            try {
+                list.add(Integer.parseInt(item));
+            } catch (NumberFormatException e) {
+                Log.d(TAG, "Can't parseInt: " + item);
+            }
+        }
+        return Collections.unmodifiableList(list);
     }
 
     /**
@@ -140,8 +167,8 @@ public class DroidLogicHdmiCecManager {
             + ", mSelectPhyAddr = " + mSelectPhyAddr);
 
         boolean cecOption = (Global.getInt(mContext.getContentResolver(), HDMI_CONTROL_ENABLED, 1) == 1);
-        if (!cecOption || mTvClient == null || mHdmiControlManager == null) {
-            Log.d(TAG, "mTvClient or mHdmiControlManager maybe null,or cec not enable, return");
+        if (!cecOption || mSwitchClient == null || mHdmiControlManager == null) {
+            Log.d(TAG, "mSwitchClient or mHdmiControlManager maybe null,or cec not enable, return");
             return false;
         }
         if ((mSourceDeviceId < DroidLogicTvUtils.DEVICE_ID_HDMI1
@@ -239,7 +266,10 @@ public class DroidLogicHdmiCecManager {
     }
 
     private void deviceSelect(int logicAddr) {
-        mTvClient.deviceSelect(logicAddr, new SelectCallback() {
+        if (mSwitchClient == null) {
+            return;
+        }
+        mSwitchClient.deviceSelect(logicAddr, new SelectCallback() {
             @Override
             public void onComplete(int result) {
                 if (result != HdmiControlManager.RESULT_SUCCESS)
@@ -267,8 +297,8 @@ public class DroidLogicHdmiCecManager {
             + ", mSelectPhyAddr = " + mSelectPhyAddr);
 
         boolean cecOption = (Global.getInt(mContext.getContentResolver(), HDMI_CONTROL_ENABLED, 1) == 1);
-        if (!cecOption || mTvClient == null || mHdmiControlManager == null) {
-            Log.d(TAG, "mTvClient or mHdmiControlManager maybe null,or cec not enable, return");
+        if (!cecOption || mSwitchClient == null || mHdmiControlManager == null) {
+            Log.d(TAG, "mSwitchClient or mHdmiControlManager maybe null,or cec not enable, return");
             return false;
         }
         int portId = getPortIdByDeviceId(deviceId);
@@ -290,7 +320,10 @@ public class DroidLogicHdmiCecManager {
     }
 
     private void portSelect(int portId) {
-        mTvClient.portSelect(portId, new SelectCallback() {
+        if (mSwitchClient == null) {
+            return;
+        }
+        mSwitchClient.portSelect(portId, new SelectCallback() {
             @Override
             public void onComplete(int result) {
                 if (result != HdmiControlManager.RESULT_SUCCESS)
@@ -335,9 +368,12 @@ public class DroidLogicHdmiCecManager {
     }
 
     public boolean isAvrDevice(int deviceId) {
+        if (mSwitchClient == null) {
+            return false;
+        }
         if (deviceId >= DroidLogicTvUtils.DEVICE_ID_HDMI1 && deviceId <= DroidLogicTvUtils.DEVICE_ID_HDMI4) {
             int id = getPortIdByDeviceId(deviceId);
-            for (HdmiDeviceInfo info : mTvClient.getDeviceList()) {
+            for (HdmiDeviceInfo info : mSwitchClient.getDeviceList()) {
                 /*this only get firt level device logical addr*/
                 if (id == ((int)info.getPortId()) && (info.getLogicalAddress() == DEV_TYPE_AUDIO_SYSTEM)) {
                     return true;
@@ -348,11 +384,14 @@ public class DroidLogicHdmiCecManager {
     }
 
     public boolean isCompositeDev(int deviceId) {
+        if (mSwitchClient == null) {
+            return false;
+        }
         int count = 0;
         /*a devie maybe have different logic addr, but same phy addr*/
         if (deviceId >= DroidLogicTvUtils.DEVICE_ID_HDMI1 && deviceId <= DroidLogicTvUtils.DEVICE_ID_HDMI4) {
             int id = getPortIdByDeviceId(deviceId);
-            for (HdmiDeviceInfo info : mTvClient.getDeviceList()) {
+            for (HdmiDeviceInfo info : mSwitchClient.getDeviceList()) {
                 /*this only get firt level device logical addr*/
                 if (id == ((int)info.getPortId()) && ((info.getPhysicalAddress() & 0xfff) == 0)) {
                     count++;
@@ -367,19 +406,10 @@ public class DroidLogicHdmiCecManager {
             int id = getPortIdByDeviceId(deviceId);
             if (DEBUG)
                 Log.d(TAG, "hasHdmiCecDevice, portId: " + id);
-            if (mTvClient == null) {
-                if (mHdmiControlManager != null) {
-                    mTvClient = mHdmiControlManager.getTvClient();
-                } else if (mContext != null) {
-                    mHdmiControlManager = (HdmiControlManager) mContext.getSystemService(Context.HDMI_CONTROL_SERVICE);
-                    if (mHdmiControlManager != null)
-                        mTvClient = mHdmiControlManager.getTvClient();
-                } else {
-                    Log.d(TAG, "could not get mTvClient.");
-                }
+            if (mSwitchClient == null) {
                 return false;
             }
-            for (HdmiDeviceInfo info : mTvClient.getDeviceList()) {
+            for (HdmiDeviceInfo info : mSwitchClient.getDeviceList()) {
                 if (DEBUG)
                     Log.d(TAG, "hasHdmiCecDevice, info: " + info);
                 if (id == ((int)info.getPortId())) {
