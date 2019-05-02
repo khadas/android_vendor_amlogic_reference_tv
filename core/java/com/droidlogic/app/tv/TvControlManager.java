@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -55,18 +56,6 @@ import java.lang.reflect.Method;
 
 import static com.droidlogic.app.tv.TvControlCommand.*;
 import com.droidlogic.app.tv.EasEvent;
-
-import android.hidl.manager.V1_0.IServiceManager;
-import android.hidl.manager.V1_0.IServiceNotification;
-import vendor.amlogic.hardware.tvserver.V1_0.ITvServer;
-import vendor.amlogic.hardware.tvserver.V1_0.ITvServerCallback;
-import vendor.amlogic.hardware.tvserver.V1_0.SignalInfo;
-import vendor.amlogic.hardware.tvserver.V1_0.FormatInfo;
-import vendor.amlogic.hardware.tvserver.V1_0.TvHidlParcel;
-import vendor.amlogic.hardware.tvserver.V1_0.ConnectType;
-import vendor.amlogic.hardware.tvserver.V1_0.Result;
-import vendor.amlogic.hardware.tvserver.V1_0.FreqList;
-import vendor.amlogic.hardware.tvserver.V1_0.RRTSearchInfo;
 
 public class TvControlManager {
     private static final String TAG = "TvControlManager";
@@ -197,6 +186,9 @@ public class TvControlManager {
 
     private EasManager easManager = new EasManager();
     private static TvControlManager mInstance;
+    static {
+        System.loadLibrary("tv_jni");
+    }
 
     private int sendCmdToTv(Parcel p, Parcel r) {
         Log.i(TAG, "sendCmdToTv is abandoned in Android O, please use cmd HIDL way!!cmd:" + p.readInt());
@@ -324,100 +316,100 @@ public class TvControlManager {
 
         private void readScanEvent(ScannerEvent scan_ev, TvHidlParcel p) {
             int i, j;
-            scan_ev.type = p.bodyInt.get(0);
+            scan_ev.type = p.bodyInt[0];
             Log.d(TAG, "scan ev type:"+ scan_ev.type);
 
-            scan_ev.precent = p.bodyInt.get(1);
-            scan_ev.totalcount = p.bodyInt.get(2);
-            scan_ev.lock = p.bodyInt.get(3);
-            scan_ev.cnum = p.bodyInt.get(4);
-            scan_ev.freq = p.bodyInt.get(5);
-            scan_ev.programName = p.bodyString.get(0);
-            scan_ev.srvType = p.bodyInt.get(6);
-            scan_ev.paras = p.bodyString.get(1);
-            scan_ev.strength = p.bodyInt.get(7);
-            scan_ev.quality = p.bodyInt.get(8);
-            scan_ev.videoStd = p.bodyInt.get(9);
-            scan_ev.audioStd = p.bodyInt.get(10);
-            scan_ev.isAutoStd = p.bodyInt.get(11);
+            scan_ev.precent = p.bodyInt[1];
+            scan_ev.totalcount = p.bodyInt[2];
+            scan_ev.lock = p.bodyInt[3];
+            scan_ev.cnum = p.bodyInt[4];
+            scan_ev.freq = p.bodyInt[5];
+            scan_ev.programName = p.bodyString[0];
+            scan_ev.srvType = p.bodyInt[6];
+            scan_ev.paras = p.bodyString[1];
+            scan_ev.strength = p.bodyInt[7];
+            scan_ev.quality = p.bodyInt[8];
+            scan_ev.videoStd = p.bodyInt[9];
+            scan_ev.audioStd = p.bodyInt[10];
+            scan_ev.isAutoStd = p.bodyInt[11];
 
-            scan_ev.mode = p.bodyInt.get(12);
-            scan_ev.sr = p.bodyInt.get(13);
-            scan_ev.mod = p.bodyInt.get(14);
-            scan_ev.bandwidth = p.bodyInt.get(15);
-            scan_ev.reserved = p.bodyInt.get(16);
-            scan_ev.ts_id = p.bodyInt.get(17);
-            scan_ev.orig_net_id = p.bodyInt.get(18);
-            scan_ev.serviceID = p.bodyInt.get(19);
-            scan_ev.vid = p.bodyInt.get(20);
-            scan_ev.vfmt = p.bodyInt.get(21);
-            int acnt = p.bodyInt.get(22);
+            scan_ev.mode = p.bodyInt[12];
+            scan_ev.sr = p.bodyInt[13];
+            scan_ev.mod = p.bodyInt[14];
+            scan_ev.bandwidth = p.bodyInt[15];
+            scan_ev.reserved = p.bodyInt[16];
+            scan_ev.ts_id = p.bodyInt[17];
+            scan_ev.orig_net_id = p.bodyInt[18];
+            scan_ev.serviceID = p.bodyInt[19];
+            scan_ev.vid = p.bodyInt[20];
+            scan_ev.vfmt = p.bodyInt[21];
+            int acnt = p.bodyInt[22];
             if (acnt != 0) {
                 scan_ev.aids = new int[acnt];
                 for (i=0;i<acnt;i++)
-                    scan_ev.aids[i] = p.bodyInt.get(i+23);
+                    scan_ev.aids[i] = p.bodyInt[i+23];
                 scan_ev.afmts = new int[acnt];
                 for (i=0;i<acnt;i++)
-                    scan_ev.afmts[i] = p.bodyInt.get(i+acnt+23);
+                    scan_ev.afmts[i] = p.bodyInt[i+acnt+23];
                 scan_ev.alangs = new String[acnt];
                 for (i=0;i<acnt;i++)
-                    scan_ev.alangs[i] = p.bodyString.get(i+2);
+                    scan_ev.alangs[i] = p.bodyString[i+2];
                 scan_ev.atypes = new int[acnt];
                 for (i=0;i<acnt;i++)
-                    scan_ev.atypes[i] = p.bodyInt.get(i+2*acnt+23);
+                    scan_ev.atypes[i] = p.bodyInt[i+2*acnt+23];
                 scan_ev.aexts = new int[acnt];
                 for (i=0;i<acnt;i++)
-                    scan_ev.aexts[i] = p.bodyInt.get(i+3*acnt+23);
+                    scan_ev.aexts[i] = p.bodyInt[i+3*acnt+23];
             }
-            scan_ev.pcr = p.bodyInt.get(4*acnt+23);
-            int scnt = p.bodyInt.get(4*acnt+24);
+            scan_ev.pcr = p.bodyInt[4*acnt+23];
+            int scnt = p.bodyInt[4*acnt+24];
             if (scnt != 0) {
                 scan_ev.stypes = new int[scnt];
                 for (i=0;i<scnt;i++)
-                    scan_ev.stypes[i] = p.bodyInt.get(i+4*acnt+25);
+                    scan_ev.stypes[i] = p.bodyInt[i+4*acnt+25];
                 scan_ev.sids = new int[scnt];
                 for (i=0;i<scnt;i++)
-                    scan_ev.sids[i] = p.bodyInt.get(i+scnt+4*acnt+25);
+                    scan_ev.sids[i] = p.bodyInt[i+scnt+4*acnt+25];
                 scan_ev.sstypes = new int[scnt];
                 for (i=0;i<scnt;i++)
-                    scan_ev.sstypes[i] = p.bodyInt.get(i+2*scnt+4*acnt+25);
+                    scan_ev.sstypes[i] = p.bodyInt[i+2*scnt+4*acnt+25];
                 scan_ev.sid1s = new int[scnt];
                 for (i=0;i<scnt;i++)
-                    scan_ev.sid1s[i] = p.bodyInt.get(i+3*scnt+4*acnt+25);
+                    scan_ev.sid1s[i] = p.bodyInt[i+3*scnt+4*acnt+25];
                 scan_ev.sid2s = new int[scnt];
                 for (i=0;i<scnt;i++)
-                    scan_ev.sid2s[i] = p.bodyInt.get(i+4*scnt+4*acnt+25);
+                    scan_ev.sid2s[i] = p.bodyInt[i+4*scnt+4*acnt+25];
                 scan_ev.slangs = new String[scnt];
                 for (i=0;i<scnt;i++)
-                    scan_ev.slangs[i] = p.bodyString.get(i+acnt+2);
+                    scan_ev.slangs[i] = p.bodyString[i+acnt+2];
             }
-            scan_ev.free_ca = p.bodyInt.get(5*scnt+4*acnt+25);
-            scan_ev.scrambled = p.bodyInt.get(5*scnt+4*acnt+26);
-            scan_ev.scan_mode = p.bodyInt.get(5*scnt+4*acnt+27);
-            scan_ev.sdtVersion = p.bodyInt.get(5*scnt+4*acnt+28);
-            scan_ev.sort_mode = p.bodyInt.get(5*scnt+4*acnt+29);
+            scan_ev.free_ca = p.bodyInt[5*scnt+4*acnt+25];
+            scan_ev.scrambled = p.bodyInt[5*scnt+4*acnt+26];
+            scan_ev.scan_mode = p.bodyInt[5*scnt+4*acnt+27];
+            scan_ev.sdtVersion = p.bodyInt[5*scnt+4*acnt+28];
+            scan_ev.sort_mode = p.bodyInt[5*scnt+4*acnt+29];
 
             scan_ev.lcnInfo = new ScannerLcnInfo();
-            scan_ev.lcnInfo.netId = p.bodyInt.get(5*scnt+4*acnt+30);
-            scan_ev.lcnInfo.tsId = p.bodyInt.get(5*scnt+4*acnt+31);
-            scan_ev.lcnInfo.serviceId = p.bodyInt.get(5*scnt+4*acnt+32);
+            scan_ev.lcnInfo.netId = p.bodyInt[5*scnt+4*acnt+30];
+            scan_ev.lcnInfo.tsId = p.bodyInt[5*scnt+4*acnt+31];
+            scan_ev.lcnInfo.serviceId = p.bodyInt[5*scnt+4*acnt+32];
             scan_ev.lcnInfo.visible = new int[4];
             scan_ev.lcnInfo.lcn = new int[4];
             scan_ev.lcnInfo.valid = new int[4];
             for (j=0; j<4; j++) {
-                scan_ev.lcnInfo.visible[j] = p.bodyInt.get(j*3+5*scnt+4*acnt+33);
-                scan_ev.lcnInfo.lcn[j] = p.bodyInt.get(j*3+5*scnt+4*acnt+34);
-                scan_ev.lcnInfo.valid[j] = p.bodyInt.get(j*3+5*scnt+4*acnt+35);
+                scan_ev.lcnInfo.visible[j] = p.bodyInt[j*3+5*scnt+4*acnt+33];
+                scan_ev.lcnInfo.lcn[j] = p.bodyInt[j*3+5*scnt+4*acnt+34];
+                scan_ev.lcnInfo.valid[j] = p.bodyInt[j*3+5*scnt+4*acnt+35];
             }
-            scan_ev.majorChannelNumber = p.bodyInt.get(4*3+5*scnt+4*acnt+33);
-            scan_ev.minorChannelNumber = p.bodyInt.get(4*3+5*scnt+4*acnt+34);
-            scan_ev.sourceId = p.bodyInt.get(4*3+5*scnt+4*acnt+35);
-            scan_ev.accessControlled = p.bodyInt.get(4*3+5*scnt+4*acnt+36);
-            scan_ev.hidden = p.bodyInt.get(4*3+5*scnt+4*acnt+37);
-            scan_ev.hideGuide = p.bodyInt.get(4*3+5*scnt+4*acnt+38);
-            scan_ev.vct = p.bodyString.get(scnt+acnt+2);
-            scan_ev.programs_in_pat = p.bodyInt.get(4*3+5*scnt+4*acnt+39);
-            scan_ev.pat_ts_id = p.bodyInt.get(4*3+5*scnt+4*acnt+40);
+            scan_ev.majorChannelNumber = p.bodyInt[4*3+5*scnt+4*acnt+33];
+            scan_ev.minorChannelNumber = p.bodyInt[4*3+5*scnt+4*acnt+34];
+            scan_ev.sourceId = p.bodyInt[4*3+5*scnt+4*acnt+35];
+            scan_ev.accessControlled = p.bodyInt[4*3+5*scnt+4*acnt+36];
+            scan_ev.hidden = p.bodyInt[4*3+5*scnt+4*acnt+37];
+            scan_ev.hideGuide = p.bodyInt[4*3+5*scnt+4*acnt+38];
+            scan_ev.vct = p.bodyString[scnt+acnt+2];
+            scan_ev.programs_in_pat = p.bodyInt[4*3+5*scnt+4*acnt+39];
+            scan_ev.pat_ts_id = p.bodyInt[4*3+5*scnt+4*acnt+40];
         }
 
         @Override
@@ -428,15 +420,15 @@ public class TvControlManager {
             switch (msg.what) {
                 case DTV_AV_PLAYBACK_CALLBACK:
                     if (mAVPlaybackListener != null) {
-                        int msgType= parcel.bodyInt.get(0);
-                        int programID= parcel.bodyInt.get(1);
+                        int msgType= parcel.bodyInt[0];
+                        int programID= parcel.bodyInt[1];
                         mAVPlaybackListener.onEvent(msgType, programID);
                     }
                     break;
                 case SOURCE_CONNECT_CALLBACK:
                     if (mSourceConnectChangeListener != null) {
-                        int source = parcel.bodyInt.get(0);
-                        int connectedState = parcel.bodyInt.get(1);
+                        int source = parcel.bodyInt[0];
+                        int connectedState = parcel.bodyInt[1];
                         if (source > 0) {
                             mSourceConnectChangeListener.onSourceConnectChange(SourceInput.values()[source], connectedState);
                         }
@@ -454,7 +446,7 @@ public class TvControlManager {
 
                 case RRT_EVENT_CALLBACK:
                     if (mRrtListener != null) {
-                        int result = parcel.bodyInt.get(0);
+                        int result = parcel.bodyInt[0];
                         Log.e(TAG, "RRT_EVENT_CALLBACK:" + result);
                         rrt5XmlLoadStatus = result;
                         mRrtListener.onRRT5InfoUpdated(result);
@@ -467,7 +459,7 @@ public class TvControlManager {
                      Log.i(TAG,"get EAS_event_callBack");
                      if (mEasListener != null) {
                         Log.i(TAG,"mEaslister is not null");
-                        int sectionCount = parcel.bodyInt.get(0);
+                        int sectionCount = parcel.bodyInt[0];
                         Log.i(TAG,"eas section count = "+sectionCount);
                         for (int count = 0; count<sectionCount; count++) {
                             EasEvent curEasEvent = new EasEvent();
@@ -490,17 +482,17 @@ public class TvControlManager {
                     if (mVframBMPListener != null) {
                         VFrameEvent ev = new VFrameEvent();
                         mVframBMPListener.onEvent(ev);
-                        ev.FrameNum = parcel.bodyInt.get(0);
-                        ev.FrameSize= parcel.bodyInt.get(1);
-                        ev.FrameWidth= parcel.bodyInt.get(2);
-                        ev.FrameHeight= parcel.bodyInt.get(3);
+                        ev.FrameNum = parcel.bodyInt[0];
+                        ev.FrameSize= parcel.bodyInt[1];
+                        ev.FrameWidth= parcel.bodyInt[2];
+                        ev.FrameHeight= parcel.bodyInt[3];
                     }
                     break;
 
                 case SCANNING_FRAME_STABLE_CALLBACK:
                     if (mScanningFrameStableListener != null) {
                         ScanningFrameStableEvent ev = new ScanningFrameStableEvent();
-                        ev.CurScanningFrq = parcel.bodyInt.get(0);
+                        ev.CurScanningFrq = parcel.bodyInt[0];
                         mScanningFrameStableListener.onFrameStable(ev);
                     }
                     break;
@@ -510,19 +502,19 @@ public class TvControlManager {
                 case EPG_EVENT_CALLBACK:
                     if (mEpgListener != null) {
                         EpgEvent ev = new EpgEvent();
-                        ev.type = parcel.bodyInt.get(0);
-                        ev.time = parcel.bodyInt.get(1);
-                        ev.programID = parcel.bodyInt.get(2);
-                        ev.channelID = parcel.bodyInt.get(3);
+                        ev.type = parcel.bodyInt[0];
+                        ev.time = parcel.bodyInt[1];
+                        ev.programID = parcel.bodyInt[2];
+                        ev.channelID = parcel.bodyInt[3];
                         mEpgListener.onEvent(ev);
                     }
                     break;
                 case SEARCH_CALLBACK:
                     if (mSigChanSearchListener != null) {
                         if (msgPdu != null) {
-                            loop_count = parcel.bodyInt.get(0);
+                            loop_count = parcel.bodyInt[0];
                             for (i = 0; i < loop_count; i++) {
-                                msgPdu[i] = parcel.bodyInt.get(i+1);
+                                msgPdu[i] = parcel.bodyInt[i+1];
                             }
                             mSigChanSearchListener.onChannelSearchChange(msgPdu);
                         }
@@ -531,10 +523,10 @@ public class TvControlManager {
                 case SIGLE_DETECT_CALLBACK:
                     if (mSigInfoChangeLister != null) {
                         TvInSignalInfo sigInfo = new TvInSignalInfo();
-                        sigInfo.transFmt = TvInSignalInfo.TransFmt.values()[parcel.bodyInt.get(0)];
-                        sigInfo.sigFmt = TvInSignalInfo.SignalFmt.valueOf(parcel.bodyInt.get(1));
-                        sigInfo.sigStatus = TvInSignalInfo.SignalStatus.values()[parcel.bodyInt.get(2)];
-                        sigInfo.reserved = parcel.bodyInt.get(3);
+                        sigInfo.transFmt = TvInSignalInfo.TransFmt.values()[parcel.bodyInt[0]];
+                        sigInfo.sigFmt = TvInSignalInfo.SignalFmt.valueOf(parcel.bodyInt[1]);
+                        sigInfo.sigStatus = TvInSignalInfo.SignalStatus.values()[parcel.bodyInt[2]];
+                        sigInfo.reserved = parcel.bodyInt[3];
                         mSigInfoChangeLister.onSigChange(sigInfo);
                         Log.e(TAG,"---SIGLE_DETECT_CALLBACK-----------------");
                     }
@@ -543,15 +535,15 @@ public class TvControlManager {
                     break;
                 case STATUS_3D_CALLBACK:
                     if (mStatus3DChangeListener != null) {
-                        mStatus3DChangeListener.onStatus3DChange(parcel.bodyInt.get(0));
+                        mStatus3DChangeListener.onStatus3DChange(parcel.bodyInt[0]);
                     }
                     break;
                 case HDMIRX_CEC_CALLBACK:
                     if (mHDMIRxCECListener != null) {
                         if (msgPdu != null) {
-                            loop_count = parcel.bodyInt.get(0);
+                            loop_count = parcel.bodyInt[0];
                             for (i = 0; i < loop_count; i++) {
-                                msgPdu[i] = parcel.bodyInt.get(i+1);
+                                msgPdu[i] = parcel.bodyInt[i+1];
                             }
                             mHDMIRxCECListener.onHDMIRxCECMessage(loop_count, msgPdu);
                         }
@@ -559,8 +551,8 @@ public class TvControlManager {
                     break;
                 case UPGRADE_FBC_CALLBACK:
                     if (mUpgradeFBCListener != null) {
-                        loop_count = parcel.bodyInt.get(0);
-                        tmp_val = parcel.bodyInt.get(1);
+                        loop_count = parcel.bodyInt[0];
+                        tmp_val = parcel.bodyInt[1];
                         Log.d(TAG, "state = " + loop_count + "    param = " + tmp_val);
                         mUpgradeFBCListener.onUpgradeStatus(loop_count, tmp_val);
                     }
@@ -569,21 +561,21 @@ public class TvControlManager {
                     break;
                 case ADC_CALIBRATION_CALLBACK:
                     if (mAdcCalibrationListener != null) {
-                        mAdcCalibrationListener.onAdcCalibrationChange(parcel.bodyInt.get(0));
+                        mAdcCalibrationListener.onAdcCalibrationChange(parcel.bodyInt[0]);
                     }
                     break;
                 case SOURCE_SWITCH_CALLBACK:
                     if (mSourceSwitchListener != null) {
                         mSourceSwitchListener.onSourceSwitchStatusChange(
-                                SourceInput.values()[(parcel.bodyInt.get(0))], (parcel.bodyInt.get(1)));
+                                SourceInput.values()[(parcel.bodyInt[0])], (parcel.bodyInt[1]));
                     }
                     break;
                 case CHANNEL_SELECT_CALLBACK:
                     if (mChannelSelectListener != null) {
                         if (msgPdu != null) {
-                            loop_count = parcel.bodyInt.get(0);
+                            loop_count = parcel.bodyInt[0];
                             for (i = 0; i < loop_count; i++) {
-                                msgPdu[i] = parcel.bodyInt.get(i+1);
+                                msgPdu[i] = parcel.bodyInt[i+1];
                             }
                             mChannelSelectListener.onChannelSelect(msgPdu);
                         }
@@ -592,10 +584,10 @@ public class TvControlManager {
                 case SERIAL_COMMUNICATION_CALLBACK:
                     if (mSerialCommunicationListener != null) {
                         if (msgPdu != null) {
-                            int dev_id = parcel.bodyInt.get(0);
-                            loop_count = parcel.bodyInt.get(1);
+                            int dev_id = parcel.bodyInt[0];
+                            loop_count = parcel.bodyInt[1];
                             for (i = 0; i < loop_count; i++) {
-                                msgPdu[i] = parcel.bodyInt.get(i+2);
+                                msgPdu[i] = parcel.bodyInt[i+2];
                             }
                             mSerialCommunicationListener.onSerialCommunication(dev_id, loop_count, msgPdu);
                         }
@@ -603,16 +595,16 @@ public class TvControlManager {
                     break;
                 case CLOSE_CAPTION_CALLBACK:
                     if (mCloseCaptionListener != null) {
-                        loop_count = parcel.bodyInt.get(0);
+                        loop_count = parcel.bodyInt[0];
                         Log.d(TAG, "cc listenner data count =" + loop_count);
                         for (i = 0; i < loop_count; i++) {
-                            dataArray[i] = parcel.bodyInt.get(i+1);
+                            dataArray[i] = parcel.bodyInt[1];
                         }
                         //data len write to end
                         dataArray[dataArray.length - 1] = loop_count;
-                        loop_count = parcel.bodyInt.get(loop_count+1);
+                        loop_count = parcel.bodyInt[loop_count+1];
                         for (i = 0; i < loop_count; i++) {
-                            cmdArray[i] = parcel.bodyInt.get(i+loop_count+2);
+                            cmdArray[i] = parcel.bodyInt[i+loop_count+2];
                         }
                         cmdArray[cmdArray.length - 1] =  loop_count;
                         mCloseCaptionListener.onCloseCaptionProcess(dataArray, cmdArray);
@@ -622,18 +614,18 @@ public class TvControlManager {
                 case RECORDER_EVENT_CALLBACK:
                     if (mRecorderEventListener != null) {
                         RecorderEvent ev = new RecorderEvent();
-                        ev.Id = parcel.bodyString.get(0);
-                        ev.Status = parcel.bodyInt.get(0);
-                        ev.Error = parcel.bodyInt.get(1);
+                        ev.Id = parcel.bodyString[0];
+                        ev.Status = parcel.bodyInt[0];
+                        ev.Error = parcel.bodyInt[1];
                         mRecorderEventListener.onRecoderEvent(ev);
                     }
                     break;
                 case AUDIO_EVENT_CALLBACK:
                     Log.i(TAG,"get AUDIO_EVENT_CALLBACK");
                     if (mAudioListener != null) {
-                        int cmd = parcel.bodyInt.get(0);
-                        int param1 = parcel.bodyInt.get(1);
-                        int param2 = parcel.bodyInt.get(2);
+                        int cmd = parcel.bodyInt[0];
+                        int param1 = parcel.bodyInt[1];
+                        int param2 = parcel.bodyInt[2];
 
                         Log.d(TAG, "tvinput cmd:"+cmd);
                         Log.d(TAG, "tvinput param1:"+param1);
@@ -648,10 +640,100 @@ public class TvControlManager {
         }
     }
 
+    public class TvHidlParcel {
+        int msgType;
+        int[] bodyInt;
+        String[] bodyString;
+    }
+
+    private void notifyCallback(TvHidlParcel parcel) {
+        Log.d(TAG, "receive callback ");
+        if (mEventHandler != null) {
+            Message msg = mEventHandler.obtainMessage(parcel.msgType, 0, 0, parcel);
+            mEventHandler.sendMessage(msg);
+        }
+    }
+
     public static synchronized TvControlManager getInstance() {
         if (null == mInstance) mInstance = new TvControlManager();
         return mInstance;
     }
+
+    private native void native_ConnectTvServer(TvControlManager TvCm);
+    private native void native_DisConnectTvServer();
+    private native String native_GetSupportInputDevices();
+    private native String native_GetTvSupportCountries();
+    private native String native_GetTvDefaultCountry();
+    private native String native_GetTvCountryName(String country_code);
+    private native String native_GetTvSearchMode(String country_code);
+    private native boolean native_GetTvDtvSupport(String country_code);
+    private native String native_GetTvDtvSystem(String country_code);
+    private native boolean native_GetTvAtvSupport(String country_code);
+    private native String native_GetTvAtvColorSystem(String country_code);
+    private native String native_GetTvAtvSoundSystem(String country_code);
+    private native String native_GetTvAtvMinMaxFreq(String country_code);
+    private native boolean native_GetTvAtvStepScan(String country_code);
+    private native void native_SetTvCountry(String country);
+    private native void native_SetCurrentLanguage(String lang);
+    private native SignalInfo native_GetCurSignalInfo();
+    private native int native_SetMiscCfg(String key_str, String value_str);
+    private native String native_GetMiscCfg(String key_str, String value_str);
+    private native int native_StopTv();
+    private native int native_StartTv();
+    private native int native_GetTvRunStatus();
+    private native int native_GetTvAction();
+    private native int native_GetCurrentSourceInput();
+    private native int native_GetCurrentVirtualSourceInput();
+    private native int native_SetSourceInput(int inputsource);
+    private native int native_SetSourceInputExt(int inputsrc, int virtualinputsrc);
+    private native int native_IsDviSIgnal();
+    private native int native_IsVgaTimingInHdmi();
+    private native int native_GetInputSrcConnectStatus(int srcinput);
+    private native int native_SetHdmiEdidVersion(int port, int ver);
+    private native int native_GetHdmiEdidVersion(int port);
+    private native int native_SaveHdmiEdidVersion(int port, int ver);
+    private native int native_SetHdmiColorRangeMode(int mode);
+    private native int native_GetHdmiColorRangeMode();
+    private native int native_SetAudioOutmode(int mode);
+    private native int native_GetAudioOutmode();
+    private native int native_GetAudioStreamOutmode();
+    private native int native_GetAtvAutoScanMode();
+    private native int native_SetAmAudioPreMute(int mute);
+    private native int native_SSMInitDevice();
+    private native int native_SaveMacAddress(int buf[]);
+    private native int native_ReadMacAddress(int data_buf[]);
+    private native int native_DtvScan(int mode, int type, int minfreq, int maxfreq, int para1, int para2);
+    private native int native_AtvAutoScan(int videoStd, int audioStd, int storeType, int procMode);
+    private native int native_AtvManualScan(int startFreq, int endFreq, int videoStd, int audioStd);
+    private native int native_PauseScan();
+    private native int native_ResumeScan();
+    private native int native_OperateDeviceForScan(int type);
+    private native int native_AtvdtvGetScanStatus();
+    private native int native_SetDvbTextCoding(String coding);
+    private native int native_SetBlackoutEnable(int enble, int isSave);
+    private native int native_GetBlackoutEnable();
+    private native int native_GetATVMinMaxFreq(int minFreq, int maxFreq);
+    private native FreqList[] native_DtvGetScanFreqListMode(int mode);
+    private native int native_UpdateRRT(int freq, int moudle, int mode);
+    private native RrtSearchInfo native_SearchRrtInfo(int rating_region_id, int dimension_id, int value_id, int programid);
+    private native int native_DtvStopScan();
+    private native int native_DtvGetSignalStrength();
+    private native int native_DtvSetAudioChannleMod(int audiochannelmod);
+    private native int native_DtvSwitchAudioTrack3(int audio_pid, int audio_format, int audio_param);
+    private native int native_DtvSwitchAudioTrack(int prog_id, int audio_track_id);
+    private native int native_DtvSetAudioAD(int enable, int audio_pid, int audio_format);
+    private native VideoFormatInfo native_DtvGetVideoFormatInfo();
+    private native int native_Scan(String fe, String scan);
+    private native int native_TvSetFrontEnd(String fe, int force);
+    private native int native_TvSetFrontendParms(int feType, int freq, int vStd, int aStd, int vfmt, int soundsys, int p1, int p2);
+    private native int native_HandleGPIO(String portName, int isout, int edge);
+    private native int native_SetLcdEnable(int enable);
+    private native int native_SendRecordingCmd(int cmd, String id, String param);
+    private native int native_SendPlayCmd(int cmd, String id, String param);
+    private native int native_SetDeviceIdForCec(int DeviceId);
+    private native int native_GetIwattRegs();
+    private native int native_SetSameSourceEnable(int enable);
+    private native int native_FactoryCleanAllTableForProgram();
 
     private TvControlManager() {
         Looper looper = Looper.myLooper();
@@ -663,82 +745,33 @@ public class TvControlManager {
             mEventHandler = null;
             Log.e(TAG, "looper is null, so can not do anything");
         }
-        //native_setup(new WeakReference<TvControlManager>(this));
-
-        try {
-            boolean ret = IServiceManager.getService()
-                    .registerForNotifications("vendor.amlogic.hardware.tvserver@1.0::ITvServer", "", mServiceNotification);
-            if (!ret) {
-                Log.e(TAG, "Failed to register service start notification");
-            }
-        } catch (RemoteException e) {
-            Log.e(TAG, "Failed to register service start notification", e);
-        }
-        connectToProxy();
 
         String LogFlg = TvMiscConfigGet(OPEN_TV_LOG_FLG, "");
         if ("log_open".equals(LogFlg))
             tvLogFlg =true;
+        native_ConnectTvServer(this);
 
         Log.e(TAG, "Instance");
     }
 
     private static final int TVSERVER_DEATH_COOKIE = 1000;
-
-    // Callback when the UsbPort status is changed by the kernel.
-    // Mostly due a command sent by the remote Usb device.
-    private HALCallback mHALCallback = null;
-
-    // Notification object used to listen to the start of the tvserver daemon.
-    private final ServiceNotification mServiceNotification = new ServiceNotification();
-
-    private ITvServer mProxy = null;
     // Mutex for all mutable shared state.
     private final Object mLock = new Object();
 
-    private void connectToProxy() {
-        synchronized (mLock) {
-            if (mProxy != null) {
-                return;
-            }
-
-            try {
-                mProxy = ITvServer.getService();
-                mProxy.linkToDeath(new DeathRecipient(), TVSERVER_DEATH_COOKIE);
-            } catch (NoSuchElementException e) {
-                Log.e(TAG, "connectToProxy: tvserver HIDL service not found."
-                        + " Did the service fail to start?", e);
-            } catch (RemoteException e) {
-                Log.e(TAG, "connectToProxy: tvserver HIDL service not responding", e);
-            }
-        }
-
-        Log.i(TAG, "connect to tvserve HIDL service success");
-    }
-
-    private void initHalCallback () {
-        synchronized (mLock) {
-            try {
-                mHALCallback = new HALCallback(this);
-                mProxy.setCallback(mHALCallback, ConnectType.TYPE_EXTEND);
-            } catch (NoSuchElementException e) {
-                Log.e(TAG, "connectToProxy: tvserver HIDL service not found."
-                      + " Did the service fail to start?", e);
-            } catch (RemoteException e) {
-                Log.e(TAG, "connectToProxy: tvserver HIDL service not responding", e);
-            }
+    public void DisConnectTvServer() {
+    synchronized (mLock) {
+        try {
+            native_DisConnectTvServer();
+        } catch (Exception e) {
+            Log.e(TAG, "DisConnectTvServer:" + e);
         }
     }
-
+    }
     public String getSupportInputDevices() {
         synchronized (mLock) {
-            Mutable<String> resultVal = new Mutable<>();
             try {
-                mProxy.getSupportInputDevices((int ret, String v) -> {
-                                resultVal.value = v;
-                            });
-                return resultVal.value;
-            } catch (RemoteException e) {
+                return native_GetSupportInputDevices();
+            } catch (Exception e) {
                 Log.e(TAG, "getSupportInputDevices:" + e);
             }
         }
@@ -748,8 +781,8 @@ public class TvControlManager {
     public String GetTVSupportCountries() {
         synchronized (mLock) {
             try {
-                return mProxy.getTvSupportCountries();
-            } catch (RemoteException e) {
+                return native_GetTvSupportCountries();
+            } catch (Exception e) {
                 Log.e(TAG, "GetTVSupportCountries:" + e);
             }
         }
@@ -759,8 +792,8 @@ public class TvControlManager {
     public String getTvDefaultCountry() {
         synchronized (mLock) {
             try {
-                return mProxy.getTvDefaultCountry();
-            } catch (RemoteException e) {
+                return native_GetTvDefaultCountry();
+            } catch (Exception e) {
                 Log.e(TAG, "getTvDefaultCountry:" + e);
             }
         }
@@ -770,8 +803,8 @@ public class TvControlManager {
     public String GetTvCountryNameById(String country_code) {
         synchronized (mLock) {
             try {
-                return mProxy.getTvCountryName(country_code);
-            } catch (RemoteException e) {
+                return native_GetTvCountryName(country_code);
+            } catch (Exception e) {
                 Log.e(TAG, "GetTvCountryName:" + e);
             }
         }
@@ -781,8 +814,8 @@ public class TvControlManager {
     public String GetTvSearchMode(String country_code) {
         synchronized (mLock) {
             try {
-                return mProxy.getTvSearchMode(country_code);
-            } catch (RemoteException e) {
+                return native_GetTvSearchMode(country_code);
+            } catch (Exception e) {
                 Log.e(TAG, "GetTvSearchMode:" + e);
             }
         }
@@ -792,8 +825,8 @@ public class TvControlManager {
     public boolean GetTvDtvSupport(String country_code) {
         synchronized (mLock) {
             try {
-                return mProxy.getTvDtvSupport(country_code);
-            } catch (RemoteException e) {
+                return native_GetTvDtvSupport(country_code);
+            } catch (Exception e) {
                 Log.e(TAG, "GetTvDtvSupport:" + e);
             }
         }
@@ -803,8 +836,8 @@ public class TvControlManager {
     public String GetTvDtvSystem(String country_code) {
         synchronized (mLock) {
             try {
-                return mProxy.getTvDtvSystem(country_code);
-            } catch (RemoteException e) {
+                return native_GetTvDtvSystem(country_code);
+            } catch (Exception e) {
                 Log.e(TAG, "GetTvDtvSystem:" + e);
             }
         }
@@ -814,8 +847,8 @@ public class TvControlManager {
     public boolean GetTvAtvSupport(String country_code) {
         synchronized (mLock) {
             try {
-                return mProxy.getTvAtvSupport(country_code);
-            } catch (RemoteException e) {
+                return native_GetTvAtvSupport(country_code);
+            } catch (Exception e) {
                 Log.e(TAG, "GetTvAtvSupport:" + e);
             }
         }
@@ -825,8 +858,8 @@ public class TvControlManager {
     public String GetTvAtvColorSystem(String country_code) {
         synchronized (mLock) {
             try {
-                return mProxy.getTvAtvColorSystem(country_code);
-            } catch (RemoteException e) {
+                return native_GetTvAtvColorSystem(country_code);
+            } catch (Exception e) {
                 Log.e(TAG, "GetTvAtvColorSystem:" + e);
             }
         }
@@ -836,8 +869,8 @@ public class TvControlManager {
     public String GetTvAtvSoundSystem(String country_code) {
         synchronized (mLock) {
             try {
-                return mProxy.getTvAtvSoundSystem(country_code);
-            } catch (RemoteException e) {
+                return native_GetTvAtvSoundSystem(country_code);
+            } catch (Exception e) {
                 Log.e(TAG, "GetTvAtvSoundSystem:" + e);
             }
         }
@@ -847,8 +880,8 @@ public class TvControlManager {
     public String GetTvAtvMinMaxFreq(String country_code) {
         synchronized (mLock) {
             try {
-                return mProxy.getTvAtvMinMaxFreq(country_code);
-            } catch (RemoteException e) {
+                return native_GetTvAtvMinMaxFreq(country_code);
+            } catch (Exception e) {
                 Log.e(TAG, "GetTvAtvMinMaxFreq:" + e);
             }
         }
@@ -858,8 +891,8 @@ public class TvControlManager {
     public boolean GetTvAtvStepScan(String country_code) {
         synchronized (mLock) {
             try {
-                return mProxy.getTvAtvStepScan(country_code);
-            } catch (RemoteException e) {
+                return native_GetTvAtvStepScan(country_code);
+            } catch (Exception e) {
                 Log.e(TAG, "GetTvAtvStepScan:" + e);
             }
         }
@@ -869,9 +902,9 @@ public class TvControlManager {
     public int SetTvCountry(String country) {
         synchronized (mLock) {
             try {
-                 mProxy.setTvCountry(country);
+                 native_SetTvCountry(country);
                  return 0;
-            } catch (RemoteException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "SetTvCountry:" + e);
             }
         }
@@ -881,14 +914,22 @@ public class TvControlManager {
     public int SetTvCurrentLanguage(String lang) {
         synchronized (mLock) {
             try {
-                 mProxy.setCurrentLanguage(lang);
+                 native_SetCurrentLanguage(lang);
                  return 0;
-            } catch (RemoteException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "SetTvCurrentLanguage:" + e);
             }
         }
         return -1;
     }
+
+
+    public class SignalInfo {
+        public int fmt;
+        public int transFmt;
+        public int status;
+        public int frameRate;
+    };
 
     /**
      * @Function: GetCurrentSignalInfo
@@ -900,13 +941,13 @@ public class TvControlManager {
         synchronized (mLock) {
             TvInSignalInfo info = new TvInSignalInfo();
             try {
-                SignalInfo hidlInfo = mProxy.getCurSignalInfo();
-                info.transFmt = TvInSignalInfo.TransFmt.values()[hidlInfo.transFmt];
-                info.sigFmt = TvInSignalInfo.SignalFmt.valueOf(hidlInfo.fmt);
-                info.sigStatus = TvInSignalInfo.SignalStatus.values()[hidlInfo.status];
-                info.reserved = hidlInfo.frameRate;
+                SignalInfo signalInfo = native_GetCurSignalInfo();
+                info.transFmt = TvInSignalInfo.TransFmt.values()[signalInfo.transFmt];
+                info.sigFmt = TvInSignalInfo.SignalFmt.valueOf(signalInfo.fmt);
+                info.sigStatus = TvInSignalInfo.SignalStatus.values()[signalInfo.status];
+                info.reserved = signalInfo.frameRate;
                 return info;
-            } catch (RemoteException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "GetCurrentSignalInfo:" + e);
             }
         }
@@ -922,8 +963,8 @@ public class TvControlManager {
     public int TvMiscConfigSet(String key_str, String value_str) {
         synchronized (mLock) {
             try {
-                return mProxy.setMiscCfg(key_str, value_str);
-            } catch (RemoteException e) {
+                return native_SetMiscCfg(key_str, value_str);
+            } catch (Exception e) {
                 Log.e(TAG, "TvMiscConfigSet:" + e);
             }
         }
@@ -940,8 +981,8 @@ public class TvControlManager {
     public String TvMiscConfigGet(String key_str, String def_str) {
         synchronized (mLock) {
             try {
-                return mProxy.getMiscCfg(key_str, def_str);
-            } catch (RemoteException e) {
+                return native_GetMiscCfg(key_str, def_str);
+            } catch (Exception e) {
                 Log.e(TAG, "TvMiscConfigGet:" + e);
             }
         }
@@ -960,54 +1001,13 @@ public class TvControlManager {
         }
     }
 
-    private static class HALCallback extends ITvServerCallback.Stub {
-        TvControlManager tvCtrlMgr;
-        HALCallback(TvControlManager tcm) {
-            tvCtrlMgr = tcm;
-        }
-
-        public void notifyCallback(TvHidlParcel parcel) {
-            Log.i(TAG, "notifyCallback msg type:" + parcel.msgType);
-
-            if (tvCtrlMgr.mEventHandler != null) {
-                Message msg = tvCtrlMgr.mEventHandler.obtainMessage(parcel.msgType, 0, 0, parcel);
-                tvCtrlMgr.mEventHandler.sendMessage(msg);
-            }
-        }
-    }
-
-    final class DeathRecipient implements HwBinder.DeathRecipient {
-        DeathRecipient() {
-        }
-
-        @Override
-        public void serviceDied(long cookie) {
-            if (TVSERVER_DEATH_COOKIE == cookie) {
-                Log.e(TAG, "tvserver HIDL service died cookie: " + cookie);
-                synchronized (mLock) {
-                    mProxy = null;
-                }
-            }
-        }
-    }
-
-    final class ServiceNotification extends IServiceNotification.Stub {
-        @Override
-        public void onRegistration(String fqName, String name, boolean preexisting) {
-            Log.i(TAG, "tvserver HIDL service started " + fqName + " " + name);
-            connectToProxy();
-        }
-    }
-
 
     protected void finalize() {
-        //native_release();
     }
 
     // when app exit, need release manual
     public final void release() {
         libtv_log_open();
-        //native_release();
     }
 
     // Deprecated, use Channels TYPE_XXXX from TvContract
@@ -1090,8 +1090,8 @@ public class TvControlManager {
     public int StopTv() {
         synchronized (mLock) {
             try {
-                return mProxy.stopTv();
-            } catch (RemoteException e) {
+                return native_StopTv();
+            } catch (Exception e) {
                 Log.e(TAG, "StopTv:" + e);
             }
         }
@@ -1101,8 +1101,8 @@ public class TvControlManager {
     public int StartTv() {
         synchronized (mLock) {
             try {
-                return mProxy.startTv();
-            } catch (RemoteException e) {
+                return native_StartTv();
+            } catch (Exception e) {
                 Log.e(TAG, "StartTv:" + e);
             }
         }
@@ -1131,8 +1131,8 @@ public class TvControlManager {
     public int GetTvRunStatus() {
         synchronized (mLock) {
             try {
-                return mProxy.getTvRunStatus();
-            } catch (RemoteException e) {
+                return native_GetTvRunStatus();
+            } catch (Exception e) {
                 Log.e(TAG, "GetTvRunStatus:" + e);
             }
         }
@@ -1161,8 +1161,8 @@ public class TvControlManager {
     public int GetTvAction() {
         synchronized (mLock) {
             try {
-                return mProxy.getTvAction();
-            } catch (RemoteException e) {
+                return native_GetTvAction();
+            } catch (Exception e) {
                 Log.e(TAG, "GetTvAction:" + e);
             }
         }
@@ -1199,8 +1199,8 @@ public class TvControlManager {
     public int GetCurrentSourceInput() {
         synchronized (mLock) {
             try {
-                return mProxy.getCurrentSourceInput();
-            } catch (RemoteException e) {
+                return native_GetCurrentSourceInput();
+            } catch (Exception e) {
                 Log.e(TAG, "GetCurrentSourceInput:" + e);
             }
         }
@@ -1216,8 +1216,8 @@ public class TvControlManager {
     public int GetCurrentVirtualSourceInput() {
         synchronized (mLock) {
             try {
-                return mProxy.getCurrentVirtualSourceInput();
-            } catch (RemoteException e) {
+                return native_GetCurrentVirtualSourceInput();
+            } catch (Exception e) {
                 Log.e(TAG, "GetCurrentVirtualSourceInput:" + e);
             }
         }
@@ -1265,8 +1265,8 @@ public class TvControlManager {
     public int SetSourceInput(SourceInput srcInput) {
         synchronized (mLock) {
             try {
-                return mProxy.setSourceInput(srcInput.toInt());
-            } catch (RemoteException e) {
+                return native_SetSourceInput(srcInput.toInt());
+            } catch (Exception e) {
                 Log.e(TAG, "SetSourceInput:" + e);
             }
         }
@@ -1282,8 +1282,8 @@ public class TvControlManager {
     public int SetSourceInput(SourceInput srcInput, SourceInput virtualSrcInput) {
         synchronized (mLock) {
             try {
-                return mProxy.setSourceInputExt(srcInput.toInt(), virtualSrcInput.toInt());
-            } catch (RemoteException e) {
+                return native_SetSourceInputExt(srcInput.toInt(), virtualSrcInput.toInt());
+            } catch (Exception e) {
                 Log.e(TAG, "SetSourceInput:" + e);
             }
         }
@@ -1299,14 +1299,14 @@ public class TvControlManager {
     public boolean IsDviSignal() {
         synchronized (mLock) {
             try {
-                int value = mProxy.isDviSIgnal();
+                int value = native_IsDviSIgnal();
                 Log.d(TAG, "IsDviSignal:" + value);
                  if (value == 1) {
                      return true;
                  } else {
                      return false;
                  }
-            } catch (RemoteException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "IsDviSignal:" + e);
             }
         }
@@ -1322,12 +1322,12 @@ public class TvControlManager {
     public boolean IsPcFmtTiming() {
         synchronized (mLock) {
             try {
-                 if (mProxy.isVgaTimingInHdmi() == 1) {
+                 if (native_IsVgaTimingInHdmi() == 1) {
                      return true;
                  } else {
                      return false;
                  }
-            } catch (RemoteException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "IsDviSignal:" + e);
             }
         }
@@ -1371,8 +1371,8 @@ public class TvControlManager {
     public int GetSourceConnectStatus(SourceInput srcInput) {
         synchronized (mLock) {
             try {
-                return mProxy.getInputSrcConnectStatus(srcInput.toInt());
-            } catch (RemoteException e) {
+                return native_GetInputSrcConnectStatus(srcInput.toInt());
+            } catch (Exception e) {
                 Log.e(TAG, "GetSourceConnectStatus:" + e);
             }
         }
@@ -1401,8 +1401,8 @@ public class TvControlManager {
     public int SetHdmiEdidVersion(HdmiPortID port_id, HdmiEdidVer ver) {
           synchronized (mLock) {
             try {
-                return mProxy.setHdmiEdidVersion(port_id.toInt(), ver.toInt());
-            } catch (RemoteException e) {
+                return native_SetHdmiEdidVersion(port_id.toInt(), ver.toInt());
+            } catch (Exception e) {
                 Log.e(TAG, "SetHdmiEdidVersion:" + e);
             }
         }
@@ -1418,8 +1418,8 @@ public class TvControlManager {
     public int GetHdmiEdidVersion(HdmiPortID port_id) {
           synchronized (mLock) {
             try {
-                return mProxy.getHdmiEdidVersion(port_id.toInt());
-            } catch (RemoteException e) {
+                return native_GetHdmiEdidVersion(port_id.toInt());
+            } catch (Exception e) {
                 Log.e(TAG, "GetHdmiEdidVersion:" + e);
             }
         }
@@ -1436,8 +1436,8 @@ public class TvControlManager {
     public int SaveHdmiEdidVersion(HdmiPortID port_id, HdmiEdidVer ver) {
           synchronized (mLock) {
             try {
-                return mProxy.saveHdmiEdidVersion(port_id.toInt(), ver.toInt());
-            } catch (RemoteException e) {
+                return native_SaveHdmiEdidVersion(port_id.toInt(), ver.toInt());
+            } catch (Exception e) {
                 Log.e(TAG, "SaveHdmiEdidVersion:" + e);
             }
         }
@@ -1487,8 +1487,8 @@ public class TvControlManager {
     public int SetHdmiColorRangeMode(HdmiColorRangeMode mode) {
         synchronized (mLock) {
             try {
-                return mProxy.setHdmiColorRangeMode(mode.toInt());
-            } catch (RemoteException e) {
+                return native_SetHdmiColorRangeMode(mode.toInt());
+            } catch (Exception e) {
                 Log.e(TAG, "SetHdmiColorRangeMode:" + e);
             }
         }
@@ -1504,8 +1504,8 @@ public class TvControlManager {
     public int GetHdmiColorRangeMode() {
         synchronized (mLock) {
             try {
-                return mProxy.getHdmiColorRangeMode();
-            } catch (RemoteException e) {
+                return native_GetHdmiColorRangeMode();
+            } catch (Exception e) {
                 Log.e(TAG, "getHdmiColorRangeMode:" + e);
             }
         }
@@ -1515,8 +1515,8 @@ public class TvControlManager {
     public int SetAudioOutmode (int mode) {
         synchronized (mLock) {
             try {
-                return mProxy.setAudioOutmode(mode);
-            } catch (RemoteException e) {
+                return native_SetAudioOutmode(mode);
+            } catch (Exception e) {
                 Log.e(TAG, "SetAudioOutmode:" + e);
             }
         }
@@ -1526,8 +1526,8 @@ public class TvControlManager {
     public int GetAudioOutmode(){
         synchronized (mLock) {
             try {
-                return mProxy.getAudioOutmode();
-            } catch (RemoteException e) {
+                return native_GetAudioOutmode();
+            } catch (Exception e) {
                 Log.e(TAG, "GetAudioOutmode:" + e);
             }
         }
@@ -1537,8 +1537,8 @@ public class TvControlManager {
     public int GetAudioStreamOutmode(){
         synchronized (mLock) {
             try {
-                return mProxy.getAudioStreamOutmode();
-            } catch (RemoteException e) {
+                return native_GetAudioStreamOutmode();
+            } catch (Exception e) {
                 Log.e(TAG, "GetAudioStreamOutmode:" + e);
             }
         }
@@ -1548,8 +1548,8 @@ public class TvControlManager {
     public int GetAtvAutoScanMode() {
         synchronized (mLock) {
             try {
-                return mProxy.getAtvAutoScanMode();
-            } catch (RemoteException e) {
+                return native_GetAtvAutoScanMode();
+            } catch (Exception e) {
                 Log.e(TAG, "GetAtvAutoScanMode:" + e);
             }
         }
@@ -1653,8 +1653,8 @@ public class TvControlManager {
     public int FactoryCleanAllTableForProgram() {
         synchronized (mLock) {
             try {
-                return mProxy.FactoryCleanAllTableForProgram();
-            } catch (RemoteException e) {
+                return native_FactoryCleanAllTableForProgram();
+            } catch (Exception e) {
                 Log.e(TAG, "FactoryCleanAllTableForProgram:" + e);
             }
         }
@@ -2593,8 +2593,8 @@ public class TvControlManager {
     public int setAmAudioPreMute(int pre_mute) {
         synchronized (mLock) {
             try {
-                return mProxy.setAmAudioPreMute(pre_mute);
-            } catch (RemoteException e) {
+                return native_SetAmAudioPreMute(pre_mute);
+            } catch (Exception e) {
                 Log.e(TAG, "setAmAudioPreMute:" + e);
             }
         }
@@ -2714,8 +2714,8 @@ public class TvControlManager {
     public int SSMInitDevice() {
         synchronized (mLock) {
             try {
-                return mProxy.SSMInitDevice();
-            } catch (RemoteException e) {
+                return native_SSMInitDevice();
+            } catch (Exception e) {
                 Log.e(TAG, "SSMInitDevice:" + e);
             }
         }
@@ -2922,8 +2922,8 @@ public class TvControlManager {
     public int SSMSaveMacAddress(int data_buf[]) {
         synchronized (mLock) {
             try {
-                return mProxy.saveMacAddress(data_buf);
-            } catch (RemoteException e) {
+                return native_SaveMacAddress(data_buf);
+            } catch (Exception e) {
                 Log.e(TAG, "SSMSaveMacAddress:" + e);
             }
         }
@@ -2939,14 +2939,8 @@ public class TvControlManager {
     public int SSMReadMacAddress(int data_buf[]) {
         synchronized (mLock) {
             try {
-                mProxy.readMacAddress((int ret, final int[] v) -> {
-                                if (Result.OK == ret) {
-                                    for (int i = 0; i < 6; i++)
-                                        data_buf[i] = v[i];
-                                }
-                            });
-                return 0;
-            } catch (RemoteException e) {
+                return native_ReadMacAddress(data_buf);
+            } catch (Exception e) {
                 Log.e(TAG, "SSMReadMacAddress:" + e);
             }
         }
@@ -3911,9 +3905,9 @@ public class TvControlManager {
     public int DtvScan(int mode, int type, int freq, int para1, int para2) {
         synchronized (mLock) {
             try {
-                mProxy.setCurrentLanguage(TvMultilingualText.getLocalLang());
-                return mProxy.dtvScan(mode, type, freq, freq, para1, para2);
-            } catch (RemoteException e) {
+                native_SetCurrentLanguage(TvMultilingualText.getLocalLang());
+                return native_DtvScan(mode, type, freq, freq, para1, para2);
+            } catch (Exception e) {
                 Log.e(TAG, "DtvScan:" + e);
             }
         }
@@ -3957,9 +3951,9 @@ public class TvControlManager {
     public int AtvAutoScan(int videoStd, int audioStd, int storeType, int procMode) {
         synchronized (mLock) {
             try {
-                mProxy.setCurrentLanguage(TvMultilingualText.getLocalLang());
-                return mProxy.atvAutoScan(videoStd, audioStd, storeType, procMode);
-            } catch (RemoteException e) {
+                native_SetCurrentLanguage(TvMultilingualText.getLocalLang());
+                return native_AtvAutoScan(videoStd, audioStd, storeType, procMode);
+            } catch (Exception e) {
                 Log.e(TAG, "AtvAutoScan:" + e);
             }
         }
@@ -3995,9 +3989,9 @@ public class TvControlManager {
             int audioStd) {
         synchronized (mLock) {
             try {
-                mProxy.setCurrentLanguage(TvMultilingualText.getLocalLang());
-                return mProxy.atvMunualScan(startFreq, endFreq, videoStd, audioStd);
-            } catch (RemoteException e) {
+                native_SetCurrentLanguage(TvMultilingualText.getLocalLang());
+                return native_AtvManualScan(startFreq, endFreq, videoStd, audioStd);
+            } catch (Exception e) {
                 Log.e(TAG, "AtvManualScan:" + e);
             }
         }
@@ -4007,8 +4001,8 @@ public class TvControlManager {
     public int AtvDtvPauseScan() {
         synchronized (mLock) {
             try {
-                return mProxy.pauseScan();
-            } catch (RemoteException e) {
+                return native_PauseScan();
+            } catch (Exception e) {
                 Log.e(TAG, "AtvDtvPauseScan:" + e);
             }
         }
@@ -4018,8 +4012,8 @@ public class TvControlManager {
     public int AtvDtvResumeScan() {
         synchronized (mLock) {
             try {
-                return mProxy.resumeScan();
-            } catch (RemoteException e) {
+                return native_ResumeScan();
+            } catch (Exception e) {
                 Log.e(TAG, "AtvDtvResumeScan:" + e);
             }
         }
@@ -4029,8 +4023,8 @@ public class TvControlManager {
     public int OpenDevForScan(int type) {
         synchronized (mLock) {
             try {
-                return mProxy.operateDeviceForScan(type);
-            } catch (RemoteException e) {
+                return native_OperateDeviceForScan(type);
+            } catch (Exception e) {
                 Log.e(TAG, "OpenDevForScan:" + e);
             }
         }
@@ -4043,8 +4037,8 @@ public class TvControlManager {
     public int AtvDtvGetScanStatus() {
         synchronized (mLock) {
             try {
-                return mProxy.atvdtvGetScanStatus();
-            } catch (RemoteException e) {
+                return native_AtvdtvGetScanStatus();
+            } catch (Exception e) {
                 Log.e(TAG, "AtvDtvGetScanStatus:" + e);
             }
         }
@@ -4059,8 +4053,8 @@ public class TvControlManager {
     public int DtvSetTextCoding(String coding) {
         synchronized (mLock) {
             try {
-                return mProxy.setDvbTextCoding(coding);
-            } catch (RemoteException e) {
+                return native_SetDvbTextCoding(coding);
+            } catch (Exception e) {
                 Log.e(TAG, "DtvSetTextCoding:" + e);
             }
         }
@@ -4083,8 +4077,8 @@ public class TvControlManager {
     public int setBlackoutEnable(int enable, int isSave){
         synchronized (mLock) {
             try {
-                return mProxy.setBlackoutEnable(enable, isSave);
-            } catch (RemoteException e) {
+                return native_SetBlackoutEnable(enable, isSave);
+            } catch (Exception e) {
                 Log.e(TAG, "setBlackoutEnable:" + e);
             }
         }
@@ -4095,8 +4089,8 @@ public class TvControlManager {
     public int getBlackoutEnable() {
         synchronized (mLock) {
             try {
-                return mProxy.getBlackoutEnable();
-            } catch (RemoteException e) {
+                return native_GetBlackoutEnable();
+            } catch (Exception e) {
                 Log.e(TAG, "getBlackoutEnable:" + e);
             }
         }
@@ -4225,15 +4219,11 @@ public class TvControlManager {
             Mutable<Integer> maxFreqV = new Mutable<>();
             Mutable<Integer> retV = new Mutable<>();
             try {
-                mProxy.getATVMinMaxFreq((int ret, int minFreq, int maxFreq) -> {
-                                    minFreqV.value = minFreq;
-                                    maxFreqV.value = maxFreq;
-                                    retV.value = ret;
-                            });
+                retV.value = native_GetATVMinMaxFreq(minFreqV.value, minFreqV.value);
                 dataBuf[0] = minFreqV.value;
                 dataBuf[1] = maxFreqV.value;
                 return retV.value;
-            } catch (RemoteException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "ATVGetMinMaxFreq:" + e);
             }
         }
@@ -4273,17 +4263,24 @@ public class TvControlManager {
         return FList;
     }
 
+    public class FreqList {
+        public int ID;
+        public int freq;
+        public int channelNum;
+        public String physicalNumDisplayName;
+    };
+
     public ArrayList<FreqList> DTVGetScanFreqList(int mode) {
         libtv_log_open();
-        Log.d(TAG, "TvControlManager TVGetScanFreqList" + mode);
+        Log.d(TAG, "TVGetScanFreqList" + mode);
         synchronized (mLock) {
             try {
-                ArrayList<FreqList> hidlFreqList = new ArrayList<FreqList>();
-                hidlFreqList = mProxy.dtvGetScanFreqListMode(mode);
-                int size = hidlFreqList.size();
+                FreqList[] FreqListTmp = native_DtvGetScanFreqListMode(mode);
+                ArrayList<FreqList> jniFreqList = new ArrayList<FreqList>(Arrays.asList(FreqListTmp));
+                int size = jniFreqList.size();
                 if (size <= 0)
                 {
-                    Log.d(TAG, "hidlFreqList size is 0");
+                    Log.d(TAG, "jniFreqList size is 0");
                     return null;
                 }
                 /*for (int i = 0; i < size; i++) {
@@ -4293,8 +4290,8 @@ public class TvControlManager {
                     hidlFreqList.get(i).channelNum);
                 }
                 */
-                return hidlFreqList;
-            } catch (RemoteException e) {
+                return jniFreqList;
+            } catch (Exception e) {
                 Log.e(TAG, "DTVGetScanFreqList:" + e);
             }
         }
@@ -4361,25 +4358,19 @@ public class TvControlManager {
 
     public void setSubtitleUpdateListener(SubtitleUpdateListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
+       // if (mHALCallback == null) {
+        //    initHalCallback();
+        //}
         mSubtitleListener = l;
     }
     //scanner
     public void setScannerListener(ScannerEventListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mScannerListener = l;
     }
 
     public void setStorDBListener(StorDBEventListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mStorDBListener = l;
         if (l == null)
             Log.i(TAG,"setStorDBListener null");
@@ -4387,9 +4378,6 @@ public class TvControlManager {
 
     public void setScanningFrameStableListener(ScanningFrameStableListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mScanningFrameStableListener = l;
     }
 
@@ -4566,9 +4554,6 @@ public class TvControlManager {
     //epg
     public void setEpgListener(EpgEventListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mEpgListener = l;
     }
 
@@ -4589,9 +4574,6 @@ public class TvControlManager {
 
     //rrt
     public void SetRRT5SourceUpdateListener(RRT5SourceUpdateListener l) {
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mRrtListener = l;
     }
 
@@ -4607,8 +4589,8 @@ public class TvControlManager {
             synchronized (mLock) {
                 try {
                     Log.d(TAG, "updateRRTRes,freq: " + freq+",module:"+moudle+",mode:"+mode);
-                    return mProxy.updateRRT(freq, moudle, mode);
-                } catch (RemoteException e) {
+                    return native_UpdateRRT(freq, moudle, mode);
+                } catch (Exception e) {
                     Log.e(TAG, "updateRRTRes:" + e);
                 }
             }
@@ -4627,18 +4609,18 @@ public class TvControlManager {
         synchronized (mLock) {
             RrtSearchInfo info = new RrtSearchInfo();
             try {
-                RRTSearchInfo tempInfo= mProxy.searchRrtInfo(rating_region_id, dimension_id, value_id, programid);
-                info.rating_region_name = tempInfo.RatingRegionName;
-                info.dimensions_name = tempInfo.DimensionsName;
-                info.rating_value_text = tempInfo.RatingValueText;
-                info.status = tempInfo.status;
+                info = native_SearchRrtInfo(rating_region_id, dimension_id, value_id, programid);
+                //info.rating_region_name = tempInfo.RatingRegionName;
+                //info.dimensions_name = tempInfo.DimensionsName;
+                //info.rating_value_text = tempInfo.RatingValueText;
+                //info.status = tempInfo.status;
                 Log.d(TAG, "programid=" + programid + ", rating_region_name: " + info.dimensions_name);
                 Log.d(TAG, "programid=" + programid + ",dimensions_name: " + info.rating_region_name);
                 Log.d(TAG, "programid=" + programid + ",rating_value_text: " + info.rating_value_text);
                 Log.d(TAG, "programid=" + programid + ",status: " + info.status);
 
                 return info;
-            } catch (RemoteException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "SearchRrtInfo:" + e);
             }
         }
@@ -4646,9 +4628,6 @@ public class TvControlManager {
     }
 
     public void setEasListener(EasEventListener l) {
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mEasListener = l;
     }
     public interface EasEventListener {
@@ -4668,9 +4647,6 @@ public class TvControlManager {
 
     public void setGetVframBMPListener(VframBMPEventListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mVframBMPListener = l;
     }
 
@@ -4681,8 +4657,8 @@ public class TvControlManager {
     public int DtvStopScan() {
         synchronized (mLock) {
             try {
-                return mProxy.dtvStopScan();
-            } catch (RemoteException e) {
+                return native_DtvStopScan();
+            } catch (Exception e) {
                 Log.e(TAG, "DtvStopScan:" + e);
             }
         }
@@ -4700,8 +4676,8 @@ public class TvControlManager {
     public int DtvGetSignalStrength() {
         synchronized (mLock) {
             try {
-                return mProxy.dtvGetSignalStrength();
-            } catch (RemoteException e) {
+                return native_DtvGetSignalStrength();
+            } catch (Exception e) {
                 Log.e(TAG, "DtvGetSignalStrength:" + e);
             }
         }
@@ -4765,8 +4741,8 @@ public class TvControlManager {
     public int DtvSetAudioChannleMod(int audioChannelMod) {
         synchronized (mLock) {
             try {
-                return mProxy.dtvSetAudioChannleMod(audioChannelMod);
-            } catch (RemoteException e) {
+                return native_DtvSetAudioChannleMod(audioChannelMod);
+            } catch (Exception e) {
                 Log.e(TAG, "DtvSetAudioChannleMod:" + e);
             }
         }
@@ -4850,8 +4826,8 @@ public class TvControlManager {
     public int DtvSwitchAudioTrack(int audio_pid, int audio_format, int audio_param) {
         synchronized (mLock) {
             try {
-                return mProxy.DtvSwitchAudioTrack3(audio_pid, audio_format,audio_param);
-            } catch (RemoteException e) {
+                return native_DtvSwitchAudioTrack3(audio_pid, audio_format,audio_param);
+            } catch (Exception e) {
                 Log.e(TAG, "DtvSwitchAudioTrack:" + e);
             }
         }
@@ -4861,8 +4837,8 @@ public class TvControlManager {
     public int DtvSwitchAudioTrack(int prog_id, int audio_track_id) {
         synchronized (mLock) {
             try {
-                return mProxy.DtvSwitchAudioTrack(prog_id, audio_track_id);
-            } catch (RemoteException e) {
+                return native_DtvSwitchAudioTrack(prog_id, audio_track_id);
+            } catch (Exception e) {
                 Log.e(TAG, "DtvSwitchAudioTrack:" + e);
             }
         }
@@ -4872,8 +4848,8 @@ public class TvControlManager {
     public int DtvSetAudioAD(int enable, int audio_pid, int audio_format) {
         synchronized (mLock) {
             try {
-                return mProxy.DtvSetAudioAD(enable, audio_pid, audio_format);
-            } catch (RemoteException e) {
+                return native_DtvSetAudioAD(enable, audio_pid, audio_format);
+            } catch (Exception e) {
                 Log.e(TAG, "DtvSetAudioAD:" + e);
             }
         }
@@ -4893,15 +4869,9 @@ public class TvControlManager {
 
     public VideoFormatInfo DtvGetVideoFormatInfo() {
         synchronized (mLock) {
-            VideoFormatInfo pVideoFormatInfo = new VideoFormatInfo();
             try {
-                FormatInfo  formatInfo= mProxy.dtvGetVideoFormatInfo();
-                pVideoFormatInfo.width = formatInfo.width;
-                pVideoFormatInfo.height= formatInfo.height;
-                pVideoFormatInfo.fps= formatInfo.fps;
-                pVideoFormatInfo.interlace= formatInfo.interlace;
-                return pVideoFormatInfo;
-            } catch (RemoteException e) {
+                return native_DtvGetVideoFormatInfo();
+            } catch (Exception e) {
                 Log.e(TAG, "DtvGetVideoFormatInfo:" + e);
             }
         }
@@ -5358,9 +5328,9 @@ public class TvControlManager {
     public int TvScan(FEParas fe, ScanParas scan) {
         synchronized (mLock) {
             try {
-                mProxy.setCurrentLanguage(TvMultilingualText.getLocalLang());
-                return mProxy.Scan(fe.toString(), scan.toString());
-            } catch (RemoteException e) {
+                native_SetCurrentLanguage(TvMultilingualText.getLocalLang());
+                return native_Scan(fe.toString(), scan.toString());
+            } catch (Exception e) {
                 Log.e(TAG, "TvScan:" + e);
             }
         }
@@ -5370,8 +5340,8 @@ public class TvControlManager {
     public int TvSetFrontEnd(FEParas fe, boolean force) {
         synchronized (mLock) {
             try {
-                return mProxy.tvSetFrontEnd(fe.toString(), force? 1 : 0);
-            } catch (RemoteException e) {
+                return native_TvSetFrontEnd(fe.toString(), force? 1 : 0);
+            } catch (Exception e) {
                 Log.e(TAG, "TvSetFrontEnd:" + e);
             }
         }
@@ -5417,8 +5387,8 @@ public class TvControlManager {
         //return sendCmdIntArray(SET_FRONTEND_PARA, val);
         synchronized (mLock) {
             try {
-                return mProxy.tvSetFrontendParms(feType.toInt(), freq, vStd, aStd, vfmt, soundsys, p1, p2);
-            } catch (RemoteException e) {
+                return native_TvSetFrontendParms(feType.toInt(), freq, vStd, aStd, vfmt, soundsys, p1, p2);
+            } catch (Exception e) {
                 Log.e(TAG, "SetFrontendParms:" + e);
             }
         }
@@ -6168,9 +6138,6 @@ public class TvControlManager {
 
     public void SetAudioEventListener (AudioEventListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mAudioListener  = l;
     }
 
@@ -6180,25 +6147,19 @@ public class TvControlManager {
 
     public void SetAVPlaybackListener(AVPlaybackListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mAVPlaybackListener = l;
     }
 
     public void SetSigInfoChangeListener(TvInSignalInfo.SigInfoChangeListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
+        //if (mHALCallback == null) {
+        //    initHalCallback();
+        //}
         mSigInfoChangeLister = l;
     }
 
     public void SetSigChannelSearchListener(TvInSignalInfo.SigChannelSearchListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mSigChanSearchListener = l;
     }
 
@@ -6212,9 +6173,6 @@ public class TvControlManager {
 
     public void SetSourceConnectListener(StatusSourceConnectListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mSourceConnectChangeListener = l;
     }
 
@@ -6224,9 +6182,6 @@ public class TvControlManager {
 
     public void SetHDMIRxCECListener(HDMIRxCECListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mHDMIRxCECListener = l;
     }
 
@@ -6236,17 +6191,11 @@ public class TvControlManager {
 
     public void SetUpgradeFBCListener(UpgradeFBCListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mUpgradeFBCListener = l;
     }
 
     public void SetStatus3DChangeListener(Status3DChangeListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mStatus3DChangeListener = l;
     }
 
@@ -6256,9 +6205,6 @@ public class TvControlManager {
 
     public void SetAdcCalibrationListener(AdcCalibrationListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mAdcCalibrationListener = l;
     }
 
@@ -6268,9 +6214,6 @@ public class TvControlManager {
 
     public void SetSourceSwitchListener(SourceSwitchListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mSourceSwitchListener = l;
     }
 
@@ -6280,9 +6223,6 @@ public class TvControlManager {
 
     public void SetChannelSelectListener(ChannelSelectListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mChannelSelectListener = l;
     }
 
@@ -6293,9 +6233,6 @@ public class TvControlManager {
 
     public void SetSerialCommunicationListener(SerialCommunicationListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mSerialCommunicationListener = l;
     }
 
@@ -6305,9 +6242,6 @@ public class TvControlManager {
 
     public void SetCloseCaptionListener(CloseCaptionListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mCloseCaptionListener = l;
     }
 
@@ -6505,8 +6439,8 @@ public class TvControlManager {
     public int handleGPIO(String portName, boolean isOut, int edge) {
           synchronized (mLock) {
             try {
-                return mProxy.handleGPIO(portName, isOut ? 1 : 0, edge);
-            } catch (RemoteException e) {
+                return native_HandleGPIO(portName, isOut ? 1 : 0, edge);
+            } catch (Exception e) {
                 Log.e(TAG, "handleGPIO:" + e);
             }
         }
@@ -6520,8 +6454,8 @@ public class TvControlManager {
     public int setLcdEnable(boolean enable) {
         synchronized (mLock) {
             try {
-                return mProxy.setLcdEnable(enable ? 1 : 0);
-            } catch (RemoteException e) {
+                return native_SetLcdEnable(enable ? 1 : 0);
+            } catch (Exception e) {
                 Log.e(TAG, "setLcdEnable:" + e);
             }
         }
@@ -6545,9 +6479,6 @@ public class TvControlManager {
     private RecorderEventListener mRecorderEventListener = null;
     public void SetRecorderEventListener(RecorderEventListener l) {
         libtv_log_open();
-        if (mHALCallback == null) {
-            initHalCallback();
-        }
         mRecorderEventListener = l;
     }
 
@@ -6560,8 +6491,8 @@ public class TvControlManager {
         synchronized (mLock) {
             try {
                 Log.d(TAG, "sendRecordingCmd");
-                return mProxy.sendRecordingCmd(cmd, id, (param == null) ? "" : param);
-            } catch (RemoteException e) {
+                return native_SendRecordingCmd(cmd, id, (param == null) ? "" : param);
+            } catch (Exception e) {
                 Log.e(TAG, "sendRecordingCmd:" + e);
             }
         }
@@ -6590,8 +6521,8 @@ public class TvControlManager {
     public int sendPlayCmd(int cmd, String id, String param) {
         synchronized (mLock) {
             try {
-                return mProxy.sendPlayCmd(cmd, id, (param == null) ? "" : param);
-            } catch (RemoteException e) {
+                return native_SendPlayCmd(cmd, id, (param == null) ? "" : param);
+            } catch (Exception e) {
                 Log.e(TAG, "sendPlayCmd:" + e);
             }
         }
@@ -6627,8 +6558,8 @@ public class TvControlManager {
     public int setDeviceIdForCec(int DeviceId) {
         synchronized (mLock) {
             try {
-                return mProxy.setDeviceIdForCec(DeviceId);
-            } catch (RemoteException e) {
+                return native_SetDeviceIdForCec(DeviceId);
+            } catch (Exception e) {
                 Log.e(TAG, "setDeviceIdForCec:" + e);
             }
         }
@@ -6638,8 +6569,8 @@ public class TvControlManager {
     public void GetIwattRegs() {
         synchronized (mLock) {
             try {
-                mProxy.getIwattRegs();
-            } catch (RemoteException e) {
+                native_GetIwattRegs();
+            } catch (Exception e) {
                 Log.e(TAG, "GetIwattRegs:" + e);
             }
         }
@@ -6648,8 +6579,8 @@ public class TvControlManager {
     public int SetSameSourceEnable(int IsEnable) {
         synchronized (mLock) {
             try {
-                return mProxy.setSameSourceEnable(IsEnable);
-            } catch (RemoteException e) {
+                return native_SetSameSourceEnable(IsEnable);
+            } catch (Exception e) {
                 Log.e(TAG, "SetSameSourceEnable:" + e);
             }
         }
