@@ -845,22 +845,26 @@ public class TvDataBaseManager {
 
     public void updateOrinsertChannelInList(ArrayList<ChannelInfo> updatelist, ArrayList<ChannelInfo> insertlist, boolean isdtv) {
         ArrayList<ContentProviderOperation> ops = new ArrayList<>();
-        for (ChannelInfo one : updatelist) {
-            long id = one.getId();
-            if (id == -1) {
-                id = queryChannelIdInDb(one);
-                Log.d(TAG, "updateOrinsertChannelInList find id = " + id);
+        if (updatelist != null) {
+            for (ChannelInfo one : updatelist) {
+                long id = one.getId();
+                if (id == -1) {
+                    id = queryChannelIdInDb(one);
+                    Log.d(TAG, "updateOrinsertChannelInList find id = " + id);
+                }
+                if (id < 0) {
+                    ops.add(creatOperation(isdtv, false, id, one));
+                } else {
+                    ops.add(creatOperation(isdtv, true, id, one));
+                }
+                Log.d(TAG, "updateOrinsertChannelInList add update = " + one.getDisplayNumber());
             }
-            if (id < 0) {
-                ops.add(creatOperation(isdtv, false, id, one));
-            } else {
-                ops.add(creatOperation(isdtv, true, id, one));
-            }
-            Log.d(TAG, "updateOrinsertChannelInList add update = " + one.getDisplayNumber());
         }
-        for (ChannelInfo one : insertlist) {
-            ops.add(creatOperation(isdtv, false, -1, one));
-            Log.d(TAG, "updateOrinsertChannelInList add insert = " + one.getDisplayNumber());
+        if (insertlist != null) {
+            for (ChannelInfo one : insertlist) {
+                ops.add(creatOperation(isdtv, false, -1, one));
+                Log.d(TAG, "updateOrinsertChannelInList add insert = " + one.getDisplayNumber());
+            }
         }
         try {
             mContentResolver.applyBatch(TvContract.AUTHORITY, ops);
