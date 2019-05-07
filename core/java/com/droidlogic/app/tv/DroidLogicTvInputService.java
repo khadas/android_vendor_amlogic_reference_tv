@@ -555,6 +555,17 @@ public class DroidLogicTvInputService extends TvInputService implements
     protected  boolean setSurfaceInService(Surface surface, TvInputBaseSession session ) {
         Log.d(TAG, "setSurfaceInService,session: " + session);
 
+        Message message = mSessionHandler.obtainMessage();
+        message.what = MSG_DO_SET_SURFACE;
+        synchronized(this) {
+            SomeArgs args = new SomeArgs();
+            args.arg1 = surface;
+            args.arg2 = session;
+
+            message.obj = args;
+        }
+        mSessionHandler.sendMessageAtFrontOfQueue(message);
+
         if (surface == null && session != null) {
             session.hideUI();
         }
@@ -566,26 +577,18 @@ public class DroidLogicTvInputService extends TvInputService implements
             selectHdmiDevice(0, 0, 0);
             Log.d(TAG, "deviceSelect(0) when change to non hdmi channel.");
         }
-        Message message = mSessionHandler.obtainMessage();
-        message.what = MSG_DO_SET_SURFACE;
-        synchronized(this) {
-            SomeArgs args = new SomeArgs();
-            args.arg1 = surface;
-            args.arg2 = session;
 
-            message.obj = args;
-        }
-
-        mSessionHandler.sendMessage(message);
         return false;
     }
 
     protected  boolean doTuneInService(Uri channelUri, int sessionId) {
         Log.d(TAG, "doTuneInService,[source_switch_time]:" +getUptimeSeconds() + "s, onTune channelUri=" + channelUri);
+
+        Message message = mSessionHandler.obtainMessage(MSG_DO_TUNE, sessionId, 0, channelUri);
+        mSessionHandler.sendMessageAtFrontOfQueue(message);
         if (mSession != null)
             mSession.hideUI();
 
-        mSessionHandler.obtainMessage(MSG_DO_TUNE, sessionId, 0, channelUri).sendToTarget();
         return false;
     }
 

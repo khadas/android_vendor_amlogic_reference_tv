@@ -53,6 +53,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     private static final boolean DEBUG = true;
     private static final String TAG = "TvInputBaseSession";
 
+    private static final int    MSG_REGISTER_BROADCAST = 8;
     private static final int    MSG_DO_PRI_CMD              = 9;
     protected static final int  MSG_SUBTITLE_SHOW           = 10;
     protected static final int  MSG_SUBTITLE_HIDE           = 11;
@@ -86,16 +87,8 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         mTvControlDataManager = TvControlDataManager.getInstance(mContext);
         mSessionHandler = new Handler(context.getMainLooper(), this);
         mTvInputManager = (TvInputManager)mContext.getSystemService(Context.TV_INPUT_SERVICE);
-        int block_norating = mTvControlDataManager.getInt(mContext.getContentResolver(), DroidLogicTvUtils.BLOCK_NORATING, 0);
-        isBlockNoRatingEnable = block_norating == 0 ? false : true;
-        if (DEBUG)
-            Log.d(TAG, "isBlockNoRatingEnable = " + isBlockNoRatingEnable);
-         Log.d(TAG, "TvInputBaseSession,inputId:" + inputId+", devieId:"+deviceId);
         mDroidLogicHdmiCecManager = DroidLogicHdmiCecManager.getInstance(mContext);
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
-        intentFilter.addAction(Intent.ACTION_SCREEN_ON);
-        mContext.registerReceiver(mBroadcastReceiver, intentFilter);
+        sendSessionMessage(MSG_REGISTER_BROADCAST);
     }
 
     public void setSessionId(int id) {
@@ -272,6 +265,12 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
             Log.d(TAG, "handleMessage, msg.what=" + msg.what);
 
         switch (msg.what) {
+            case MSG_REGISTER_BROADCAST:
+                    IntentFilter intentFilter = new IntentFilter();
+                    intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
+                    intentFilter.addAction(Intent.ACTION_SCREEN_ON);
+                    mContext.registerReceiver(mBroadcastReceiver, intentFilter);
+                break;
             case MSG_DO_PRI_CMD:
                 doAppPrivateCmd((String)msg.obj, msg.getData());
                 break;
