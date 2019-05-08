@@ -582,7 +582,7 @@ public class DroidLogicTvInputService extends TvInputService implements
     }
 
     protected  boolean doTuneInService(Uri channelUri, int sessionId) {
-        Log.d(TAG, "doTuneInService,[source_switch_time]:" +getUptimeSeconds() + "s, onTune channelUri=" + channelUri);
+        Log.d(TAG, "doTuneInService onTune channelUri=" + channelUri);
 
         Message message = mSessionHandler.obtainMessage(MSG_DO_TUNE, sessionId, 0, channelUri);
         mSessionHandler.sendMessageAtFrontOfQueue(message);
@@ -645,8 +645,7 @@ public class DroidLogicTvInputService extends TvInputService implements
     }
 
     private void doSetSurface(Surface surface, TvInputBaseSession session) {
-        Log.d(TAG, "[source_switch_time]:" +getUptimeSeconds()
-                + "s, doSetSurface inputId=" + mCurrentInputId + " number=" + session.mId + " surface=" + surface);
+        Log.d(TAG, "doSetSurface inputId=" + mCurrentInputId + " number=" + session.mId + " surface=" + surface);
 
         if (surface == null) {
             if (mHardware != null && mConfigs != null
@@ -655,7 +654,7 @@ public class DroidLogicTvInputService extends TvInputService implements
                 mSurface = null;
                 stopTvPlay(session.mId);
             }
-            Log.d(TAG, "surface is null, return");
+            Log.d(TAG, "surface is null finish, return SwitchSourceTime = " + getUptimeSeconds());
             return;
         }
 
