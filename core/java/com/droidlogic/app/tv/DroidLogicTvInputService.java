@@ -648,6 +648,7 @@ public class DroidLogicTvInputService extends TvInputService implements
         Log.d(TAG, "doSetSurface inputId=" + mCurrentInputId + " number=" + session.mId + " surface=" + surface);
 
         if (surface == null) {
+            Log.d(TAG, "doSetSurface surface is null SwitchSourceTime = " + getUptimeSeconds());
             if (mHardware != null && mConfigs != null
                     && mSession != null && session.mId == mSession.mId) {
                 Log.d(TAG, "exited TV source, so stop TV play");
@@ -657,7 +658,7 @@ public class DroidLogicTvInputService extends TvInputService implements
             Log.d(TAG, "surface is null finish, return SwitchSourceTime = " + getUptimeSeconds());
             return;
         }
-
+        Log.d(TAG, "doSetSurface surface is not null SwitchSourceTime = " + getUptimeSeconds());
         if (surface != null && !surface.isValid()) {
             Log.d(TAG, "onSetSurface get invalid surface");
             return;
@@ -690,7 +691,7 @@ public class DroidLogicTvInputService extends TvInputService implements
     }
 
     public int doTune(Uri uri, int sessionId) {
-        Log.d(TAG, "doTune, uri = " + uri);
+        Log.d(TAG, "doTune, uri = " + uri + "SwitchSourceTime = " + getUptimeSeconds());
         int result = startTvPlay();
         Log.d(TAG, "startTvPlay,result= " + result);
         if (mConfigs.length == 0 || result != ACTION_SUCCESS) {
