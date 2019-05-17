@@ -59,6 +59,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     protected static final int  MSG_SUBTITLE_HIDE           = 11;
     protected static final int  MSG_DO_RELEASE              = 12;
     protected static final int  MSG_AUDIO_MUTE              = 13;
+    protected static final int  MSG_IMAGETEXT_SET           = 14;
 
     protected static final int TVINPUT_BASE_DELAY_SEND_MSG  = 10; // Filter message within 10ms, only the last message is processed
     private Context mContext;
@@ -209,10 +210,9 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     public void notifyVideoUnavailable(int reason) {
         Log.d(TAG, "notifyVideoUnavailable: "+reason);
         super.notifyVideoUnavailable(reason);
-        if (mOverlayView != null) {
-            mOverlayView.setImageVisibility(true);
-            mOverlayView.setTextVisibility(true);
-        }
+        Message msg = mSessionHandler.obtainMessage(MSG_IMAGETEXT_SET);
+        mSessionHandler.removeMessages(msg.what);
+        msg.sendToTarget();
     }
 
 
@@ -291,6 +291,12 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
                 long startTime = SystemClock.uptimeMillis();
                 setAudiodMute(msg.arg1 == 0);
                 if (DEBUG) Log.d(TAG, "setAudiodMute used " + (SystemClock.uptimeMillis() - startTime) + " ms");
+                break;
+            case MSG_IMAGETEXT_SET:
+                if (mOverlayView != null) {
+                    mOverlayView.setImageVisibility(true);
+                    mOverlayView.setTextVisibility(true);
+                }
                 break;
         }
         return false;
