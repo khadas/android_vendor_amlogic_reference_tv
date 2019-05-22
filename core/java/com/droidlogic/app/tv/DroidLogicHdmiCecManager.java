@@ -250,9 +250,6 @@ public class DroidLogicHdmiCecManager {
             mSelectLogicAddr = logicAddr;
             mSelectPhyAddr = phyAddr;
         }
-        if (deviceId == 0) {
-            setDeviceIdForCec(deviceId);
-        }
 
         if (deviceId != 0 && logicAddr == 0) {
             //Message message = mHandler.obtainMessage(REMOVE_DEVICE_SELECT, 0, 0);

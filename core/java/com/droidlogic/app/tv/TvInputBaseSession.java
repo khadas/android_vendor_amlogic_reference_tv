@@ -311,7 +311,6 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
                 Log.d(TAG, "onSetMain, mDeviceId: " + mDeviceId + " not correct!");
             } else {
                 mDroidLogicHdmiCecManager.connectHdmiCec(mDeviceId);
-                mDroidLogicHdmiCecManager.setDeviceIdForCec(mDeviceId);
             }
         } else {
             if (info == null) {
