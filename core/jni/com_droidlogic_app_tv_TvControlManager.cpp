@@ -117,7 +117,8 @@ static void ScanServicesEvent(const tv_parcel_t &parcel) {
             jfieldID jaids = env->GetFieldID(jniClass, "aids", "[I");
             jintArray jaidsArray = env->NewIntArray(acnt);
             jint *jaidsdata = env->GetIntArrayElements(jaidsArray, 0);
-            for (jint i = 0; i < acnt; i++) {
+            for (jint i = 0; i < acnt; i++)
+ {
                 jaidsdata[i] = parcel.bodyInt[i+23];
             }
             env->SetIntArrayRegion(jaidsArray, 0, acnt, (jint*)jaidsdata);
@@ -126,7 +127,8 @@ static void ScanServicesEvent(const tv_parcel_t &parcel) {
             jfieldID jafmts = env->GetFieldID(jniClass, "afmts", "[I");
             jintArray jafmtsArray = env->NewIntArray(acnt);
             jint *jafmtsdata = env->GetIntArrayElements(jafmtsArray, 0);
-            for (jint i = 0; i < acnt; i++) {
+            for (jint i = 0; i < acnt; i++)
+ {
                 jafmtsdata[i] = parcel.bodyInt[i+acnt+23];
             }
             env->SetIntArrayRegion(jafmtsArray, 0, acnt, (jint*)jafmtsdata);
@@ -144,7 +146,8 @@ static void ScanServicesEvent(const tv_parcel_t &parcel) {
             jfieldID jatypes = env->GetFieldID(jniClass, "atypes", "[I");
             jintArray jatypesArray = env->NewIntArray(acnt);
             jint *jatypesdata = env->GetIntArrayElements(jatypesArray, 0);
-            for (jint i = 0; i < acnt; i++) {
+            for (jint i = 0; i < acnt; i++)
+ {
                 jatypesdata[i] = parcel.bodyInt[i+2*acnt+23];
             }
             env->SetIntArrayRegion(jatypesArray, 0, acnt, (jint*)jatypesdata);
@@ -153,7 +156,8 @@ static void ScanServicesEvent(const tv_parcel_t &parcel) {
             jfieldID jaexts = env->GetFieldID(jniClass, "aexts", "[I");
             jintArray jaextsArray = env->NewIntArray(acnt);
             jint *jaextsdata = env->GetIntArrayElements(jaextsArray, 0);
-            for (jint i = 0; i < acnt; i++) {
+            for (jint i = 0; i < acnt; i++)
+ {
                 jaextsdata[i] = parcel.bodyInt[i+3*acnt+23];
             }
             env->SetIntArrayRegion(jaextsArray, 0, acnt, (jint*)jaextsdata);
@@ -167,7 +171,8 @@ static void ScanServicesEvent(const tv_parcel_t &parcel) {
             jfieldID jstypes = env->GetFieldID(jniClass, "stypes", "[I");
             jintArray jstypesArray = env->NewIntArray(scnt);
             jint *jstypesdata = env->GetIntArrayElements(jstypesArray, 0);
-            for (jint i = 0; i < acnt; i++) {
+            for (jint i = 0; i < acnt; i++)
+ {
                 jstypesdata[i] = parcel.bodyInt[i+4*acnt+25];
             }
             env->SetIntArrayRegion(jstypesArray, 0, scnt, (jint*)jstypesdata);
@@ -176,7 +181,8 @@ static void ScanServicesEvent(const tv_parcel_t &parcel) {
             jfieldID jsids = env->GetFieldID(jniClass, "sids", "[I");
             jintArray jsidsArray = env->NewIntArray(scnt);
             jint *jsidsdata = env->GetIntArrayElements(jsidsArray, 0);
-            for (jint i = 0; i < acnt; i++) {
+            for (jint i = 0; i < acnt; i++)
+ {
                 jsidsdata[i] = parcel.bodyInt[i+scnt+4*acnt+25];
             }
             env->SetIntArrayRegion(jsidsArray, 0, scnt, (jint*)jsidsdata);
@@ -185,7 +191,8 @@ static void ScanServicesEvent(const tv_parcel_t &parcel) {
             jfieldID jsstypes = env->GetFieldID(jniClass, "sstypes", "[I");
             jintArray jsstypesArray = env->NewIntArray(scnt);
             jint *jsstypesdata = env->GetIntArrayElements(jsstypesArray, 0);
-            for (jint i = 0; i < acnt; i++) {
+            for (jint i = 0; i < acnt; i++)
+ {
                 jsstypesdata[i] = parcel.bodyInt[i+2*scnt+4*acnt+25];
             }
             env->SetIntArrayRegion(jsstypesArray, 0, scnt, (jint*)jsstypesdata);
@@ -194,7 +201,8 @@ static void ScanServicesEvent(const tv_parcel_t &parcel) {
             jfieldID jsid1s = env->GetFieldID(jniClass, "sid1s", "[I");
             jintArray jsid1sArray = env->NewIntArray(scnt);
             jint *jsid1sdata = env->GetIntArrayElements(jsid1sArray, 0);
-            for (jint i = 0; i < acnt; i++) {
+            for (jint i = 0; i < acnt; i++)
+ {
                 jsid1sdata[i] = parcel.bodyInt[i+3*scnt+4*acnt+25];
             }
             env->SetIntArrayRegion(jsid1sArray, 0, scnt, (jint*)jsid1sdata);
@@ -203,7 +211,8 @@ static void ScanServicesEvent(const tv_parcel_t &parcel) {
             jfieldID jsid2s = env->GetFieldID(jniClass, "sid2s", "[I");
             jintArray jsid2sArray = env->NewIntArray(scnt);
             jint *jsid2sdata = env->GetIntArrayElements(jsid2sArray, 0);
-            for (jint i = 0; i < acnt; i++) {
+            for (jint i = 0; i < acnt; i++)
+ {
                 jsid2sdata[i] = parcel.bodyInt[i+4*scnt+4*acnt+25];
             }
             env->SetIntArrayRegion(jsid2sArray, 0, scnt, (jint*)jsid2sdata);
@@ -334,7 +343,8 @@ void EventCallback::notify (const tv_parcel_t &parcel) {
         jint sizeInt = parcel.bodyInt.size();
         jintArray jbodyIntArray = env->NewIntArray(sizeInt);
         jint *jbodyIntdata = env->GetIntArrayElements(jbodyIntArray, 0);
-        for (jint i = 0; i < sizeInt; i++) {
+        for (jint i = 0; i < sizeInt; i++)
+ {
             jbodyIntdata[i] = parcel.bodyInt[i];
         }
         env->SetIntArrayRegion(jbodyIntArray, 0, sizeInt, (jint*)jbodyIntdata);
@@ -494,7 +504,7 @@ static jstring GetTvAtvMinMaxFreq(JNIEnv *env, jclass clazz __unused, jstring jc
     const sp<TvServerHidlClient>& Tv = getTvClient();
     if (Tv != NULL) {
         const char *country_code = env->GetStringUTFChars(jcountry_code, nullptr);
-        Tv->getTvAtvMinMaxFreq(country_code);
+        MinMaxFreq = Tv->getTvAtvMinMaxFreq(country_code);
         env->ReleaseStringUTFChars(jcountry_code, country_code);
     }
     return env->NewStringUTF(MinMaxFreq.c_str());

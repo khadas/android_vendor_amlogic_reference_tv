@@ -145,11 +145,12 @@ public class TvScanConfig {
         String[] supportList = strings.split(",");
         if (supportList.length != 2) {
             Log.e(TAG, "get atv search freq param length= " + supportList.length + "error, use default freq [" + TV_MIN_MAX_FREQ.get(0) + ", " + TV_MIN_MAX_FREQ.get(1) + "]");
-            supportList[0] = TV_MIN_MAX_FREQ.get(0);
-            supportList[1] = TV_MIN_MAX_FREQ.get(1);
+            param[0] = Integer.parseInt(TV_MIN_MAX_FREQ.get(0));
+            param[1] = Integer.parseInt(TV_MIN_MAX_FREQ.get(1));
+        } else {
+            param[0] = Integer.parseInt(supportList[0]);
+            param[1] = Integer.parseInt(supportList[1]);
         }
-        param[0] = Integer.parseInt(supportList[0]);
-        param[1] = Integer.parseInt(supportList[1]);
         return 0;
     }
 
