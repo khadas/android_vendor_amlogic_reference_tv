@@ -134,7 +134,11 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         if (DEBUG)
             Log.d(TAG, "onSetStreamVolume volume = " + volume);
         Message msg = mSessionHandler.obtainMessage(MSG_AUDIO_MUTE);
-        msg.arg1 = (int)volume;
+        if (0.0 == volume) {
+            msg.arg1 = 0;
+        } else {
+            msg.arg1 = 1;
+        }
         mSessionHandler.removeMessages(msg.what);
         mSessionHandler.sendMessageDelayed(msg, TVINPUT_BASE_DELAY_SEND_MSG);
     }
