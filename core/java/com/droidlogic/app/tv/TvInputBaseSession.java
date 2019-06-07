@@ -77,6 +77,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     protected boolean isUnlockCurrent_NR = false;
     DroidLogicHdmiCecManager mDroidLogicHdmiCecManager = null;
     private int mKeyCodeMediaPlayPauseCount = 0;
+    private boolean isSurfaceAlive = true;
 
     public TvInputBaseSession(Context context, String inputId, int deviceId) {
         super(context);
@@ -219,16 +220,29 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         msg.sendToTarget();
     }
 
+    @Override
+     public boolean onSetSurface(Surface surface) {
+        if (surface == null) {
+            mSessionHandler.removeCallbacksAndMessages(null);
+            isSurfaceAlive = false;
+
+            setOverlayViewEnabled(false);
+            if (mOverlayView != null) {
+                mOverlayView.releaseResource();
+                mOverlayView = null;
+            }
+        } else {
+            isSurfaceAlive = true;
+        }
+
+        return false;
+     }
 
     @Override
     public void onRelease() {
+        mSessionHandler.removeCallbacksAndMessages(null);
         if (mSessionHandler == null)
             return;
-        setOverlayViewEnabled(false);
-        if (mOverlayView != null) {
-            mOverlayView.releaseResource();
-            mOverlayView = null;
-        }
         Message msg = mSessionHandler.obtainMessage(MSG_DO_RELEASE);
         mSessionHandler.removeMessages(msg.what);
         msg.sendToTarget();
@@ -266,7 +280,13 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     @Override
     public boolean handleMessage(Message msg) {
         if (DEBUG)
-            Log.d(TAG, "handleMessage, msg.what=" + msg.what);
+            Log.d(TAG, "handleMessage, msg.what=" + msg.what + " isSurfaceAlive=" + isSurfaceAlive);
+
+        if (!isSurfaceAlive) {
+            if (msg.what != MSG_DO_RELEASE && msg.what != MSG_AUDIO_MUTE) {
+                return false;
+            }
+        }
 
         switch (msg.what) {
             case MSG_REGISTER_BROADCAST:
