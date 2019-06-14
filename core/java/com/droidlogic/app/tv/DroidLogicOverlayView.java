@@ -25,6 +25,7 @@ public abstract class DroidLogicOverlayView extends FrameLayout {
     protected TextView mTextView;
     protected View mSubtitleView;
     protected TextView mEasTextView;
+    protected TextView mTeletextNumber;
 
     public DroidLogicOverlayView(Context context) {
         this(context, null);
@@ -66,12 +67,20 @@ public abstract class DroidLogicOverlayView extends FrameLayout {
         mEasTextView.setText(text);
     }
 
+    public void setTextForTeletextNumber(CharSequence text){
+        mTeletextNumber.setText(text);
+    }
+
     public void setEasTextVisibility(boolean visible) {
         mEasTextView.setVisibility(visible ? VISIBLE : GONE);
     }
 
     public void setTextVisibility(boolean visible) {
         mTextView.setVisibility(visible ? VISIBLE : GONE);
+    }
+
+    public void setTeleTextNumberVisibility(boolean visible) {
+        mTeletextNumber.setVisibility(visible ? VISIBLE : GONE);
     }
 
     public void setSubtitleVisibility(boolean visible) {
