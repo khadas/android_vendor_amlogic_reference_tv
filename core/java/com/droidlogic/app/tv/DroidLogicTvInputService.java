@@ -75,7 +75,7 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
         TvInSignalInfo.SigInfoChangeListener, TvControlManager.StorDBEventListener,
         TvControlManager.ScanningFrameStableListener, TvControlManager.StatusSourceConnectListener {
     private static final String TAG = DroidLogicTvInputService.class.getSimpleName();
-    private static final boolean DEBUG = Log.isLoggable("HDMI", Log.DEBUG);;
+    private static final boolean DEBUG = Log.isLoggable("HDMI", Log.DEBUG);
 
     private SparseArray<TvInputInfo> mInfoList = new SparseArray<>();
 
@@ -714,11 +714,13 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
 
         if (surface == null) {
             Log.d(TAG, "doSetSurface surface is null SwitchSourceTime = " + getUptimeSeconds());
+
+            Log.d(TAG, "mHardware=" + mHardware + " mConfigs=" + mConfigs + " mSession=" + mSession);
             if (mHardware != null && mConfigs != null
                     && mSession != null && session.mId == mSession.mId) {
                 Log.d(TAG, "exited TV source, so stop TV play");
                 mSurface = null;
-                stopTvPlay(session.mId);
+                stopTvPlay(session.mId, true);
                 setAudioDelay(false);
             }
             Log.d(TAG, "surface is null finish, return SwitchSourceTime = " + getUptimeSeconds());
@@ -729,15 +731,10 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
             Log.d(TAG, "onSetSurface get invalid surface");
             return;
         } else if (surface != null) {
-            if (mHardware != null && mSurface != null
-                && (mSourceType >= DroidLogicTvUtils.DEVICE_ID_HDMI1)
-                && (mSourceType <= DroidLogicTvUtils.DEVICE_ID_HDMI4)) {
-                    //stopTvPlay(mSession.mId);
-                    Log.e(TAG, "This should be never be print. If so, please check");
-            }
             if (mSurface != null && surface != null && mSurface != surface && mSession != null) {
-                Log.d(TAG, "TvView swithed,  stopTvPlay before tuning");
-                stopTvPlay(mSession.mId);
+                boolean needStopTv = !TextUtils.equals(session.getInputId(), mSession.getInputId());
+                Log.d(TAG, "TvView swithed,  needStopTv=" + needStopTv);
+                stopTvPlay(mSession.mId, needStopTv);
             }
             registerInputSession(session);
             setCurrentSessionById(session.mId);
@@ -748,6 +745,7 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
             createDecoder();
             decoderRelease();
             mHardware.setSurface(mSurface, mConfigs[0]);
+            completeTvViewFastSwitch();
         }
 
         if (mPendingTune.hasPendingEventToProcess(session.mId)) {
@@ -791,9 +789,14 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
         return ACTION_FAILED;
     }
 
-    private int stopTvPlay(int sessionId) {
+    public int stopTvPlay(int sessionId, boolean needStopTv) {
         Log.d(TAG, "stopTvPlay:"+sessionId+" mHardware:"+mHardware);
         if (mHardware != null && mConfigs.length > 0) {
+            Log.d(TAG, "needStopTv=" + needStopTv);
+            if (!needStopTv) {
+                Log.d(TAG, "enableTvViewFastSwitch");
+                enableTvViewFastSwitch();
+            }
             mHardware.setSurface(null, mConfigs[0]);
             tvPlayStopped(sessionId);
         }
@@ -1046,6 +1049,11 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
                 }
             }
         }
+
+        if (DroidLogicTvUtils.needPreviewFeture(mSystemControlManager)) {
+            mTvControlDataManager.putString(getContentResolver(), DroidLogicTvUtils.TV_SESSION_STATE, "free");
+            mTvControlDataManager.putInt(getContentResolver(), DroidLogicTvUtils.TV_SESSION_COUNT, 0);
+        }
     }
 
     private static final String SOUDND_EFFECT_PACKAGE_NAME ="com.droidlogic.tvinput";
@@ -1130,6 +1138,48 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
         return deviceId >= DroidLogicTvUtils.DEVICE_ID_HDMI1 &&
                deviceId <= DroidLogicTvUtils.DEVICE_ID_HDMI4;
 
+    }
+
+    private void enableTvViewFastSwitch (){
+        if (mSession !=null) {
+            int device_id = mSession.getDeviceId();
+            switch (device_id) {
+                case DroidLogicTvUtils.DEVICE_ID_HDMI1:
+                case DroidLogicTvUtils.DEVICE_ID_HDMI2:
+                case DroidLogicTvUtils.DEVICE_ID_HDMI3:
+                case DroidLogicTvUtils.DEVICE_ID_HDMI4:
+                case DroidLogicTvUtils.DEVICE_ID_AV1:
+                case DroidLogicTvUtils.DEVICE_ID_AV2:
+                case DroidLogicTvUtils.DEVICE_ID_ATV:
+                case DroidLogicTvUtils.DEVICE_ID_DTV:
+                case DroidLogicTvUtils.DEVICE_ID_ADTV:
+                    mSystemControlManager.setProperty(DroidLogicTvUtils.PROP_NEED_FAST_SWITCH, "true");
+                break;
+            }
+        }
+    }
+
+    private void completeTvViewFastSwitch() {
+        if (mSession !=null &&
+                mSystemControlManager.getPropertyBoolean(DroidLogicTvUtils.PROP_NEED_FAST_SWITCH, false)) {
+            int device_id = mSession.getDeviceId();
+            switch (device_id) {
+                case DroidLogicTvUtils.DEVICE_ID_HDMI1:
+                case DroidLogicTvUtils.DEVICE_ID_HDMI2:
+                case DroidLogicTvUtils.DEVICE_ID_HDMI3:
+                case DroidLogicTvUtils.DEVICE_ID_HDMI4:
+                case DroidLogicTvUtils.DEVICE_ID_AV1:
+                case DroidLogicTvUtils.DEVICE_ID_AV2:
+                    onSigChange(mTvControlManager.GetCurrentSignalInfo());
+                    mSystemControlManager.setProperty(DroidLogicTvUtils.PROP_NEED_FAST_SWITCH, "false");
+                break;
+                case DroidLogicTvUtils.DEVICE_ID_ATV:
+                case DroidLogicTvUtils.DEVICE_ID_DTV:
+                case DroidLogicTvUtils.DEVICE_ID_ADTV:
+                    //ATV,DTV reset PROP_NEED_FAST_SWITCH in ADTV service
+                break;
+            }
+        }
     }
 
     private class DroidLogicSettingsObserver extends ContentObserver {

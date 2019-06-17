@@ -42,6 +42,8 @@ import org.json.JSONException;
 import com.droidlogic.app.tv.TvScanConfig;
 import android.util.Log;
 
+import com.droidlogic.app.SystemControlManager;
+
 public class DroidLogicTvUtils
 {
     public static final String TAG = "DroidLogicTvUtils";
@@ -296,6 +298,16 @@ public class DroidLogicTvUtils
     public static final String PARA_ENABLE = "enable";
     public static final String PARA_VALUE1 = "value1";
 
+    //used for reference board preview window
+    public static final String PROP_NEED_PREVIEW_WINDOW = "tv.need.droidlogic.preview_window";
+    public static final String PROP_NEED_FAST_SWITCH = "tv.need.tvview.fast_switch";
+    public static final String TV_SESSION_STATE = "tv_input_session_state";
+    public static final String TV_SESSION_COUNT = "tv_input_session_count";
+    public static final String SWITCHING_HOME = "switching_home";
+    public static final String SWITCHING_TVAPP = "switching_tvapp";
+    public static final String PLAYING_HOME = "playing_home";
+    public static final String PLAYING_TVAPP = "playing_tvapp";
+    public static final String STATE_FREE = "free";
     /**
      * Other extra names for {@link TvInputInfo.createSetupIntent#intent} except for input id.
      */
@@ -1800,5 +1812,9 @@ public class DroidLogicTvUtils
             Log.e(TAG, "deserializeInternalProviderData Exception = " + e.getMessage());
         }
         return result;
+    }
+
+    public static boolean needPreviewFeture (SystemControlManager sm) {
+        return sm.getPropertyBoolean(PROP_NEED_PREVIEW_WINDOW, false);
     }
 }

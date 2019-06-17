@@ -199,7 +199,7 @@ public class TvControlDataManager {
         return  null;
     }*/
 
-    public boolean putString(ContentResolver resolver, String name, String value) {
+    public static boolean putString(ContentResolver resolver, String name, String value) {
         /*if (DEBUG) Log.d(TAG, "putString  name = " + name + ", value = " + value);
         Uri uri = Uri.parse(CONTENT_URI + TABLE_SCAN_NAME);
         ContentValues values = new ContentValues();
@@ -229,7 +229,7 @@ public class TvControlDataManager {
         return Settings.System.putString(resolver, name, value);
     }
 
-    public String getString(ContentResolver resolver, String name) {
+    public static String getString(ContentResolver resolver, String name) {
         /*String result = null;
         Uri uri = Uri.parse(CONTENT_URI + TABLE_SCAN_NAME);
         synchronized (TvControlDataManager.class) {
@@ -257,12 +257,12 @@ public class TvControlDataManager {
 
     }
 
-    public boolean putInt(ContentResolver resolver, String name, int value) {
+    public static boolean putInt(ContentResolver resolver, String name, int value) {
         //return putString(resolver, name, String.valueOf(value));
         return Settings.System.putInt(resolver, name, value);
     }
 
-    public int getInt(ContentResolver resolver, String name, int def) {
+    public static int getInt(ContentResolver resolver, String name, int def) {
         /*String value = getString(resolver, name);
         if (value != null) {
             return Integer.parseInt(value);
@@ -272,12 +272,12 @@ public class TvControlDataManager {
         return Settings.System.getInt(resolver, name, def);
     }
 
-    public boolean putLong(ContentResolver resolver, String name, long value) {
+    public static boolean putLong(ContentResolver resolver, String name, long value) {
         //return Settings.System.getInt(resolver, name, String.valueOf(value));
         return Settings.System.putLong(resolver, name, value);
     }
 
-    public long getLong(ContentResolver resolver, String name, long def) {
+    public static long getLong(ContentResolver resolver, String name, long def) {
         /*String value = getString(resolver, name);
         if (value != null) {
             return Integer.parseInt(value);
@@ -288,12 +288,12 @@ public class TvControlDataManager {
         return Settings.System.getLong(resolver, name, def);
     }
 
-    public boolean putFloat(ContentResolver resolver, String name, float value) {
+    public static boolean putFloat(ContentResolver resolver, String name, float value) {
         //return putString(resolver, name, String.valueOf(value));
         return Settings.System.putFloat(resolver, name, value);
     }
 
-    public float getFloat(ContentResolver resolver, String name, float def) {
+    public static float getFloat(ContentResolver resolver, String name, float def) {
         /*String value = getString(resolver, name);
         if (value != null) {
             return Float.parseFloat(value);
@@ -304,12 +304,12 @@ public class TvControlDataManager {
         return Settings.System.getFloat(resolver, name, def);
     }
 
-    public boolean putBoolean(ContentResolver resolver, String name, boolean value) {
+    public static boolean putBoolean(ContentResolver resolver, String name, boolean value) {
         //return putString(resolver, name, value ? "1" : "0");
         return Settings.System.putInt(resolver, name, value ? 1 : 0);
     }
 
-    public boolean getBoolean(ContentResolver resolver, String name, boolean def) {
+    public static boolean getBoolean(ContentResolver resolver, String name, boolean def) {
         /*String value = getString(resolver, name);
         if (value != null) {
             return (Integer.parseInt(value) != 0) ? true : false;

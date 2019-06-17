@@ -32,6 +32,7 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.os.SystemClock;
 import android.os.SystemProperties;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -52,6 +53,9 @@ import com.droidlogic.app.tv.TvControlDataManager;
 public abstract class TvInputBaseSession extends TvInputService.Session implements Handler.Callback {
     private static final boolean DEBUG = true;
     private static final String TAG = "TvInputBaseSession";
+
+    private static final int SESSION_CTEATED = 0;
+    private static final int SESSION_RELEASED = 1;
 
     private static final int    MSG_REGISTER_BROADCAST = 8;
     private static final int    MSG_DO_PRI_CMD              = 9;
@@ -81,8 +85,8 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     private TvInputManager mTvInputManager;
     private boolean mHasRetuned = false;
     protected Handler mSessionHandler;
+    private SystemControlManager mSystemControlManager = null;
     private TvControlDataManager mTvControlDataManager = null;
-    private SystemControlManager mSystemControlManager;
     private TvControlManager mTvControlManager;
     protected DroidLogicOverlayView mOverlayView = null;
 
@@ -107,9 +111,13 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         mDeviceId = deviceId;
 
         Log.d(TAG, "TvInputBaseSession, inputId " + inputId + " deviceId " + deviceId);
+        mSystemControlManager = SystemControlManager.getInstance();
+        if (DroidLogicTvUtils.needPreviewFeture(mSystemControlManager)) {
+            setSessionStateMachine(SESSION_CTEATED);
+        }
+
         mAudioManager = (AudioManager)context.getSystemService (Context.AUDIO_SERVICE);
         mTvControlDataManager = TvControlDataManager.getInstance(mContext);
-        mSystemControlManager = SystemControlManager.getInstance();
         mTvControlManager = TvControlManager.getInstance();
         mSessionHandler = new Handler(context.getMainLooper(), this);
         mTvInputManager = (TvInputManager)mContext.getSystemService(Context.TV_INPUT_SERVICE);
@@ -146,6 +154,41 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         // should be modified together with onSetMain, so that the ActiveSource could show the real path.
         mDroidLogicHdmiCecManager.selectHdmiDevice(HdmiDeviceInfo.ADDR_INTERNAL, HdmiDeviceInfo.DEVICE_INACTIVE);
         mContext.unregisterReceiver(mBroadcastReceiver);
+
+        if (setSessionStateMachine(SESSION_RELEASED) == 0) {
+            ((DroidLogicTvInputService)mContext).stopTvPlay(mId, true);
+        }
+    }
+
+    private int setSessionStateMachine (int action) {
+        int count = TvControlDataManager.getInt(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_COUNT, 0);
+        switch (action) {
+                case SESSION_CTEATED:
+                    count++;
+                    break;
+                case SESSION_RELEASED:
+                    count--;
+                    break;
+        }
+
+        if (count > 1) {
+        } else if (count == 1) {
+            if (DroidLogicTvUtils.needPreviewFeture(mSystemControlManager)) {
+                String state = TvControlDataManager.getString(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_STATE);
+                if (TextUtils.equals(state, DroidLogicTvUtils.SWITCHING_HOME)) {
+                    TvControlDataManager.putString(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_STATE, DroidLogicTvUtils.PLAYING_HOME);
+                } else if (TextUtils.equals(state, DroidLogicTvUtils.SWITCHING_TVAPP)) {
+                    TvControlDataManager.putString(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_STATE, DroidLogicTvUtils.PLAYING_TVAPP);
+                }
+            }
+        } else {
+            TvControlDataManager.putString(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_STATE, DroidLogicTvUtils.STATE_FREE);
+            count = 0;
+        }
+        TvControlDataManager.putInt(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_COUNT, count);
+        //Log.d(TAG, "setSessionStateMachine current state is :" + TvControlDataManager.getString(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_STATE) + "  count=" + count);
+
+        return count;
     }
 
     public void doAppPrivateCmd(String action, Bundle bundle) {}
