@@ -361,7 +361,7 @@ void EventCallback::notify (const tv_parcel_t &parcel) {
         env->SetObjectField(hidlParcel, jbodyString, jbodyStringArray);
         env->CallVoidMethod(TvObject, notifyCallback, hidlParcel);
     } else {
-        ALOGE("[%s] env, TvObject or notifyClazzis NULL", __FUNCTION__);
+        ALOGE("[%s] env, TvObject or notifyClazz is NULL", __FUNCTION__);
     }
 
     if (needDetach) {
@@ -1130,6 +1130,22 @@ static jint FactoryCleanAllTableForProgram(JNIEnv *env __unused, jclass clazz __
     return result;
 }
 
+static jint SetPreviewWindow(JNIEnv *env __unused, jclass clazz __unused, jint x1, jint y1, jint x2, jint y2) {
+    const sp<TvServerHidlClient>& Tv = getTvClient();
+    jint result = -1;
+    if (Tv != NULL)
+        result = Tv->setPreviewWindow(x1, y1, x2, y2);
+    return result;
+}
+
+static jint SetPreviewWindowMode(JNIEnv *env __unused, jclass clazz __unused, jint enable) {
+    const sp<TvServerHidlClient>& Tv = getTvClient();
+    jint result = -1;
+    if (Tv != NULL)
+        result = Tv->setPreviewWindowMode(enable);
+    return result;
+}
+
 
 static JNINativeMethod Tv_Methods[] = {
 {"native_ConnectTvServer", "(Lcom/droidlogic/app/tv/TvControlManager;)V", (void *) ConnectTvServer },
@@ -1207,6 +1223,8 @@ static JNINativeMethod Tv_Methods[] = {
 {"native_DtvGetVideoFormatInfo", "()Lcom/droidlogic/app/tv/TvControlManager$VideoFormatInfo;", (void *) DtvGetVideoFormatInfo },
 {"native_SearchRrtInfo", "(IIII)Lcom/droidlogic/app/tv/TvControlManager$RrtSearchInfo;", (void *) SearchRrtInfo },
 {"native_DtvGetScanFreqListMode", "(I)[Lcom/droidlogic/app/tv/TvControlManager$FreqList;", (void *) DtvGetScanFreqListMode },
+{"native_SetPreviewWindow", "(IIII)I", (void *) SetPreviewWindow },
+{"native_SetPreviewWindowMode", "(I)I", (void *) SetPreviewWindowMode },
 };
 
 #define FIND_CLASS(var, className) \

@@ -562,6 +562,14 @@ int TvServerHidlClient::FactoryCleanAllTableForProgram() {
     return mTvServer->FactoryCleanAllTableForProgram();
 }
 
+int TvServerHidlClient::setPreviewWindow(int32_t x1, int32_t y1, int32_t x2, int32_t y2) {
+    return mTvServer->setPreviewWindow(x1, y1, x2, y2);
+}
+
+int TvServerHidlClient::setPreviewWindowMode(int32_t enable) {
+    return mTvServer->setPreviewWindowMode(enable);
+}
+
 // callback from tv service
 Return<void> TvServerHidlClient::TvServerHidlCallback::notifyCallback(const TvHidlParcel& hidlParcel)
 {

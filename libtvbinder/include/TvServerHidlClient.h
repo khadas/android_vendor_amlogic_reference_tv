@@ -156,6 +156,8 @@ public:
     int sendPlayCmd(int32_t cmd, const std::string& id, const std::string& param);
     int getIwattRegs();
     int FactoryCleanAllTableForProgram();
+    int setPreviewWindow(int32_t x1, int32_t y1, int32_t x2, int32_t y2);
+    int setPreviewWindowMode(int32_t enable);
 
 private:
     class TvServerHidlCallback : public ITvServerCallback {

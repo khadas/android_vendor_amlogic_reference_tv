@@ -734,6 +734,8 @@ public class TvControlManager {
     private native int native_GetIwattRegs();
     private native int native_SetSameSourceEnable(int enable);
     private native int native_FactoryCleanAllTableForProgram();
+    private native int native_SetPreviewWindow(int x1, int y1, int x2, int y2);
+    private native int native_SetPreviewWindowMode(int enable);
 
     private TvControlManager() {
         Looper looper = Looper.myLooper();
@@ -1341,8 +1343,14 @@ public class TvControlManager {
      * @Return: 0 success, -1 fail
      */
     public int SetPreviewWindow(int x1, int y1, int x2, int y2) {
-        int val[] = new int[]{x1, y1, x2, y2};
-        return sendCmdIntArray(SET_PREVIEW_WINDOW, val);
+        synchronized (mLock) {
+            try {
+                return native_SetPreviewWindow(x1, y1, x2, y2);
+            } catch (Exception e) {
+                Log.e(TAG, "SetPreviewWindow:" + e);
+            }
+        }
+        return -1;
     }
 
     /**
@@ -1351,15 +1359,14 @@ public class TvControlManager {
      * of course, the mode need revert when exiting from preview window.
      */
     public int SetPreviewWindowMode(boolean enable) {
-        Parcel cmd = Parcel.obtain();
-        Parcel r = Parcel.obtain();
-        cmd.writeInt(SET_PREVIEW_WINDOW_MODE);
-        cmd.writeInt(enable ? 1 : 0);
-        sendCmdToTv(cmd, r);
-        int ret = r.readInt();
-        cmd.recycle();
-        r.recycle();
-        return ret;
+        synchronized (mLock) {
+            try {
+                return native_SetPreviewWindowMode(enable ? 1 : 0);
+            } catch (Exception e) {
+                Log.e(TAG, "SetPreviewWindow:" + e);
+            }
+        }
+        return -1;
     }
 
     /**
