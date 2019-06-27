@@ -48,7 +48,7 @@ public class DroidLogicHdmiCecManager {
     private static boolean DEBUG = false;
     private static final int CALLBACK_HANDLE_FAIL = 1 << 16;
     private static final int DELAYMILIS = 100;
-    private static final int LONGDELAYMILIS = 800;
+    private static final int LONGDELAYMILIS = 300;
     private static final int SHORTDELAYMILIS = 5;
     private static final int HDMI_DEVICE_SELECT = 2 << 16;
     private static final int HDMI_PORT_SELECT = 3 << 16;

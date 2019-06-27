@@ -553,7 +553,7 @@ public class DroidLogicTvInputService extends TvInputService implements
     }
 
     protected  boolean setSurfaceInService(Surface surface, TvInputBaseSession session ) {
-        Log.d(TAG, "setSurfaceInService,session: " + session);
+        Log.d(TAG, "setSurfaceInService, surface: " + surface + " session: " + session);
 
         Message message = mSessionHandler.obtainMessage();
         message.what = MSG_DO_SET_SURFACE;
@@ -569,7 +569,6 @@ public class DroidLogicTvInputService extends TvInputService implements
         if (surface == null && session != null) {
             session.hideUI();
         }
-
         return false;
     }
 
