@@ -21,6 +21,7 @@
 
 #define LOG_TAG "TvServerHidlClient"
 #include <utils/Log.h>
+#include "unistd.h"
 
 #include "include/TvServerHidlClient.h"
 
@@ -78,8 +79,6 @@ sp<ITvServer> TvServerHidlClient::getTvService()
 TvServerHidlClient::TvServerHidlClient(tv_connect_type_t type): mType(type)
 {
     mTvServer = getTvService();
-    mTvServerHidlCallback = new TvServerHidlCallback(this);
-    mTvServer->setCallback(mTvServerHidlCallback, static_cast<ConnectType>(type));
 }
 
 TvServerHidlClient::~TvServerHidlClient()
@@ -98,7 +97,6 @@ void TvServerHidlClient::reconnect()
     mTvServer.clear();
     //reconnect to server
     mTvServer = getTvService();
-    mTvServer->setCallback(mTvServerHidlCallback, static_cast<ConnectType>(mType));
 }
 
 void TvServerHidlClient::disconnect()
@@ -150,9 +148,27 @@ status_t TvServerHidlClient::processCmd(const Parcel &p, Parcel *r __unused)
 
 void TvServerHidlClient::setListener(const sp<TvListener> &listener)
 {
+    ALOGI("TvServerHidlClient setListener");
     mListener = listener;
+    if (listener != NULL) {
+        if (mTvServerHidlCallback == NULL) {
+            mTvServerHidlCallback = new TvServerHidlCallback(this);
+            mCallbackPid = gettid();
+            mTvServer->setCallback(mTvServerHidlCallback, static_cast<ConnectType>(mType), mCallbackPid);
+        }
+    }
 }
 
+void TvServerHidlClient::unregisterListener(const sp<TvListener> &listener)
+{
+    ALOGI("TvServerHidlClient unregisterListener");
+    if (listener != NULL) {
+        mCallbackPid = gettid();
+        mTvServer->unregisterCallback(mTvServerHidlCallback, static_cast<ConnectType>(mType), mCallbackPid);
+    }
+    mListener = NULL;
+    mTvServerHidlCallback = NULL;
+}
 int TvServerHidlClient::startTv() {
     return mTvServer->startTv();
 }
@@ -587,6 +603,13 @@ Return<void> TvServerHidlClient::TvServerHidlCallback::notifyCallback(const TvHi
     memory->commit();
 
 #endif
+    if (tvserverClient->mListener == NULL) {
+        ALOGI("listener is  null");
+        return Void();
+    } else {
+        ALOGI("listener not  null");
+    }
+
     sp<TvListener> listener;
     {
         Mutex::Autolock _l(mLock);

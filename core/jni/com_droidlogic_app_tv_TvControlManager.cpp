@@ -384,8 +384,6 @@ static void ConnectTvServer(JNIEnv *env, jclass clazz __unused, jobject obj)
     ALOGI("Connect Tv server");
     const sp<TvServerHidlClient>& Tv = getTvClient();
     if (Tv != NULL) {
-        spEventCB = new EventCallback();
-        Tv->setListener(spEventCB);
         TvObject = env->NewGlobalRef(obj);
     }
 }
@@ -397,6 +395,25 @@ static void DisConnectTvServer(JNIEnv *env, jclass clazz __unused, jobject obj)
     env->DeleteGlobalRef(TvObject);
 }
 
+static void registerTvserverListener(JNIEnv *env, jclass clazz __unused, jobject obj)
+{
+    ALOGI("register Tv server Listener");
+    const sp<TvServerHidlClient>& Tv = getTvClient();
+    if (Tv != NULL) {
+        spEventCB = new EventCallback();
+        Tv->setListener(spEventCB);;
+    }
+}
+
+static void unregisterTvserverListener(JNIEnv *env, jclass clazz __unused, jobject obj)
+{
+    ALOGI("unregister Tv server Listener");
+    const sp<TvServerHidlClient>& Tv = getTvClient();
+    if (Tv != NULL) {
+        Tv->unregisterListener(spEventCB);
+        spEventCB = NULL;
+    }
+}
 
 static jstring GetSupportInputDevices(JNIEnv *env, jclass clazz __unused) {
     std::string tvDevices;
@@ -1150,6 +1167,8 @@ static jint SetPreviewWindowMode(JNIEnv *env __unused, jclass clazz __unused, ji
 static JNINativeMethod Tv_Methods[] = {
 {"native_ConnectTvServer", "(Lcom/droidlogic/app/tv/TvControlManager;)V", (void *) ConnectTvServer },
 {"native_DisConnectTvServer", "()V", (void *) DisConnectTvServer },
+{"native_registerTvserverListener", "()V", (void *) registerTvserverListener },
+{"native_unregisterTvserverListener", "()V", (void *) unregisterTvserverListener },
 {"native_GetSupportInputDevices", "()Ljava/lang/String;", (void *) GetSupportInputDevices },
 {"native_GetTvSupportCountries", "()Ljava/lang/String;", (void *) GetTvSupportCountries },
 {"native_GetTvDefaultCountry", "()Ljava/lang/String;", (void *) GetTvDefaultCountry },

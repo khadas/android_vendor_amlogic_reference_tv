@@ -661,6 +661,8 @@ public class TvControlManager {
 
     private native void native_ConnectTvServer(TvControlManager TvCm);
     private native void native_DisConnectTvServer();
+    private native void native_registerTvserverListener();
+    private native void native_unregisterTvserverListener();
     private native String native_GetSupportInputDevices();
     private native String native_GetTvSupportCountries();
     private native String native_GetTvDefaultCountry();
@@ -761,13 +763,31 @@ public class TvControlManager {
     private final Object mLock = new Object();
 
     public void DisConnectTvServer() {
-    synchronized (mLock) {
-        try {
-            native_DisConnectTvServer();
-        } catch (Exception e) {
-            Log.e(TAG, "DisConnectTvServer:" + e);
+        synchronized (mLock) {
+            try {
+                native_DisConnectTvServer();
+            } catch (Exception e) {
+                Log.e(TAG, "DisConnectTvServer:" + e);
+            }
         }
     }
+    public void registerTvserverListener() {
+        synchronized (mLock) {
+            try {
+                native_registerTvserverListener();
+            } catch (Exception e) {
+                Log.e(TAG, "registerTvserverListener:" + e);
+            }
+        }
+    }
+    public void unregisterTvserverListener() {
+        synchronized (mLock) {
+            try {
+                native_unregisterTvserverListener();
+            } catch (Exception e) {
+                Log.e(TAG, "unregisterTvserverListener:" + e);
+            }
+        }
     }
     public String getSupportInputDevices() {
         synchronized (mLock) {
