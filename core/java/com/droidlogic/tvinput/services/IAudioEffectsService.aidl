@@ -17,14 +17,17 @@
 package com.droidlogic.tvinput.services;
 
 interface IAudioEffectsService{
+    void createAudioEffects();
+    boolean isSupportVirtualX();
+    void setDtsVirtualXMode(int virtalXMode);
+    int getDtsVirtualXMode();
+    void setDtsTruVolumeHdEnable(boolean enable);
+    boolean getDtsTruVolumeHdEnable();
     int getSoundModeStatus();
     int getSoundModule();
     int getTrebleStatus();
     int getBassStatus();
     int getBalanceStatus();
-    int getSurroundStatus();
-    int getDialogClarityStatus();
-    int getBassBoostStatus();
     boolean getAgcEnableStatus();
     int getAgcMaxLevelStatus();
     int getAgcAttrackTimeStatus();
@@ -37,9 +40,12 @@ interface IAudioEffectsService{
     void setTreble(int step);
     void setBass(int step);
     void setBalance(int step);
-    void setSurround(int mode);
-    void setDialogClarity(int mode);
-    void setBassBoost(int mode);
+    void setSurroundEnable(boolean enable);
+    boolean getSurroundEnable();
+    void setDialogClarityMode(int mode);
+    int getDialogClarityMode();
+    void setTruBassEnable(boolean enable);
+    boolean getTruBassEnable();
     void setAgsEnable(int mode);
     void setAgsMaxLevel(int step);
     void setAgsAttrackTime(int step);
