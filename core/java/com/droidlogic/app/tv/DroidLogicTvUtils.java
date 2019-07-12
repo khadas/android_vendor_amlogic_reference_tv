@@ -1161,7 +1161,11 @@ public class DroidLogicTvUtils
             try {
                 String childStr = jsonObject.get(k).toString();
                 map.put(k, childStr);
-                JSONObject childJsonObject = new JSONObject(childStr);
+                JSONObject childJsonObject = null;
+                Object childObject = jsonObject.get(k);
+                if (childObject instanceof JSONObject) {
+                    childJsonObject = (JSONObject)childObject;
+                }
                 if (childJsonObject != null) {
                     Map<String, String> childMap = multiJsonToMap(childJsonObject.toString());
                     if (childMap != null) {

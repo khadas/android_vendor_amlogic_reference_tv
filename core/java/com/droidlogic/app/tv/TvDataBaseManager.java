@@ -249,7 +249,11 @@ public class TvDataBaseManager {
                         String v;
                         //String childStr = jsonObject.get(k).toString();
                         //JSONObject childJsonObject = new JSONObject(childStr);
-                        JSONObject childJsonObject = jsonObject.getJSONObject(k);
+                        JSONObject childJsonObject = null;
+                        Object childObject = jsonObject.get(k);
+                        if (childObject instanceof JSONObject) {
+                            childJsonObject = (JSONObject)childObject;
+                        }
                         if (childJsonObject != null && childJsonObject.length() > 0 && childJsonObject.has(key)) {
                             if (flagKey != null) {
                                 childJsonObject.put(flagKey, String.valueOf(1));
@@ -262,7 +266,10 @@ public class TvDataBaseManager {
                     }
                 }
                 if (!ret) {
-                    JSONObject customObj = jsonObject.getJSONObject(ChannelInfo.KEY_OTHER_CUSTOM);
+                    JSONObject customObj = null;
+                    if (jsonObject.has(ChannelInfo.KEY_OTHER_CUSTOM)) {
+                        customObj = jsonObject.getJSONObject(ChannelInfo.KEY_OTHER_CUSTOM);
+                    }
                     if (customObj != null) {//add for other type channel
                         if (flagKey != null) {
                             customObj.put(flagKey, String.valueOf(1));
@@ -271,14 +278,16 @@ public class TvDataBaseManager {
                         jsonObject.put(ChannelInfo.KEY_OTHER_CUSTOM, customObj);
                         addInCustomed = true;
                     } else {
-                        JSONObject creatObj = new JSONObject();
+                        //JSONObject creatObj = new JSONObject();
                         if (flagKey != null) {
-                            creatObj.put(flagKey, String.valueOf(1));
+                            jsonObject.put(flagKey, String.valueOf(1));
                         }
-                        creatObj.put(key, value);
-                        jsonObject.put(ChannelInfo.KEY_OTHER_CUSTOM, creatObj);
-                        addInCustomed = true;
+                        //creatObj.put(key, value);
+                        //jsonObject.put(ChannelInfo.KEY_OTHER_CUSTOM, creatObj);
+                        jsonObject.put(key, value);
+
                     }
+                    ret = true;
                 }
                 if (DEBUG) {
                     Log.d(TAG, "updateSingleChannelInternalProviderData after = " + jsonObject.toString());
@@ -328,6 +337,8 @@ public class TvDataBaseManager {
         if (ChannelInfo.KEY_HIDDEN.equals(key)) {
             result = ChannelInfo.KEY_SET_HIDDEN;
         } else if (ChannelInfo.KEY_IS_FAVOURITE.equals(key)) {
+            result = ChannelInfo.KEY_SET_FAVOURITE;
+        } else if (ChannelInfo.KEY_FAVOURITE_INFO.equals(key)) {
             result = ChannelInfo.KEY_SET_FAVOURITE;
         }
         return result;
