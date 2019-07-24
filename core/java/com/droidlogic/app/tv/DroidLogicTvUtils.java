@@ -217,6 +217,11 @@ public class DroidLogicTvUtils
 
     public static final String ACTION_PROGRAM_APPOINTED = "droidlogic.intent.action.tv_appointed_program";
     public static final String ACTION_LIVETV_PROGRAM_APPOINTED = "droidlogic.intent.action.livetv_appointed_program";
+    public static final String ACTION_DROID_PROGRAM_WATCH_APPOINTED = "droidlogic.intent.action.droid_appointed_program";
+    public static final String ACTION_DROID_PROGRAM_RECORD_APPOINTED = "droidlogic.intent.action.droid_appointed_record_program";
+    public static final String ACTION_DROID_PROGRAM_RECORD_OPERATION = "droidlogic.intent.action.droid_appointed_record_operation";
+    public static final String ACTION_DROID_PROGRAM_RECORD_STATUS = "droidlogic.intent.action.REQUEST_RECORD_STATUS";
+    public static final String ACTION_DROID_PROGRAM_RECORD_STATUS_JSON = "droidlogic.intent.action.REQUEST_RECORD_STATUS_JSON";
     public static final String KEY_LIVETV_PROGRAM_APPOINTED = "livetv_appointed_program";
     public static final String KEY_ENABLE_NOSIGNAL_TIMEOUT = "enable_nosignal_timeout";
     public static final String PROP_DISABLE_NOSIGNAL_TIMEOUT_FUNCTION = "persist.tv.disable.nosig.timeout";
