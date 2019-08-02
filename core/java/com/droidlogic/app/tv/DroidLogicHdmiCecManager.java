@@ -27,6 +27,8 @@ import android.os.Message;
 import android.os.SystemProperties;
 import android.text.TextUtils;
 import java.util.Collections;
+import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 
 public class DroidLogicHdmiCecManager {
     private static final String TAG = "DroidLogicHdmiCecManager";
@@ -269,6 +271,9 @@ public class DroidLogicHdmiCecManager {
         if (mTvClient == null) {
             return;
         }
+        if (logicAddr == 0) {
+            setProperties("persist.vendor.sys.cec.input.port", "" + logicAddr);
+        }
         mTvClient.deviceSelect(logicAddr, new SelectCallback() {
             @Override
             public void onComplete(int result) {
@@ -323,6 +328,7 @@ public class DroidLogicHdmiCecManager {
         if (mTvClient == null) {
             return;
         }
+        setProperties("persist.vendor.sys.cec.input.port", "" + portId);
         mTvClient.portSelect(portId, new SelectCallback() {
             @Override
             public void onComplete(int result) {
@@ -430,5 +436,16 @@ public class DroidLogicHdmiCecManager {
     public void sendKeyEvent(int keyCode, boolean isPressed) {
         Message msg = mHandler.obtainMessage(SEND_KEY_EVENT, keyCode, isPressed ? 1 : 0);
         mHandler.sendMessageDelayed(msg, 0);
+    }
+
+    public static void setProperties(String key, String def) {
+        String defVal = def;
+        try {
+            Class properClass = Class.forName("android.os.SystemProperties");
+            Method getMethod = properClass.getMethod("set", String.class, String.class);
+            defVal = (String)getMethod.invoke(null, key, def);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }
