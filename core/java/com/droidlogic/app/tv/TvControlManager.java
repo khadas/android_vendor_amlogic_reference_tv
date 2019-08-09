@@ -74,8 +74,9 @@ public class TvControlManager {
     public static final int ATV_AUDIO_STD_BG            = 2;
     public static final int ATV_AUDIO_STD_M             = 3;
     public static final int ATV_AUDIO_STD_L             = 4;
-    public static final int ATV_AUDIO_STD_AUTO          = 5;
-    public static final int ATV_AUDIO_STD_MUTE          = 6;
+    public static final int ATV_AUDIO_STD_LC            = 5;
+    public static final int ATV_AUDIO_STD_AUTO          = 6;
+    public static final int ATV_AUDIO_STD_MUTE          = 7;
 
     public static final int ATV_VIDEO_STD_AUTO          = 0;
     public static final int ATV_VIDEO_STD_PAL           = 1;
