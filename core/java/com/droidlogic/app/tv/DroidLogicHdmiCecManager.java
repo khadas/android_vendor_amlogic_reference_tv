@@ -47,7 +47,7 @@ public class DroidLogicHdmiCecManager {
     private TvInputManager mTvInputManager;
     private TvControlDataManager mTvControlDataManager = null;
     private TvControlManager mTvControlManager;
-    private static boolean DEBUG = false;
+    private static boolean DEBUG = Log.isLoggable("HDMI", Log.DEBUG);
     private static final int CALLBACK_HANDLE_FAIL = 1 << 16;
     private static final int DELAYMILIS = 100;
     private static final int LONGDELAYMILIS = 300;
@@ -116,10 +116,14 @@ public class DroidLogicHdmiCecManager {
             List<Integer> mDeviceTypes;
             mDeviceTypes = getIntList(SystemProperties.get(PROPERTY_VENDOR_DEVICE_TYPE));
             for (int type : mDeviceTypes) {
-                if (type == DEV_TYPE_TV
-                    || type == DEV_TYPE_TUNER
-                    || type == DEV_TYPE_AUDIO_SYSTEM) {
+                if (DEBUG) {
+                    Log.d(TAG, "DroidLogicHdmiCecManager device type " + type);
+                }
+
+                if (type == DEV_TYPE_TV) {
                     mTvClient = mHdmiControlManager.getTvClient();
+                } else if (type == DEV_TYPE_AUDIO_SYSTEM) {
+                    mTvClient = mHdmiControlManager.getAudioSystemClient();
                 }
             }
         }
@@ -410,9 +414,9 @@ public class DroidLogicHdmiCecManager {
     public boolean hasHdmiCecDevice(int deviceId) {
         if (deviceId >= DroidLogicTvUtils.DEVICE_ID_HDMI1 && deviceId <= DroidLogicTvUtils.DEVICE_ID_HDMI4) {
             int id = getPortIdByDeviceId(deviceId);
-            if (DEBUG)
-                Log.d(TAG, "hasHdmiCecDevice, portId: " + id);
+            Log.d(TAG, "hasHdmiCecDevice, portId: " + id);
             if (mTvClient == null) {
+                Log.e(TAG, "hasHdmiCecDevice TvClient null!");
                 return false;
             }
             for (HdmiDeviceInfo info : mTvClient.getDeviceList()) {
