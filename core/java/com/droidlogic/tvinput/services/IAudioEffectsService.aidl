@@ -36,7 +36,8 @@ interface IAudioEffectsService{
     int getVirtualSurroundStatus();
     void setSoundMode(int mode);
     void setSoundModeByObserver(int mode);
-    void setDifferentBandEffects(int bandnum, int value, boolean needsave);
+    void setUserSoundModeParam(int bandNumber, int value);
+    int getUserSoundModeParam(int bandNumber);
     void setTreble(int step);
     void setBass(int step);
     void setBalance(int step);
@@ -52,8 +53,12 @@ interface IAudioEffectsService{
     void setAgsReleaseTime(int step);
     void setSourceIdForAvl(int step);
     void setVirtualSurround(int mode);
-    void setParameters(int order, int value);
-    int getParameters(int order);
+    void setDbxEnable(boolean enable);
+    boolean getDbxEnable();
+    void setDbxSoundMode(int dbxMode);
+    int getDbxSoundMode();
+    void setDbxAdvancedModeParam(int paramType, int value);
+    int getDbxAdvancedModeParam(int paramType);
     void cleanupAudioEffects();
     void initSoundEffectSettings();
     void resetSoundEffectSettings();

@@ -28,100 +28,51 @@ public class AudioEffectManager {
     private boolean mDebug = true;
     private int RETRY_MAX = 10;
     //soundmode set by eq or dap module, first use dap if exist
-    public static final  int DAP_MODULE             = 0;
-    public static final  int EQ_MODULE              = 1;
-    /* Modes of sound effects */
-    public static final int MODE_STANDARD           = 0;
-    public static final int MODE_MUSIC              = 1;
-    public static final int MODE_NEWS               = 2;
-    public static final int MODE_THEATER            = 3;
-    public static final int MODE_GAME               = 4;
-    public static final int MODE_CUSTOM             = 5;
+    public static final  int DAP_MODULE                                 = 0;
+    public static final  int EQ_MODULE                                  = 1;
 
-    /* Modes of sound effects */
-    public static final int EXTEND_MODE_STANDARD    = 0;
-    public static final int EXTEND_MODE_MUSIC       = 1;
-    public static final int EXTEND_MODE_NEWS        = 2;
-    public static final int EXTEND_MODE_THEATER     = 3;
-    public static final int EXTEND_MODE_GAME        = 4;
-    public static final int EXTEND_MODE_CUSTOM      = 5;
+    /* EQ sound mode type */
+    public static final int MODE_STANDARD                               = 0;
+    public static final int MODE_MUSIC                                  = 1;
+    public static final int MODE_NEWS                                   = 2;
+    public static final int MODE_THEATER                                = 3;
+    public static final int MODE_GAME                                   = 4;
+    public static final int MODE_CUSTOM                                 = 5;
+
+    /* custom sound mode EQ band type*/
+    public static final int EQ_SOUND_MODE_EFFECT_BAND1                  = 0;
+    public static final int EQ_SOUND_MODE_EFFECT_BAND2                  = 1;
+    public static final int EQ_SOUND_MODE_EFFECT_BAND3                  = 2;
+    public static final int EQ_SOUND_MODE_EFFECT_BAND4                  = 3;
+    public static final int EQ_SOUND_MODE_EFFECT_BAND5                  = 4;
+
+    /* DBX sound mode param type */
+    public static final int DBX_ADVANCED_MODE_PRARM_TYPE_SONICS         = 0;
+    public static final int DBX_ADVANCED_MODE_PRARM_TYPE_VOLUME         = 1;
+    public static final int DBX_ADVANCED_MODE_PRARM_TYPE_SURROUND       = 2;
+
+    /* DBX sound mode */
+    public static final int DBX_SOUND_MODE_STANDARD                     = 0;
+    public static final int DBX_SOUND_MODE_MUSIC                        = 1;
+    public static final int DBX_SOUND_MODE_MOVIE                        = 2;
+    public static final int DBX_SOUND_MODE_THEATER                      = 3;
+    public static final int DBX_SOUND_MODE_ADVANCED                     = 4;
 
     //surround value definition
-    public static final int SURROUND_ON             = 0;
-    public static final int SURROUND_OFF            = 1;
+    public static final int SURROUND_ON                                 = 0;
+    public static final int SURROUND_OFF                                = 1;
     //bass boost value definition
-    public static final int BASS_BOOST_ON           = 0;
-    public static final int BASS_BOOST_OFF          = 1;
+    public static final int BASS_BOOST_ON                               = 0;
+    public static final int BASS_BOOST_OFF                              = 1;
     //amlogic add
-    public static final int SPDIF_OFF               = 0;
-    public static final int SPDIF_PCM               = 1;
-    public static final int SPDIF_RAW               = 2;
-    public static final int SPDIF_AUTO              = 3;
+    public static final int SPDIF_OFF                                   = 0;
+    public static final int SPDIF_PCM                                   = 1;
+    public static final int SPDIF_RAW                                   = 2;
+    public static final int SPDIF_AUTO                                  = 3;
 
-    public static final int SOUND_SPEAKER_OUT       = 0;
-    public static final int SOUND_SPDIF_OUT         = 1;
-    public static final int SOUND_ARC_OUT           = 2;
-
-    private static final String AUDIO_SOUND_MODE            = "audio_sound_mode";
-    private static final String AUDIO_TREBLE_LEVEL          = "audio_treble_level";
-    private static final String AUDIO_BASS_LEVEL            = "audio_bass_level";
-    private static final String AUDIO_BALANCE_LEVEL         = "audio_balance_level";
-    private static final String AUDIO_SURROUND_MODE         = "audio_suround_mode";
-    private static final String AUDIO_DIALOG_CLARITY_MODE   = "audio_dialog_charity_mode";
-    private static final String AUDIO_BASS_BOOST_MODE       = "audio_bass_boost_mode";
-    private static final String AUDIO_SOUND_EFFECT_BAND1    = "audio_sound_effect_band1";
-    private static final String AUDIO_SOUND_EFFECT_BAND2    = "audio_sound_effect_band2";
-    private static final String AUDIO_SOUND_EFFECT_BAND3    = "audio_sound_effect_band3";
-    private static final String AUDIO_SOUND_EFFECT_BAND4    = "audio_sound_effect_band4";
-    private static final String AUDIO_SOUND_EFFECT_BAND5    = "audio_sound_effect_band5";
-
-    // defined index ID for DB storage
-    public static final String DB_ID_SOUND_EFFECT_BASS                          = "db_id_sound_effect_bass";
-    public static final String DB_ID_SOUND_EFFECT_TREBLE                        = "db_id_sound_effect_treble";
-    public static final String DB_ID_SOUND_EFFECT_BALANCE                       = "db_id_sound_effect_balance";
-    public static final String DB_ID_SOUND_EFFECT_DIALOG_CLARITY                = "db_id_sound_effect_dialog_clarity";
-    public static final String DB_ID_SOUND_EFFECT_SURROUND                      = "db_id_sound_effect_surround";
-    public static final String DB_ID_SOUND_EFFECT_TRUBASS                       = "db_id_sound_effect_tru_bass";
-    public static final String DB_ID_SOUND_EFFECT_SOUND_MODE                    = "db_id_sound_effect_sound_mode";
-    public static final String DB_ID_SOUND_EFFECT_SOUND_MODE_TYPE               = "db_id_sound_effect_sound_mode_type";
-    public static final String DB_ID_SOUND_EFFECT_SOUND_MODE_TYPE_DAP           = "db_id_sound_effect_sound_mode_type_dap";
-    public static final String DB_ID_SOUND_EFFECT_SOUND_MODE_TYPE_EQ            = "db_id_sound_effect_sound_mode_type_eq";
-    public static final String DB_ID_SOUND_EFFECT_SOUND_MODE_DAP_VALUE          = "db_id_sound_effect_sound_mode_dap";
-    public static final String DB_ID_SOUND_EFFECT_SOUND_MODE_EQ_VALUE           = "db_id_sound_effect_sound_mode_eq";
-    public static final String DB_ID_SOUND_EFFECT_BAND1                         = "db_id_sound_effect_band1";
-    public static final String DB_ID_SOUND_EFFECT_BAND2                         = "db_id_sound_effect_band2";
-    public static final String DB_ID_SOUND_EFFECT_BAND3                         = "db_id_sound_effect_band3";
-    public static final String DB_ID_SOUND_EFFECT_BAND4                         = "db_id_sound_effect_band4";
-    public static final String DB_ID_SOUND_EFFECT_BAND5                         = "db_id_sound_effect_band5";
-    public static final String DB_ID_SOUND_EFFECT_AGC_ENABLE                    = "db_id_sound_effect_agc_on";
-    public static final String DB_ID_SOUND_EFFECT_AGC_MAX_LEVEL                 = "db_id_sound_effect_agc_level";
-    public static final String DB_ID_SOUND_EFFECT_AGC_ATTRACK_TIME              = "db_id_sound_effect_agc_attrack";
-    public static final String DB_ID_SOUND_EFFECT_AGC_RELEASE_TIME              = "db_id_sound_effect_agc_release";
-    public static final String DB_ID_SOUND_EFFECT_AGC_SOURCE_ID                 = "db_id_sound_avl_source_id";
-    public static final String DB_ID_SOUND_EFFECT_VIRTUALX_MODE                 = "db_id_sound_effect_virtualx_mode";
-    public static final String DB_ID_SOUND_EFFECT_TREVOLUME_HD                  = "db_id_sound_effect_truvolume_hd";
-
-    //set id
-    public static final int SET_BASS                                = 0;
-    public static final int SET_TREBLE                              = 1;
-    public static final int SET_BALANCE                             = 2;
-    public static final int SET_DIALOG_CLARITY_MODE                 = 3;
-    public static final int SET_SURROUND_ENABLE                     = 4;
-    public static final int SET_TRUBASS_ENABLE                      = 5;
-    public static final int SET_SOUND_MODE                          = 6;
-    public static final int SET_EFFECT_BAND1                        = 7;
-    public static final int SET_EFFECT_BAND2                        = 8;
-    public static final int SET_EFFECT_BAND3                        = 9;
-    public static final int SET_EFFECT_BAND4                        = 10;
-    public static final int SET_EFFECT_BAND5                        = 11;
-    public static final int SET_AGC_ENABLE                          = 12;
-    public static final int SET_AGC_MAX_LEVEL                       = 13;
-    public static final int SET_AGC_ATTRACK_TIME                    = 14;
-    public static final int SET_AGC_RELEASE_TIME                    = 15;
-    public static final int SET_AGC_SOURCE_ID                       = 16;
-    public static final int SET_VIRTUAL_SURROUND                    = 17;
-    public static final int SET_VIRTUALX_MODE                       = 18;
-    public static final int SET_TRUVOLUME_HD_ENABLE                 = 19;
+    public static final int SOUND_SPEAKER_OUT                           = 0;
+    public static final int SOUND_SPDIF_OUT                             = 1;
+    public static final int SOUND_ARC_OUT                               = 2;
 
     public static final int EFFECT_BASS_DEFAULT     = 50;   // 0 - 100
     public static final int EFFECT_TREBLE_DEFAULT   = 50;   // 0 - 100
@@ -136,8 +87,19 @@ public class AudioEffectManager {
     public static final int SOUND_EFFECT_SURROUND_ENABLE_DEFAULT    = 0;        // OFF
     public static final int SOUND_EFFECT_DIALOG_CLARITY_ENABLE_DEFAULT= 0;      // OFF
     public static final int SOUND_EFFECT_TRUBASS_ENABLE_DEFAULT     = 0;        // OFF
-    public static final int SOUND_EFFECT_VIRTUALX_MODE_DEFAULT      = 0;        // OFF
+    public static final int SOUND_EFFECT_VIRTUALX_MODE_DEFAULT      = SOUND_EFFECT_VIRTUALX_MODE_OFF;
     public static final int SOUND_EFFECT_TRUVOLUME_HD_ENABLE_DEFAULT= 0;        // OFF
+    public static final int SOUND_EFFECT_DBX_ENABLE_DEFAULT         = 0;        // OFF
+    public static final int SOUND_EFFECT_DBX_SOUND_MODE_DEFAULT     = DBX_SOUND_MODE_STANDARD;
+
+    // DBX sound mode default param [sonics, volume, surround]
+    public static final byte[][] SOUND_EFFECT_DBX_SOUND_MODE_ARRAY_DEFAULT = {
+            {4, 2, 2},  // standard mode
+            {0, 2, 2},  // music mode
+            {0, 2, 0},  // movie mode
+            {0, 1, 2},  // theater mode
+            {4, 2, 2},  // advance mode default db value
+    };
 
     private static AudioEffectManager mInstance;
 
@@ -363,12 +325,21 @@ public class AudioEffectManager {
         }
     }
 
-    public void setDifferentBandEffects(int bandNumber, int value, boolean bNeedSave) {
+    public void setUserSoundModeParam(int bandNumber, int value) {
         try {
-            mAudioEffectService.setDifferentBandEffects(bandNumber, value, bNeedSave);
+            mAudioEffectService.setUserSoundModeParam(bandNumber, value);
         } catch (RemoteException e) {
-            Log.e(TAG, "setDifferentBandEffects failed:" + e);
+            Log.e(TAG, "setUserSoundModeParam failed:" + e);
         }
+    }
+
+    public int getUserSoundModeParam(int bandNumber) {
+        try {
+            return mAudioEffectService.getUserSoundModeParam(bandNumber);
+        } catch (RemoteException e) {
+            Log.e(TAG, "getUserSoundModeParam failed:" + e);
+        }
+        return -1;
     }
 
     public void setTreble(int step) {
@@ -446,9 +417,9 @@ public class AudioEffectManager {
         return false;
     }
 
-    public void setAgsEnable(int mode) {
+    public void setAgsEnable(int enable) {
         try {
-            mAudioEffectService.setAgsEnable(mode);
+            mAudioEffectService.setAgsEnable(enable);
         } catch (RemoteException e) {
             Log.e(TAG, "setAgsEnable failed:" + e);
         }
@@ -494,19 +465,53 @@ public class AudioEffectManager {
         }
     }
 
-    public void setParameters(int order, int value) {
+    public void setDbxEnable(boolean enable) {
         try {
-            mAudioEffectService.setParameters(order, value);
+            mAudioEffectService.setDbxEnable(enable);
         } catch (RemoteException e) {
-            Log.e(TAG, "setParameters failed:" + e);
+            Log.e(TAG, "setDbxEnable failed:" + e);
         }
     }
 
-    public int getParameters(int order) {
+    public boolean getDbxEnable() {
         try {
-            return mAudioEffectService.getParameters(order);
+            return mAudioEffectService.getDbxEnable();
         } catch (RemoteException e) {
-            Log.e(TAG, "getParameters failed:" + e);
+            Log.e(TAG, "getDbxEnable failed:" + e);
+        }
+        return false;
+    }
+
+    public void setDbxSoundMode(int dbxMode) {
+        try {
+            mAudioEffectService.setDbxSoundMode(dbxMode);
+        } catch (RemoteException e) {
+            Log.e(TAG, "setDbxSoundMode failed:" + e);
+        }
+    }
+
+    public int getDbxSoundMode() {
+        try {
+            return mAudioEffectService.getDbxSoundMode();
+        } catch (RemoteException e) {
+            Log.e(TAG, "getDbxSoundMode failed:" + e);
+        }
+        return -1;
+    }
+
+    public void setDbxAdvancedModeParam(int paramType, int value) {
+        try {
+            mAudioEffectService.setDbxAdvancedModeParam(paramType, value);
+        } catch (RemoteException e) {
+            Log.e(TAG, "setDbxAdvancedModeParam failed:" + e);
+        }
+    }
+
+    public int getDbxAdvancedModeParam(int paramType) {
+        try {
+            return mAudioEffectService.getDbxAdvancedModeParam(paramType);
+        } catch (RemoteException e) {
+            Log.e(TAG, "getDbxAdvancedModeParam failed:" + e);
         }
         return -1;
     }
