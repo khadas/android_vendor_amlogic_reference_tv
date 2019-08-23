@@ -106,6 +106,8 @@ public class ChannelInfo {
     public static final String KEY_FINE_TUNE = "fine_tune";
     public static final String KEY_IS_FAVOURITE = "is_favourite";
     public static final String KEY_SET_FAVOURITE = "set_favourite";
+    public static final String KEY_SET_DISPLAYNAME = "set_displayname";
+    public static final String KEY_SET_DISPLAYNUMBER = "set_displaynumber";
 
     public static final String KEY_MAJOR_NUM = "majorNum";
     public static final String KEY_MINOR_NUM = "minorNum";

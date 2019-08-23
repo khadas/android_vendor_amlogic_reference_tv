@@ -159,8 +159,53 @@ public class TvDataBaseManager {
         }
     }
 
+    public boolean updateSingleColumn(long id, String columnKey, Object value) {
+        boolean ret = false;
+        if (id == -1 && TextUtils.isEmpty(columnKey)) {
+            return ret;
+        }
+        String[] projection = {columnKey};
+        Uri channelsUri = TvContract.buildChannelUri(id);
+        Cursor cursor = null;
+        ContentValues values = null;
+        try {
+            cursor = mContentResolver.query(channelsUri, projection, Channels._ID + "=?", new String[]{String.valueOf(id)}, null);
+            while (cursor != null && cursor.moveToNext()) {
+                values = new ContentValues();
+                if (value instanceof byte[]) {
+                    values.put(columnKey, (byte[])value);
+                } else if (value instanceof String) {
+                    values.put(columnKey, (String)value);
+                } else if (value instanceof Integer) {
+                    values.put(columnKey, (Integer)value);
+                } else {
+                    Log.i(TAG, "updateChannelInternalProviderData unkown data type");
+                    return ret;
+                }
+                ret = true;
+                mContentResolver.update(channelsUri, values, null, null);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.i(TAG, "updateSingleColumn mContentResolver operation Exception = " + e.getMessage());
+        }
+        try {
+            if (cursor != null) {
+                cursor.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.i(TAG, "updateSingleColumn cursor.close() Exception = " + e.getMessage());
+        }
+        if (DEBUG)
+            Log.d(TAG, "updateSingleColumn " + (ret ? "found" : "notfound")
+                    + " _id:" + id + " key:" + columnKey + " value:" + value);
+        return ret;
+    }
+
     public boolean updateSingleChannelInternalProviderData(long id, String key, String value) {
         boolean ret = false;
+        boolean addInCustomed = false;
         if (id == -1 && TextUtils.isEmpty(key)) {
             return ret;
         }
@@ -224,6 +269,7 @@ public class TvDataBaseManager {
                         }
                         customObj.put(key, value);
                         jsonObject.put(ChannelInfo.KEY_OTHER_CUSTOM, customObj);
+                        addInCustomed = true;
                     } else {
                         JSONObject creatObj = new JSONObject();
                         if (flagKey != null) {
@@ -231,13 +277,14 @@ public class TvDataBaseManager {
                         }
                         creatObj.put(key, value);
                         jsonObject.put(ChannelInfo.KEY_OTHER_CUSTOM, creatObj);
+                        addInCustomed = true;
                     }
                 }
                 if (DEBUG) {
                     Log.d(TAG, "updateSingleChannelInternalProviderData after = " + jsonObject.toString());
                 }
                 Object result = null;
-                if (ret) {
+                if (ret || addInCustomed) {
                     if (type == Cursor.FIELD_TYPE_BLOB) {
                         result = DroidLogicTvUtils.serializeInternalProviderData(jsonObject.toString());
                     } else if (type == Cursor.FIELD_TYPE_STRING) {
@@ -258,7 +305,7 @@ public class TvDataBaseManager {
         }
 
         if (DEBUG)
-            Log.d(TAG, "updateSingleChannelInternalProviderData " + (ret ? "found" : "notfound")
+            Log.d(TAG, "updateSingleChannelInternalProviderData " + (ret ? "found" : (addInCustomed ? "addnew" : "notfound" ))
                     + " _id:" + id + " key:" + key + " value:" + value);
         return ret;
     }
