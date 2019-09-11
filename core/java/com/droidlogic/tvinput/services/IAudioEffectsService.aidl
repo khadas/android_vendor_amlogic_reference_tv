@@ -47,10 +47,10 @@ interface IAudioEffectsService{
     int getDialogClarityMode();
     void setTruBassEnable(boolean enable);
     boolean getTruBassEnable();
-    void setAgsEnable(int mode);
-    void setAgsMaxLevel(int step);
-    void setAgsAttrackTime(int step);
-    void setAgsReleaseTime(int step);
+    void setAgcEnable(boolean enable);
+    void setAgcMaxLevel(int step);
+    void setAgcAttrackTime(int step);
+    void setAgcReleaseTime(int step);
     void setSourceIdForAvl(int step);
     void setVirtualSurround(int mode);
     void setDbxEnable(boolean enable);
@@ -59,6 +59,12 @@ interface IAudioEffectsService{
     int getDbxSoundMode();
     void setDbxAdvancedModeParam(int paramType, int value);
     int getDbxAdvancedModeParam(int paramType);
+    void setAudioOutputSpeakerDelay(int source, int delayMs);
+    int getAudioOutputSpeakerDelay(int source);
+    void setAudioOutputSpdifDelay(int source, int delayMs);
+    int getAudioOutputSpdifDelay(int source);
+    void setAudioPrescale(int source,int value);
+    int getAudioPrescale(int source);
     void cleanupAudioEffects();
     void initSoundEffectSettings();
     void resetSoundEffectSettings();

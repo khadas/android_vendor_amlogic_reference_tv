@@ -27,70 +27,68 @@ public class AudioEffectManager {
 
     private boolean mDebug = true;
     private int RETRY_MAX = 10;
-    //soundmode set by eq or dap module, first use dap if exist
+
+    /* [getSoundModule] soundmode set by eq or dap module, first use dap if exist */
     public static final  int DAP_MODULE                                 = 0;
     public static final  int EQ_MODULE                                  = 1;
 
-    /* EQ sound mode type */
-    public static final int MODE_STANDARD                               = 0;
-    public static final int MODE_MUSIC                                  = 1;
-    public static final int MODE_NEWS                                   = 2;
-    public static final int MODE_THEATER                                = 3;
-    public static final int MODE_GAME                                   = 4;
-    public static final int MODE_CUSTOM                                 = 5;
+    /* [setSoundMode] EQ sound mode type */
+    public static final int EQ_SOUND_MODE_STANDARD                      = 0;
+    public static final int EQ_SOUND_MODE_MUSIC                         = 1;
+    public static final int EQ_SOUND_MODE_NEWS                          = 2;
+    public static final int EQ_SOUND_MODE_THEATER                       = 3;
+    public static final int EQ_SOUND_MODE_GAME                          = 4;
+    public static final int EQ_SOUND_MODE_CUSTOM                        = 5;
 
-    /* custom sound mode EQ band type*/
+    /* [setUserSoundModeParam] custom sound mode EQ band type */
     public static final int EQ_SOUND_MODE_EFFECT_BAND1                  = 0;
     public static final int EQ_SOUND_MODE_EFFECT_BAND2                  = 1;
     public static final int EQ_SOUND_MODE_EFFECT_BAND3                  = 2;
     public static final int EQ_SOUND_MODE_EFFECT_BAND4                  = 3;
     public static final int EQ_SOUND_MODE_EFFECT_BAND5                  = 4;
 
-    /* DBX sound mode param type */
+    /* [setDialogClarityMode] Modes of dialog clarity */
+    public static final int DIALOG_CLARITY_MODE_OFF                     = 0;
+    public static final int DIALOG_CLARITY_MODE_LOW                     = 1;
+    public static final int DIALOG_CLARITY_MODE_HIGH                    = 2;
+
+    /* [setDbxAdvancedModeParam] DBX sound mode param type */
     public static final int DBX_ADVANCED_MODE_PRARM_TYPE_SONICS         = 0;
     public static final int DBX_ADVANCED_MODE_PRARM_TYPE_VOLUME         = 1;
     public static final int DBX_ADVANCED_MODE_PRARM_TYPE_SURROUND       = 2;
 
-    /* DBX sound mode */
+    /* [setDbxSoundMode] DBX sound mode */
     public static final int DBX_SOUND_MODE_STANDARD                     = 0;
     public static final int DBX_SOUND_MODE_MUSIC                        = 1;
     public static final int DBX_SOUND_MODE_MOVIE                        = 2;
     public static final int DBX_SOUND_MODE_THEATER                      = 3;
     public static final int DBX_SOUND_MODE_ADVANCED                     = 4;
 
-    //surround value definition
-    public static final int SURROUND_ON                                 = 0;
-    public static final int SURROUND_OFF                                = 1;
-    //bass boost value definition
-    public static final int BASS_BOOST_ON                               = 0;
-    public static final int BASS_BOOST_OFF                              = 1;
-    //amlogic add
-    public static final int SPDIF_OFF                                   = 0;
-    public static final int SPDIF_PCM                                   = 1;
-    public static final int SPDIF_RAW                                   = 2;
-    public static final int SPDIF_AUTO                                  = 3;
+    /* [setDtsVirtualXMode] VirtualX effect mode */
+    public static final int SOUND_EFFECT_VIRTUALX_MODE_OFF              = 0;
+    public static final int SOUND_EFFECT_VIRTUALX_MODE_BASS             = 1;
+    public static final int SOUND_EFFECT_VIRTUALX_MODE_FULL             = 2;
 
-    public static final int SOUND_SPEAKER_OUT                           = 0;
-    public static final int SOUND_SPDIF_OUT                             = 1;
-    public static final int SOUND_ARC_OUT                               = 2;
-
-    public static final int EFFECT_BASS_DEFAULT     = 50;   // 0 - 100
-    public static final int EFFECT_TREBLE_DEFAULT   = 50;   // 0 - 100
-    public static final int EFFECT_BALANCE_DEFAULT  = 50;   // 0 - 100
-
-    /* VirtualX effect mode */
-    public static final int SOUND_EFFECT_VIRTUALX_MODE_OFF          = 0;
-    public static final int SOUND_EFFECT_VIRTUALX_MODE_BASS         = 1;
-    public static final int SOUND_EFFECT_VIRTUALX_MODE_FULL         = 2;
+    /* [setAudioOutputSpeakerDelay / setAudioOutputSpdifDelay / setAudioPrescale] output delay source define */
+    public static final int AUDIO_OUTPUT_DELAY_SOURCE_ATV               = 0;
+    public static final int AUDIO_OUTPUT_DELAY_SOURCE_DTV               = 1;
+    public static final int AUDIO_OUTPUT_DELAY_SOURCE_AV                = 2;
+    public static final int AUDIO_OUTPUT_DELAY_SOURCE_HDMI              = 3;
+    public static final int AUDIO_OUTPUT_DELAY_SOURCE_MEDIA             = 4;
+    public static final int AUDIO_OUTPUT_DELAY_SOURCE_MAX               = 5;
 
     /* init value for first boot */
-    public static final int SOUND_EFFECT_SURROUND_ENABLE_DEFAULT    = 0;        // OFF
-    public static final int SOUND_EFFECT_DIALOG_CLARITY_ENABLE_DEFAULT= 0;      // OFF
-    public static final int SOUND_EFFECT_TRUBASS_ENABLE_DEFAULT     = 0;        // OFF
-    public static final int SOUND_EFFECT_VIRTUALX_MODE_DEFAULT      = SOUND_EFFECT_VIRTUALX_MODE_OFF;
-    public static final int SOUND_EFFECT_TRUVOLUME_HD_ENABLE_DEFAULT= 0;        // OFF
-    public static final int SOUND_EFFECT_DBX_ENABLE_DEFAULT         = 0;        // OFF
-    public static final int SOUND_EFFECT_DBX_SOUND_MODE_DEFAULT     = DBX_SOUND_MODE_STANDARD;
+    public static final int EFFECT_BASS_DEFAULT                         = 50;   // 0 - 100
+    public static final int EFFECT_TREBLE_DEFAULT                       = 50;   // 0 - 100
+    public static final int EFFECT_BALANCE_DEFAULT                      = 50;   // 0 - 100
+
+    public static final int SOUND_EFFECT_SURROUND_ENABLE_DEFAULT        = 0;        // OFF
+    public static final int SOUND_EFFECT_DIALOG_CLARITY_ENABLE_DEFAULT  = 0;        // OFF
+    public static final int SOUND_EFFECT_TRUBASS_ENABLE_DEFAULT         = 0;        // OFF
+    public static final int SOUND_EFFECT_VIRTUALX_MODE_DEFAULT          = SOUND_EFFECT_VIRTUALX_MODE_OFF;
+    public static final int SOUND_EFFECT_TRUVOLUME_HD_ENABLE_DEFAULT    = 0;        // OFF
+    public static final int SOUND_EFFECT_DBX_ENABLE_DEFAULT             = 0;        // OFF
+    public static final int SOUND_EFFECT_DBX_SOUND_MODE_DEFAULT         = DBX_SOUND_MODE_STANDARD;
 
     // DBX sound mode default param [sonics, volume, surround]
     public static final byte[][] SOUND_EFFECT_DBX_SOUND_MODE_ARRAY_DEFAULT = {
@@ -417,35 +415,35 @@ public class AudioEffectManager {
         return false;
     }
 
-    public void setAgsEnable(int enable) {
+    public void setAgcEnable(boolean enable) {
         try {
-            mAudioEffectService.setAgsEnable(enable);
+            mAudioEffectService.setAgcEnable(enable);
         } catch (RemoteException e) {
-            Log.e(TAG, "setAgsEnable failed:" + e);
+            Log.e(TAG, "setAgcEnable failed:" + e);
         }
     }
 
-    public void setAgsMaxLevel(int step) {
+    public void setAgcMaxLevel(int step) {
         try {
-            mAudioEffectService.setAgsMaxLevel(step);
+            mAudioEffectService.setAgcMaxLevel(step);
         } catch (RemoteException e) {
-            Log.e(TAG, "setAgsMaxLevel failed:" + e);
+            Log.e(TAG, "setAgcMaxLevel failed:" + e);
         }
     }
 
-    public void setAgsAttrackTime(int step) {
+    public void setAgcAttrackTime(int step) {
         try {
-            mAudioEffectService.setAgsAttrackTime(step);
+            mAudioEffectService.setAgcAttrackTime(step);
         } catch (RemoteException e) {
-            Log.e(TAG, "setAgsAttrackTime failed:" + e);
+            Log.e(TAG, "setAgcAttrackTime failed:" + e);
         }
     }
 
-    public void setAgsReleaseTime(int step) {
+    public void setAgcReleaseTime(int step) {
         try {
-            mAudioEffectService.setAgsReleaseTime(step);
+            mAudioEffectService.setAgcReleaseTime(step);
         } catch (RemoteException e) {
-            Log.e(TAG, "setAgsReleaseTime failed:" + e);
+            Log.e(TAG, "setAgcReleaseTime failed:" + e);
         }
     }
 
@@ -516,6 +514,55 @@ public class AudioEffectManager {
         return -1;
     }
 
+    public void setAudioOutputSpeakerDelay(int source, int delayMs) {
+        try {
+            mAudioEffectService.setAudioOutputSpeakerDelay(source, delayMs);
+        } catch (RemoteException e) {
+            Log.e(TAG, "setAudioOutputSpeakerDelay failed:" + e);
+        }
+    }
+    public int getAudioOutputSpeakerDelay(int source) {
+        try {
+            return mAudioEffectService.getAudioOutputSpeakerDelay(source);
+        } catch (RemoteException e) {
+            Log.e(TAG, "getAudioOutputSpeakerDelay failed:" + e);
+        }
+        return -1;
+    }
+
+    public void setAudioOutputSpdifDelay(int source, int delayMs) {
+        try {
+            mAudioEffectService.setAudioOutputSpdifDelay(source, delayMs);
+        } catch (RemoteException e) {
+            Log.e(TAG, "setAudioOutputSpdifDelay failed:" + e);
+        }
+    }
+
+    public int getAudioOutputSpdifDelay(int source) {
+        try {
+            return mAudioEffectService.getAudioOutputSpdifDelay(source);
+        } catch (RemoteException e) {
+            Log.e(TAG, "getAudioOutputSpdifDelay failed:" + e);
+        }
+        return -1;
+    }
+
+    public void setAudioPrescale(int source, int value) {
+        try {
+            mAudioEffectService.setAudioPrescale(source, value);
+        } catch (RemoteException e) {
+            Log.e(TAG, "setAudioPrescale failed:" + e);
+        }
+    }
+
+    public int getAudioPrescale(int source) {
+        try {
+            return mAudioEffectService.getAudioPrescale(source);
+        } catch (RemoteException e) {
+            Log.e(TAG, "getDbxAdvancedModeParam failed:" + e);
+        }
+        return -1;
+    }
     public void cleanupAudioEffects() {
         try {
             mAudioEffectService.cleanupAudioEffects();

@@ -373,6 +373,7 @@ public class DroidLogicTvUtils
     public static final String ATV_CHANNEL_INDEX = "atv_channel_index";
     public static final String DTV_CHANNEL_INDEX = "dtv_channel_index";
     public static final String TV_INPUT_ID = "tv_input_id";
+    public static final String DB_ID_TV_SOURCE_TYPE = "db_id_tv_source_type";
     public static final String TV_SEARCH_ATSC_CLIST = "atsc_c_list_mode";
     public static final String TV_NUMBER_SEARCH_MODE = "number_search_mode";
     public static final String TV_NUMBER_SEARCH_NUMBER = "number_search_number";
@@ -687,6 +688,15 @@ public class DroidLogicTvUtils
 
     public static String getInputId(Context mContext) {
         return TvControlDataManager.getInstance(mContext).getString(mContext.getContentResolver(), DroidLogicTvUtils.TV_INPUT_ID);
+    }
+
+
+    public static void setTvSourceType(Context mContext, int sourceType) {
+        TvControlDataManager.getInstance(mContext).putInt(mContext.getContentResolver(), DB_ID_TV_SOURCE_TYPE, sourceType);
+    }
+
+    public static int getTvSourceType(Context mContext) {
+        return TvControlDataManager.getInstance(mContext).getInt(mContext.getContentResolver(), DB_ID_TV_SOURCE_TYPE, DEVICE_ID_ADTV);
     }
 
     public static String getCurrentSignalType(Context context) {
