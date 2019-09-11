@@ -227,6 +227,15 @@ public class DroidLogicTvUtils
     public static final String PROP_DISABLE_NOSIGNAL_TIMEOUT_FUNCTION = "persist.tv.disable.nosig.timeout";
     public static final String KEY_ENABLE_SUSPEND_TIMEOUT = "enable_suspend_timeout";
     public static final String ACTION_STOP_EPG_ACTIVITY = "droidlogic.intent.action.stop_epg_activity";
+    public static final String ACTION_REMOVE_ALL_DVR_RECORDS = "droidlogic.intent.action.remove_all_dvr_records";
+    public static final String ACTION_DVR_RESPONSE = "droidlogic.intent.action.dvr_response";
+    public static final String KEY_DVR_DELETE_RESULT_LIST = "dvr_delete_result_list";
+    public static final String KEY_DTVKIT_SEARCH_TYPE = "dtvkit_search_type";//auto or manual
+    public static final String KEY_DTVKIT_SEARCH_TYPE_AUTO = "dtvkit_auto_search";//auto
+    public static final String KEY_DTVKIT_SEARCH_TYPE_MANUAL = "dtvkit_manual_search_type";//manual
+    public static final String KEY_LIVETV_PVR_STATUS = "livetv_pvr_status";//manual
+    public static final String VALUE_LIVETV_PVR_SCHEDULE_AVAILABLE = "livetv_pvr_schedule";
+    public static final String VALUE_LIVETV_PVR_RECORD_PROGRAM_AVAILABLE = "livetv_pvr_program";
 
     public static final String ACTION_ATV_AUTO_SCAN = "atv_auto_scan";
     public static final String ACTION_DTV_AUTO_SCAN = "dtv_auto_scan";
