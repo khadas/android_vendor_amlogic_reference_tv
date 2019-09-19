@@ -994,6 +994,46 @@ public class TvDataBaseManager {
         }
     }
 
+    // move the channel to first, this function only used for no LCN product
+    public void topChannel (ChannelInfo topChannel) {
+       if ( topChannel == null || topChannel.getNumber() <= 1) {
+            return;
+       }
+
+        Uri channelsUri = TvContract.buildChannelsUriForInput(topChannel.getInputId());
+
+        Cursor cursor = null;
+        try {
+            cursor = mContentResolver.query(channelsUri, ChannelInfo.COMMON_PROJECTION, null, null, null);
+            while (cursor != null && cursor.moveToNext()) {
+                long rowId = cursor.getLong(findPosition(ChannelInfo.COMMON_PROJECTION, Channels._ID));
+                int number = cursor.getInt(findPosition(ChannelInfo.COMMON_PROJECTION, Channels.COLUMN_DISPLAY_NUMBER));
+                String type = cursor.getString(findPosition(ChannelInfo.COMMON_PROJECTION, Channels.COLUMN_TYPE));
+
+                ChannelInfo channel = ChannelInfo.fromCommonCursor(cursor);
+                if ((topChannel.isAnalogChannel() && channel.isAnalogChannel())
+                        || (topChannel.isDigitalChannel() && channel.isDigitalChannel())) {
+
+                    Uri uri = TvContract.buildChannelUri(channel.getId());
+                    ContentValues updateValues = new ContentValues();
+                    if (channel.getNumber() < topChannel.getNumber()) {
+                        updateValues.put(Channels.COLUMN_DISPLAY_NUMBER, number + 1);
+                        mContentResolver.update(uri, updateValues, null, null);
+                    } else if (channel.getNumber() == topChannel.getNumber()) {
+                        updateValues.put(Channels.COLUMN_DISPLAY_NUMBER,  1);
+                        mContentResolver.update(uri, updateValues, null, null);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            //TODO
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
     public void updateChannelInfo(ChannelInfo channel) {
         if (channel.getInputId() == null)
             return;
