@@ -76,6 +76,7 @@ public class AudioEffectManager {
     public static final int AUDIO_OUTPUT_DELAY_SOURCE_HDMI              = 3;
     public static final int AUDIO_OUTPUT_DELAY_SOURCE_MEDIA             = 4;
     public static final int AUDIO_OUTPUT_DELAY_SOURCE_MAX               = 5;
+    public static final String PROP_AUDIO_DELAY_ENABLED                 = "persist.tv.audio.delay.enabled";
 
     /* init value for first boot */
     public static final int EFFECT_BASS_DEFAULT                         = 50;   // 0 - 100

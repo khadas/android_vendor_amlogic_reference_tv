@@ -417,8 +417,6 @@ public class DroidLogicTvInputService extends TvInputService implements
             Log.d(TAG, "onSigChange-nosignal");
             mSession.notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_UNKNOWN);
         } else if (status == TvInSignalInfo.SignalStatus.TVIN_SIG_STATUS_STABLE) {
-            // refresh audio param when signal support
-            doAudioSetting(true);
             int device_id = mSession.getDeviceId();
             if ((mTvControlManager.GetCurrentSourceInput() != DroidLogicTvUtils.DEVICE_ID_DTV)
                 || (signal_info.reserved == 1))
@@ -571,6 +569,8 @@ public class DroidLogicTvInputService extends TvInputService implements
 
         if (surface == null && session != null) {
             session.hideUI();
+        } else if (surface != null) {
+            setAudioDelay(true);
         }
         return false;
     }
@@ -598,7 +598,6 @@ public class DroidLogicTvInputService extends TvInputService implements
                 break;
             case MSG_DO_SET_SURFACE:
                 SomeArgs args = (SomeArgs) message.obj;
-                doAudioSetting((Surface)args.arg1 != null);
                 doSetSurface((Surface)args.arg1, (TvInputBaseSession)args.arg2);
                 break;
             }
@@ -639,34 +638,6 @@ public class DroidLogicTvInputService extends TvInputService implements
         Log.e(TAG, "decoderRelease done");
     }
 
-    // refresh audio delay param when select source or deselect source
-    private void doAudioSetting(boolean selectSource) {
-        String searchType = DroidLogicTvUtils.getSearchType(mContext);
-        int audioSource = 0;
-        if (!selectSource) {
-            audioSource = AudioEffectManager.AUDIO_OUTPUT_DELAY_SOURCE_MEDIA;
-        } else {
-            if (DroidLogicTvUtils.DEVICE_ID_ADTV == mSourceType) {
-                if (searchType.equals("ATV")) {
-                    audioSource = AudioEffectManager.AUDIO_OUTPUT_DELAY_SOURCE_ATV;
-                } else {
-                    audioSource = AudioEffectManager.AUDIO_OUTPUT_DELAY_SOURCE_DTV;
-                }
-            } else if (DroidLogicTvUtils.DEVICE_ID_AV1 == mSourceType || DroidLogicTvUtils.DEVICE_ID_AV2 == mSourceType) {
-                audioSource = AudioEffectManager.AUDIO_OUTPUT_DELAY_SOURCE_AV;
-            } else if (mSourceType >= DroidLogicTvUtils.DEVICE_ID_HDMI1 && mSourceType <= DroidLogicTvUtils.DEVICE_ID_HDMI4) {
-                audioSource = AudioEffectManager.AUDIO_OUTPUT_DELAY_SOURCE_HDMI;
-            } else {
-                audioSource = AudioEffectManager.AUDIO_OUTPUT_DELAY_SOURCE_MEDIA;
-            }
-        }
-        Log.d(TAG, "doAudioSetting, audioSource:" + audioSource + ",speaker delay:" + mAudioEffectManager.getAudioOutputSpeakerDelay(audioSource)
-                + ", spdif delay:"+ mAudioEffectManager.getAudioOutputSpdifDelay(audioSource));
-        DroidLogicTvUtils.setTvSourceType(mContext, audioSource);
-        mAudioEffectManager.setAudioOutputSpeakerDelay(audioSource, mAudioEffectManager.getAudioOutputSpeakerDelay(audioSource));
-        mAudioEffectManager.setAudioOutputSpdifDelay(audioSource, mAudioEffectManager.getAudioOutputSpdifDelay(audioSource));
-    }
-
     private void doSetSurface(Surface surface, TvInputBaseSession session) {
         Log.d(TAG, "doSetSurface inputId=" + mCurrentInputId + " number=" + session.mId + " surface=" + surface);
 
@@ -677,6 +648,7 @@ public class DroidLogicTvInputService extends TvInputService implements
                 Log.d(TAG, "exited TV source, so stop TV play");
                 mSurface = null;
                 stopTvPlay(session.mId);
+                setAudioDelay(false);
             }
             Log.d(TAG, "surface is null finish, return SwitchSourceTime = " + getUptimeSeconds());
             return;
@@ -1054,5 +1026,42 @@ public class DroidLogicTvInputService extends TvInputService implements
             }
         }
         return  isRunning;
+    }
+
+    // refresh audio delay param when select source or deselect source
+    private void setAudioDelay(boolean isTvSource) {
+        if (!getAudioDelayEnabled()) {
+            return;
+        }
+
+        String searchType = DroidLogicTvUtils.getSearchType(mContext);
+        int audioSource = 0;
+        if (!isTvSource) {
+            audioSource = AudioEffectManager.AUDIO_OUTPUT_DELAY_SOURCE_MEDIA;
+        } else {
+            if (DroidLogicTvUtils.DEVICE_ID_ADTV == mSourceType) {
+                if (searchType.equals("ATV")) {
+                    audioSource = AudioEffectManager.AUDIO_OUTPUT_DELAY_SOURCE_ATV;
+                } else {
+                    audioSource = AudioEffectManager.AUDIO_OUTPUT_DELAY_SOURCE_DTV;
+                }
+            } else if (DroidLogicTvUtils.DEVICE_ID_AV1 == mSourceType || DroidLogicTvUtils.DEVICE_ID_AV2 == mSourceType) {
+                audioSource = AudioEffectManager.AUDIO_OUTPUT_DELAY_SOURCE_AV;
+            } else if (mSourceType >= DroidLogicTvUtils.DEVICE_ID_HDMI1 && mSourceType <= DroidLogicTvUtils.DEVICE_ID_HDMI4) {
+                audioSource = AudioEffectManager.AUDIO_OUTPUT_DELAY_SOURCE_HDMI;
+            } else {
+                audioSource = AudioEffectManager.AUDIO_OUTPUT_DELAY_SOURCE_MEDIA;
+            }
+        }
+        Log.d(TAG, "setAudioDelay, audioSource:" + audioSource + ",speaker delay:" + mAudioEffectManager.getAudioOutputSpeakerDelay(audioSource)
+                + ", spdif delay:"+ mAudioEffectManager.getAudioOutputSpdifDelay(audioSource));
+        DroidLogicTvUtils.setTvSourceType(mContext, audioSource);
+        mAudioEffectManager.setAudioOutputSpeakerDelay(audioSource, mAudioEffectManager.getAudioOutputSpeakerDelay(audioSource));
+        mAudioEffectManager.setAudioOutputSpdifDelay(audioSource, mAudioEffectManager.getAudioOutputSpdifDelay(audioSource));
+    }
+
+    private boolean getAudioDelayEnabled () {
+        return SystemControlManager.getInstance()
+                .getPropertyBoolean(AudioEffectManager.PROP_AUDIO_DELAY_ENABLED, false);
     }
 }
