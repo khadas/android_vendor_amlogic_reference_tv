@@ -56,7 +56,9 @@ public abstract class DroidLogicOverlayView extends FrameLayout {
     }
 
     public void setTuningImageVisibility(boolean visible) {
-        mTuningImageView.setVisibility(visible ? VISIBLE : GONE);
+        if (mTuningImageView != null) {
+            mTuningImageView.setVisibility(visible ? VISIBLE : GONE);
+        }
     }
 
     public void setText(int resId) {
@@ -64,15 +66,21 @@ public abstract class DroidLogicOverlayView extends FrameLayout {
     }
 
     public void setTextForEas(CharSequence text){
-        mEasTextView.setText(text);
+        if (mEasTextView != null) {
+            mEasTextView.setText(text);
+        }
     }
 
     public void setTextForTeletextNumber(CharSequence text){
-        mTeletextNumber.setText(text);
+        if (mTeletextNumber != null) {
+            mTeletextNumber.setText(text);
+        }
     }
 
     public void setEasTextVisibility(boolean visible) {
-        mEasTextView.setVisibility(visible ? VISIBLE : GONE);
+        if (mEasTextView != null) {
+            mEasTextView.setVisibility(visible ? VISIBLE : GONE);
+        }
     }
 
     public void setTextVisibility(boolean visible) {
@@ -80,11 +88,15 @@ public abstract class DroidLogicOverlayView extends FrameLayout {
     }
 
     public void setTeleTextNumberVisibility(boolean visible) {
-        mTeletextNumber.setVisibility(visible ? VISIBLE : GONE);
+        if (mTeletextNumber != null) {
+            mTeletextNumber.setVisibility(visible ? VISIBLE : GONE);
+        }
     }
 
     public void setSubtitleVisibility(boolean visible) {
-        mSubtitleView.setVisibility(visible ? VISIBLE : GONE);
+        if (mSubtitleView != null) {
+            mSubtitleView.setVisibility(visible ? VISIBLE : GONE);
+        }
     }
 
     public View getSubtitleView() {
