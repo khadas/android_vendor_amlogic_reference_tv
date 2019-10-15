@@ -272,9 +272,6 @@ public class DroidLogicHdmiCecManager {
         if (mTvClient == null) {
             return;
         }
-        if (logicAddr == 0 && mSystemControlManager != null) {
-            mSystemControlManager.setProperty("persist.vendor.sys.cec.input.port", "" + logicAddr);
-        }
         mTvClient.deviceSelect(logicAddr, new SelectCallback() {
             @Override
             public void onComplete(int result) {
@@ -329,8 +326,7 @@ public class DroidLogicHdmiCecManager {
         if (mTvClient == null) {
             return;
         }
-        if (mSystemControlManager != null)
-            mSystemControlManager.setProperty("persist.vendor.sys.cec.input.port", "" + portId);
+
         mTvClient.portSelect(portId, new SelectCallback() {
             @Override
             public void onComplete(int result) {

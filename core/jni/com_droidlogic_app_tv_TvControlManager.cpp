@@ -15,6 +15,8 @@
  */
 #define LOG_TAG "tv-jni"
 #include "com_droidlogic_app_tv_TvControlManager.h"
+#include <vendor/amlogic/hardware/hdmicec/1.0/IDroidHdmiCEC.h>
+
 static sp<TvServerHidlClient> spTv = NULL;
 sp<EventCallback> spEventCB;
 static jobject TvObject;
@@ -1163,6 +1165,22 @@ static jint SetPreviewWindowMode(JNIEnv *env __unused, jclass clazz __unused, ji
     return result;
 }
 
+static jint GetCecWakePort(JNIEnv *env __unused, jclass clazz __unused) {
+    using ::vendor::amlogic::hardware::hdmicec::V1_0::IDroidHdmiCEC;
+    ALOGD("GetCecWakePort");
+    jint result = -1;
+    sp<IDroidHdmiCEC> hdmicec = IDroidHdmiCEC::tryGetService();
+    while (hdmicec == nullptr) {
+         usleep(200*1000);//sleep 200ms
+         hdmicec = IDroidHdmiCEC::tryGetService();
+         ALOGE("tryGet hdmicecd daemon Service");
+    };
+    if (hdmicec != nullptr) {
+        result = hdmicec->getCecWakePort();
+        ALOGD("GetCecWakePort %d", result);
+    }
+    return result;
+}
 
 static JNINativeMethod Tv_Methods[] = {
 {"native_ConnectTvServer", "(Lcom/droidlogic/app/tv/TvControlManager;)V", (void *) ConnectTvServer },
@@ -1244,6 +1262,8 @@ static JNINativeMethod Tv_Methods[] = {
 {"native_DtvGetScanFreqListMode", "(I)[Lcom/droidlogic/app/tv/TvControlManager$FreqList;", (void *) DtvGetScanFreqListMode },
 {"native_SetPreviewWindow", "(IIII)I", (void *) SetPreviewWindow },
 {"native_SetPreviewWindowMode", "(I)I", (void *) SetPreviewWindowMode },
+{"native_GetCecWakePort", "()I", (void *) GetCecWakePort },
+
 };
 
 #define FIND_CLASS(var, className) \
@@ -1279,6 +1299,7 @@ int register_com_droidlogic_app_tv_TvControlManager(JNIEnv *env)
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved __unused)
 {
+    ALOGD("bbb");
     JNIEnv *env = NULL;
     jint result = -1;
 

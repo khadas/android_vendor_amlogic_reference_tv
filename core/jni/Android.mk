@@ -11,6 +11,7 @@ LOCAL_SRC_FILES := \
 
 LOCAL_SHARED_LIBRARIES :=  \
     vendor.amlogic.hardware.tvserver@1.0 \
+    vendor.amlogic.hardware.hdmicec@1.0 \
     libhidlbase \
     libcutils \
     libutils \
@@ -20,7 +21,8 @@ LOCAL_SHARED_LIBRARIES :=  \
 LOCAL_C_INCLUDES += $(JNI_H_INCLUDE) \
                     frameworks/base/core/jni/include \
                     libnativehelper/include/nativehelpers \
-                    $(LIB_TV_BINDER_PATH)/include
+                    hardware/libhardware/include \
+                    $(LIB_TV_BINDER_PATH)/include \
 
 LOCAL_MODULE := libtv_jni
 LOCAL_PRELINK_MODULE := false

@@ -739,6 +739,7 @@ public class TvControlManager {
     private native int native_FactoryCleanAllTableForProgram();
     private native int native_SetPreviewWindow(int x1, int y1, int x2, int y2);
     private native int native_SetPreviewWindowMode(int enable);
+    private native int native_GetCecWakePort();
 
     private TvControlManager() {
         Looper looper = Looper.myLooper();
@@ -944,6 +945,12 @@ public class TvControlManager {
             }
         }
         return -1;
+    }
+
+    public int getCecWakePort() {
+        int port = native_GetCecWakePort();
+        Log.d(TAG, "getCecWakePort " + port);
+        return port;
     }
 
 
