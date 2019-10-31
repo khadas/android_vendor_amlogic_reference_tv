@@ -75,7 +75,6 @@ public:
     void disconnect();
     //status_t processCmd(const Parcel &p, Parcel *r);
     void setListener(const sp<TvListener> &listener);
-    void unregisterListener(const sp<TvListener> &listener);
 
     int startTv();
     int stopTv();
@@ -183,7 +182,6 @@ private:
 
     static Mutex mLock;
     tv_connect_type_t mType;
-    int32_t mCallbackPid;
     // helper function to obtain tv service handle
     sp<ITvServer> getTvService();
 
