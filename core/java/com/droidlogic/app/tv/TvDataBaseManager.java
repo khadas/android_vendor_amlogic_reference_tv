@@ -2163,6 +2163,52 @@ public class TvDataBaseManager {
         return program;
     }
 
+    public List<Program> getProgramByTimePeriod(long starttime, long endtime) {
+        List<Program> programs = new ArrayList<>();
+        Uri uri = TvContract.Programs.CONTENT_URI;
+        String selection = TvContract.Programs.COLUMN_START_TIME_UTC_MILLIS + "<? AND "
+                + TvContract.Programs.COLUMN_END_TIME_UTC_MILLIS + ">?";
+        String[] selectionArgs = {String.valueOf(endtime), String.valueOf(starttime)};
+        String sortOrder = TvContract.Programs.COLUMN_START_TIME_UTC_MILLIS + " ASC";
+        Cursor cursor = null;
+        try {
+            cursor = mContentResolver.query(uri, null, selection, selectionArgs, sortOrder);
+            if (cursor == null || cursor.getCount() == 0) {
+                return programs;
+            }
+            while (cursor.moveToNext()) {
+                programs.add(Program.fromCursor(cursor));
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "getProgramByTimePeriod Exception = " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return programs;
+    }
+
+    public List<Program> getOverlapProgramsInTimePeriod(Program program) {
+        List<Program> findProgams = new ArrayList<>();
+        List<Program> periodPrograms = new ArrayList<>();
+        if (program != null) {
+            periodPrograms = getProgramByTimePeriod(program.getStartTimeUtcMillis(), program.getEndTimeUtcMillis());
+        }
+        if (periodPrograms != null && periodPrograms.size() > 0) {
+            for (Program temp : periodPrograms) {
+                if (program.getId() != temp.getId() &&
+                        (temp.getScheduledRecordStatus() == Program.RECORD_STATUS_APPOINTED ||
+                        temp.getScheduledRecordStatus() == Program.RECORD_STATUS_IN_PROGRESS)) {
+                    findProgams.add(temp);
+                }
+            }
+        }
+
+        return findProgams;
+    }
+
     public int deleteProgram(ChannelInfo channel) {
         return deleteProgram(channel.getId());
     }
