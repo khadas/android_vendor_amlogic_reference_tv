@@ -30,6 +30,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.LayoutInflater;
 
+import com.droidlogic.app.SystemControlManager;
 import com.droidlogic.app.tv.DroidLogicTvUtils;
 import com.droidlogic.app.tv.TvControlManager;
 import com.droidlogic.app.tv.TvControlDataManager;
@@ -71,6 +72,8 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     private boolean mHasRetuned = false;
     protected Handler mSessionHandler;
     private TvControlDataManager mTvControlDataManager = null;
+    private SystemControlManager mSystemControlManager;
+    private TvControlManager mTvControlManager;
     protected DroidLogicOverlayView mOverlayView = null;
 
     protected boolean isBlockNoRatingEnable = false;
@@ -87,6 +90,8 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
 
         mAudioManager = (AudioManager)context.getSystemService (Context.AUDIO_SERVICE);
         mTvControlDataManager = TvControlDataManager.getInstance(mContext);
+        mSystemControlManager = SystemControlManager.getInstance();
+        mTvControlManager = TvControlManager.getInstance();
         mSessionHandler = new Handler(context.getMainLooper(), this);
         mTvInputManager = (TvInputManager)mContext.getSystemService(Context.TV_INPUT_SERVICE);
         mDroidLogicHdmiCecManager = DroidLogicHdmiCecManager.getInstance(mContext);
@@ -124,6 +129,12 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
 
     @Override
     public void onSurfaceChanged(int format, int width, int height) {
+        Log.d(TAG, "onSurfaceChanged: format="+format + " width=" + width + " height=" + height);
+        if (width < 720 || height < 480) {
+            mTvControlManager.SetPreviewWindowMode(true);
+        } else {
+            mTvControlManager.SetPreviewWindowMode(false);
+        }
     }
 
     @Override

@@ -713,6 +713,8 @@ public class TvControlManager {
     private native int native_SetDvbTextCoding(String coding);
     private native int native_SetBlackoutEnable(int enble, int isSave);
     private native int native_GetBlackoutEnable();
+	private native int native_SetScreenColorForSignalChange(int screenColor, int isSave);
+	private native int native_GetScreenColorForSignalChange();
     private native int native_GetATVMinMaxFreq(int minFreq, int maxFreq);
     private native FreqList[] native_DtvGetScanFreqListMode(int mode);
     private native int native_UpdateRRT(int freq, int moudle, int mode);
@@ -4089,7 +4091,7 @@ public class TvControlManager {
     }
 
     //enable: 0  is disable , 1  is enable.      when enable it , can black video for switching program
-    public int setBlackoutEnable(int enable, int isSave){
+    public int setBlackoutEnable(int enable, int isSave) {
         synchronized (mLock) {
             try {
                 return native_SetBlackoutEnable(enable, isSave);
@@ -4107,6 +4109,40 @@ public class TvControlManager {
                 return native_GetBlackoutEnable();
             } catch (Exception e) {
                 Log.e(TAG, "getBlackoutEnable:" + e);
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * @Function: setScreenColorForSignalChange
+     * @Description: set screen color for switch source/switch channal/no signal
+     * @Param: screenColor:screen color:0 is black screen; 1 is blue screen
+     * @Param: isSave:wthether want to save setting
+     * @Return: 0 ok or -1 error
+     */
+    public int setScreenColorForSignalChange(int screenColor, int isSave) {
+        synchronized (mLock) {
+            try {
+                return native_SetScreenColorForSignalChange(screenColor, isSave);
+            } catch (Exception e) {
+                Log.e(TAG, "setScreenColorForSignalChange:" + e);
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * @Function: getScreenColorForSignalChange
+     * @Description: get screen color for switch source/switch channal/no signal
+     * @Return: 0 is balck acreen; 1 is blue screen;
+     */
+    public int getScreenColorForSignalChange() {
+        synchronized (mLock) {
+            try {
+                return native_GetScreenColorForSignalChange();
+            } catch (Exception e) {
+                Log.e(TAG, "getScreenColorForSignalChange:" + e);
             }
         }
         return 0;

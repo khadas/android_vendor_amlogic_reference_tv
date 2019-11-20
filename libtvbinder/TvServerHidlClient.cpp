@@ -468,6 +468,14 @@ int TvServerHidlClient::getBlackoutEnable() {
     return mTvServer->getBlackoutEnable();
 }
 
+int TvServerHidlClient::setScreenColorForSignalChange(int screenColor, int is_save) {
+    return mTvServer->setScreenColorForSignalChange(screenColor, is_save);
+}
+
+int TvServerHidlClient::getScreenColorForSignalChange() {
+    return mTvServer->getScreenColorForSignalChange();
+}
+
 int TvServerHidlClient::getATVMinMaxFreq(int scanMinFreq, int scanMaxFreq) {
     int ret =-1;
     mTvServer->getATVMinMaxFreq([&](int retT, int scanMinFreqT, int scanMaxFreqT){

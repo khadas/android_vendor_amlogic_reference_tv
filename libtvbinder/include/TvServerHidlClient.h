@@ -138,6 +138,8 @@ public:
     int setDvbTextCoding(const std::string& coding);
     int setBlackoutEnable(int status, int is_save);
     int getBlackoutEnable();
+    int setScreenColorForSignalChange(int screenColor, int is_save);
+    int getScreenColorForSignalChange();
     int getATVMinMaxFreq(int scanMinFreq, int scanMaxFreq);
     std::vector<FreqList> dtvGetScanFreqListMode(int mode);
     int updateRRT(int freq, int moudle, int mode);

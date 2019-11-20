@@ -884,6 +884,22 @@ static jint GetBlackoutEnable(JNIEnv *env __unused, jclass clazz __unused) {
     return result;
 }
 
+static jint SetScreenColorForSignalChange(JNIEnv *env __unused, jclass clazz __unused, jint screen_color, jint is_save) {
+    const sp<TvServerHidlClient>& Tv = getTvClient();
+    jint result = -1;
+    if (Tv != NULL)
+        result = Tv->setScreenColorForSignalChange(screen_color, is_save);
+    return result;
+}
+
+static jint GetScreenColorForSignalChange(JNIEnv *env __unused, jclass clazz __unused) {
+    const sp<TvServerHidlClient>& Tv = getTvClient();
+    jint result = -1;
+    if (Tv != NULL)
+        result = Tv->getScreenColorForSignalChange();
+    return result;
+}
+
 static jint GetATVMinMaxFreq(JNIEnv *env __unused, jclass clazz __unused, jint scanMinFreq, jint scanMaxFreq) {
     const sp<TvServerHidlClient>& Tv = getTvClient();
     jint result = -1;
@@ -1219,6 +1235,8 @@ static JNINativeMethod Tv_Methods[] = {
 {"native_SetDvbTextCoding", "(Ljava/lang/String;)I", (void *) SetDvbTextCoding },
 {"native_SetBlackoutEnable", "(II)I", (void *) SetBlackoutEnable },
 {"native_GetBlackoutEnable", "()I", (void *) GetBlackoutEnable },
+{"native_SetScreenColorForSignalChange", "(II)I", (void *) SetScreenColorForSignalChange },
+{"native_GetScreenColorForSignalChange", "()I", (void *) GetScreenColorForSignalChange },
 {"native_GetATVMinMaxFreq", "(II)I", (void *) GetATVMinMaxFreq },
 {"native_UpdateRRT", "(III)I", (void *) UpdateRRT },
 {"native_DtvStopScan", "()I", (void *) DtvStopScan },
