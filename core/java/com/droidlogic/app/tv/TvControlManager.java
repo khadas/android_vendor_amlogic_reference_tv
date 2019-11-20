@@ -6404,7 +6404,8 @@ public class TvControlManager {
 
     public enum HdmiEdidVer {
         HDMI_EDID_VER_14(0),
-        HDMI_EDID_VER_20(1);
+        HDMI_EDID_VER_20(1),
+        HDMI_EDID_VER_AUTO(2);
         private int val;
 
         HdmiEdidVer(int val) {
