@@ -10,14 +10,22 @@
 package com.droidlogic.app.tv;
 
 import android.content.Context;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
+import android.content.Intent;
+import android.hardware.hdmi.HdmiControlManager;
+import android.hardware.hdmi.HdmiTvClient;
+import android.hardware.hdmi.HdmiDeviceInfo;
+import android.hardware.hdmi.HdmiTvClient.SelectCallback;
 import android.media.AudioManager;
 import android.media.tv.TvContentRating;
 import android.media.tv.TvInputManager;
 import android.media.tv.TvInputService;
+import android.media.tv.TvInputInfo;
 import android.media.tv.TvStreamConfig;
 import android.media.tv.TvInputManager.Hardware;
 import android.provider.Settings;
-//import android.net.Uri;
+import android.provider.Settings.Global;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -26,32 +34,20 @@ import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.LayoutInflater;
 
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.droidlogic.app.SystemControlManager;
+import com.droidlogic.app.tv.DroidLogicHdmiCecManager;
 import com.droidlogic.app.tv.DroidLogicTvUtils;
 import com.droidlogic.app.tv.TvControlManager;
 import com.droidlogic.app.tv.TvControlDataManager;
-
-import android.hardware.hdmi.HdmiControlManager;
-import android.hardware.hdmi.HdmiTvClient;
-import android.provider.Settings.Global;
-import android.hardware.hdmi.HdmiDeviceInfo;
-import android.hardware.hdmi.HdmiTvClient.SelectCallback;
-
-import com.droidlogic.app.tv.DroidLogicHdmiCecManager;
-import android.media.tv.TvInputInfo;
-//import android.hardware.hdmi.HdmiClient;
-import android.content.BroadcastReceiver;
-import android.content.IntentFilter;
-import android.content.Intent;
-import java.util.List;
-import android.view.KeyEvent;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public abstract class TvInputBaseSession extends TvInputService.Session implements Handler.Callback {
     private static final boolean DEBUG = true;
@@ -102,6 +98,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         mInputId = inputId;
         mDeviceId = deviceId;
 
+        Log.d(TAG, "TvInputBaseSession, inputId " + inputId + " deviceId " + deviceId);
         mAudioManager = (AudioManager)context.getSystemService (Context.AUDIO_SERVICE);
         mTvControlDataManager = TvControlDataManager.getInstance(mContext);
         mSystemControlManager = SystemControlManager.getInstance();
@@ -135,7 +132,12 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         msg.sendToTarget();
     }
     public void doRelease() {
-        Log.d(TAG, "doRelease,session:"+this);
+        Log.d(TAG, "doRelease,session: " + this);
+        // When tv not show hdmi cec source, try to take the active source to INACTIVE_DEVICE.
+        // It can be removed when the "Active Source" filter could be removed in hal. Related
+        // with setDeviceIdForCec which finally call HdmiCecControl::TvEventListner::notify
+        // HdmiCecControl::TvEventListner::TV_EVENT_SOURCE_SWITCH.
+        mDroidLogicHdmiCecManager.selectHdmiDevice(HdmiDeviceInfo.ADDR_INTERNAL, HdmiDeviceInfo.DEVICE_INACTIVE);
         mContext.unregisterReceiver(mBroadcastReceiver);
     }
 
@@ -315,9 +317,6 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
 
     @Override
     public boolean handleMessage(Message msg) {
-        if (DEBUG)
-            Log.d(TAG, "handleMessage, msg.what=" + msg.what + " isSurfaceAlive=" + isSurfaceAlive);
-
         if (!isSurfaceAlive) {
             if (msg.what != MSG_DO_RELEASE && msg.what != MSG_AUDIO_MUTE) {
                 return false;
@@ -371,21 +370,35 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         return false;
     }
 
+    /**
+     * Only in here should the TvInput switch to the active source generally.
+     * In the previous design way, lots of places including LiveTv,DroidTvSettings,TvInput etc.
+     * does portSelect or deviceSelect, and in the selectHdmiDevice method of DroidHdmiCecManager,
+     * lots of if-else is used. And there are still issues come out today or tomorrow, especailly
+     * for projects like amazon which does not use aml LiveTv apps.
+     * The most important idea of refactoring the code is that the control logic should be high
+     * aggregated and much simple, and only in this way it could be easy to maintain.
+     */
     @Override
     public void onSetMain(boolean isMain) {
-        Log.d(TAG, "onSetMain, isMain: " + isMain +" mDeviceId: "+ mDeviceId +" mInputId: " + mInputId);
         TvInputInfo info = mTvInputManager.getTvInputInfo(mInputId);
-        if (isMain && info != null)  {
-            if (mDeviceId < DroidLogicTvUtils.DEVICE_ID_HDMI1 || mDeviceId > DroidLogicTvUtils.DEVICE_ID_HDMI4) {
-                Log.d(TAG, "onSetMain, mDeviceId: " + mDeviceId + " not correct!");
-            } else {
-                mDroidLogicHdmiCecManager.connectHdmiCec(mDeviceId);
-            }
-        } else {
+        Log.d(TAG, "onSetMain, isMain " + isMain + " deviceId " + mDeviceId + " input " + info);
+        if (isMain) {
             if (info == null) {
-                Log.d(TAG, "onSetMain, info is null");
-            } else if (info.getHdmiDeviceInfo() == null) {
-                Log.d(TAG, "onSetMain, info is: " + info + " but info.getHdmiDeviceInfo() is null");
+                return;
+            }
+            // For projects like Amazon Fireos, it should directly only use the HdmiDeviceInfo
+            // In the TvInputInfo to do deviceSelect, as to solve the auto jump issue.
+            HdmiDeviceInfo hdmiDevice = info.getHdmiDeviceInfo();
+            if (hdmiDevice == null) {
+                hdmiDevice = mDroidLogicHdmiCecManager.getHdmiDeviceInfo(mInputId);
+            }
+            if (hdmiDevice != null) {
+                Log.d(TAG, "onSetMain hdmi device " + hdmiDevice);
+                mDroidLogicHdmiCecManager.selectHdmiDevice(hdmiDevice.getLogicalAddress(), mDeviceId);
+            } else {
+                // There is no connected hdmi device, just cold switch
+                mDroidLogicHdmiCecManager.selectHdmiDevice(mDeviceId);
             }
         }
     }
@@ -478,7 +491,6 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     private String getHdmiHdrInfo() {
         String result = null;
         int hdrType = mSystemControlManager.GetSourceHdrType();
-        Log.d(TAG, "getHdmiHdrInfo = " + hdrType);
         switch (hdrType) {
             case 0:
                 result = "UNKOWN";
@@ -521,7 +533,6 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     private String getHdmiAudioFormat() {
         String result = null;
         String formatInfo = mAudioManager.getParameters("HDMIIN audio format");
-        Log.d(TAG, "getHdmiAudioFormat = " + formatInfo);
         int audioFormat = parseFirstValidIntegerByPattern(formatInfo);
         switch (audioFormat) {
             case 0:

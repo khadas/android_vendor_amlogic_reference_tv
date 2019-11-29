@@ -71,11 +71,11 @@ import android.text.TextUtils;
 import android.os.UserHandle;
 import java.util.Map;
 
-public class DroidLogicTvInputService extends TvInputService implements
+public abstract class DroidLogicTvInputService extends TvInputService implements
         TvInSignalInfo.SigInfoChangeListener, TvControlManager.StorDBEventListener,
         TvControlManager.ScanningFrameStableListener, TvControlManager.StatusSourceConnectListener {
     private static final String TAG = DroidLogicTvInputService.class.getSimpleName();
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = Log.isLoggable("HDMI", Log.DEBUG);;
 
     private SparseArray<TvInputInfo> mInfoList = new SparseArray<>();
 
@@ -106,6 +106,7 @@ public class DroidLogicTvInputService extends TvInputService implements
     private int mCurrentSessionId = 0;
 
     private TvInputManager mTvInputManager;
+    private DroidLogicHdmiCecManager mHdmiCecManager;
     private TvControlManager mTvControlManager;
     private TvControlDataManager mTvControlDataManager = null;
     private SystemControlManager mSystemControlManager;
@@ -181,6 +182,7 @@ public class DroidLogicTvInputService extends TvInputService implements
     public void onCreate() {
         super.onCreate();
         mTvInputManager = (TvInputManager)this.getSystemService(Context.TV_INPUT_SERVICE);
+        mHdmiCecManager = DroidLogicHdmiCecManager.getInstance(getApplicationContext());
         mSystemControlManager = SystemControlManager.getInstance();
         mTvControlManager = TvControlManager.getInstance();
         mAudioManager = (AudioManager)this.getSystemService (Context.AUDIO_SERVICE);
@@ -221,6 +223,10 @@ public class DroidLogicTvInputService extends TvInputService implements
             mSessionHandler = new SurfaceHandler();
     }
 
+    public abstract String getDeviceClassName();
+
+    public abstract int getDeviceSourceType();
+
     protected void initInputService(int sourceType, String className) {
         mSourceType = sourceType;
         mChildClassName = className;
@@ -238,11 +244,6 @@ public class DroidLogicTvInputService extends TvInputService implements
         if (mHardware != null && mDeviceId != -1) {
             mConfigs = null;
             mHardware = null;
-        }
-
-        //if hdmi signal is unstable from stable, disconnect cec.
-        if (isHdmiDeviceId(mDeviceId) && (mDroidLogicHdmiCecManager.getInputSourceDeviceId() == mDeviceId)) {
-            selectHdmiDevice(0, 0, 0);
         }
     }
 
@@ -786,11 +787,6 @@ public class DroidLogicTvInputService extends TvInputService implements
             } else {
                 return ACTION_SUCCESS;
             }
-            //mHardware.setSurface(mSurface, mConfigs[0]);
-            /*if ((mDeviceId >= DroidLogicTvUtils.DEVICE_ID_HDMI1)
-                    && (mDeviceId <= DroidLogicTvUtils.DEVICE_ID_HDMI4)) {
-                selectHdmiDevice(mDeviceId);
-            }*/
         }
         return ACTION_FAILED;
     }
@@ -801,7 +797,6 @@ public class DroidLogicTvInputService extends TvInputService implements
             mHardware.setSurface(null, mConfigs[0]);
             tvPlayStopped(sessionId);
         }
-        //disconnectHdmiCec(0, 0, 0);
         return ACTION_SUCCESS;
     }
     public void setCurrentSessionById(int sessionId){}
@@ -811,21 +806,6 @@ public class DroidLogicTvInputService extends TvInputService implements
     protected int getCurrentSessionId() {
         return mCurrentSessionId;
     }
-    /**
-     * select hdmi cec device.
-     * @param deviceId the hardware device id of hdmi need to be selected.
-     */
-    public void selectHdmiDevice(final int deviceId, int logicAddr, int phyAddr) {
-        mDroidLogicHdmiCecManager.selectHdmiDevice(deviceId, logicAddr, phyAddr);
-    }
-
-    /**
-     * reset the status for hdmi cec device.
-     * @param device the hardware device id of hdmi need to be selected.
-     */
-    public void disconnectHdmiCec(int deviceId, int logicAddr, int phyAddr) {
-        mDroidLogicHdmiCecManager.selectHdmiDevice(deviceId, logicAddr, phyAddr);
-    }
 
     private int getHdmiPortIndex(int phyAddr) {
         /* TODO: consider of tuner */
@@ -833,8 +813,48 @@ public class DroidLogicTvInputService extends TvInputService implements
     }
 
     @Override
+    public TvInputInfo onHardwareAdded(TvInputHardwareInfo hardwareInfo) {
+        if (hardwareInfo.getDeviceId() != getDeviceSourceType() || hasInfoExisted(hardwareInfo))
+            return null;
+
+        TvInputInfo info = null;
+        ResolveInfo rInfo = getResolveInfo(getDeviceClassName());
+        info = new TvInputInfo.Builder(getApplicationContext(),
+                new ComponentName(DroidLogicTvUtils.TV_DROIDLOGIC_PACKAGE, getDeviceClassName()))
+                .setTvInputHardwareInfo(hardwareInfo)
+                .setLabel(getTvInputInfoLabel(hardwareInfo.getDeviceId()))
+                .build();
+
+        updateInfoListIfNeededLocked(hardwareInfo, info, false);
+        acquireHardware(info);
+        return info;
+    }
+
+    @Override
+    public String onHardwareRemoved(TvInputHardwareInfo hardwareInfo) {
+        if (hardwareInfo.getType() != getDeviceSourceType())
+            return null;
+
+        TvInputInfo info = getTvInputInfo(hardwareInfo);
+        String id = null;
+        if (info != null)
+            id = info.getId();
+
+        updateInfoListIfNeededLocked(hardwareInfo, info, true);
+        releaseHardware();
+        return id;
+    }
+
+    /**
+    * This callback is called when HdmiControlService update the cec device info,
+    * So most of the times it's not triggered by a hotplug action, which means
+    * New device is added here. As a result, we should not do the useless work
+    * of onHdmiDeviceRemoved and onHdmiDeviceAdded when it's the same device.
+    */
+    @Override
     public TvInputInfo onHdmiDeviceAdded(HdmiDeviceInfo deviceInfo) {
         if (deviceInfo == null) {
+            Log.e(TAG, "onHdmiDeviceAdded device null");
             return null;
         }
         int phyaddr = deviceInfo.getPhysicalAddress();
@@ -843,15 +863,18 @@ public class DroidLogicTvInputService extends TvInputService implements
         int sourceType = getHdmiPortIndex(phyaddr) + DroidLogicTvUtils.DEVICE_ID_HDMI1;
         if (sourceType < DroidLogicTvUtils.DEVICE_ID_HDMI1
                 || sourceType > DroidLogicTvUtils.DEVICE_ID_HDMI4
-                || sourceType != mSourceType)
+                || sourceType != mSourceType) {
             return null;
-        Log.d(TAG, "onHdmiDeviceAdded, sourceType = " + sourceType + ", mSourceType = " + mSourceType);
+        }
 
         if (getTvInputInfo(keyDeviceId) != null) {
             Log.d(TAG, "onHdmiDeviceAdded, phyaddr:" + phyaddr + " already add");
             return null;
         }
 
+        if (DEBUG) {
+            Log.d(TAG, "onHdmiDeviceAdded " + deviceInfo);
+        }
         String parentId = null;
         TvInputInfo info = null;
         TvInputInfo parent = getTvInputInfo(sourceType);
@@ -861,77 +884,47 @@ public class DroidLogicTvInputService extends TvInputService implements
             Log.d(TAG, "onHdmiDeviceAdded, can't found parent");
             return null;
         }
-        Log.d(TAG, "onHdmiDeviceAdded, logicAddr:" + hdmiDeviceId +
-                    ", sourceType:" + sourceType + ", parentId: " + parentId);
-        ResolveInfo rInfo = getResolveInfo(mChildClassName);
-        if (rInfo != null) {
-            try {
-                info = TvInputInfo.createTvInputInfo(
-                        getApplicationContext(),
-                        rInfo,
-                        deviceInfo,
-                        parentId,
-                        deviceInfo.getDisplayName(),
-                        null);
-            } catch (XmlPullParserException e) {
-                // TODO: handle exception
-            }catch (IOException e) {
-                // TODO: handle exception
-            }
-        } else {
-            return null;
+        ResolveInfo service = getResolveInfo(getDeviceClassName());
+        if (service != null) {
+            info = new TvInputInfo.Builder(getApplicationContext(),
+                    new ComponentName(DroidLogicTvUtils.TV_DROIDLOGIC_PACKAGE, getDeviceClassName()))
+                    .setHdmiDeviceInfo(deviceInfo)
+                    .setParentId(parentId)
+                    .setLabel(deviceInfo.getDisplayName())
+                    .build();
         }
-
-        Log.d(TAG, "createTvInputInfo, id:" + deviceInfo.toString()+",deviceId: "+deviceInfo.getDeviceId());
-        setInputName(info, deviceInfo.getDisplayName());
         updateInfoListIfNeededLocked(keyDeviceId, info, false);
-        //selectHdmiDevice(sourceType);
-        selectHdmiDevice(sourceType, hdmiDeviceId, phyaddr);
-
+        // We should not do this work here, the previous logic has to add lots of if-else to
+        // process mounts of issues it causes. There are mainly two cases to be considered:
+        // 1.User's action. User Tv's remote to do the source switch, or use playback's remote
+        // to do the otp. 2.Playback hotplug in, or swith the hdmi_cec_enabled settings. We
+        // need to make sure tv could tune to the channel that has been set before.
+        //mHdmiCecManager.selectHdmiDevice(deviceInfo.getLogicalAddress());
         return info;
     }
 
     @Override
     public String onHdmiDeviceRemoved(HdmiDeviceInfo deviceInfo) {
-        if (deviceInfo == null)
+        if (deviceInfo == null) {
+            Log.e(TAG, "onHdmiDeviceRemoved device null");
             return null;
+        }
         int phyaddr = deviceInfo.getPhysicalAddress();
         int hdmiDeviceId = deviceInfo.getId();
         int keyDeviceId = hdmiDeviceId + DroidLogicTvUtils.DEVICE_ID_OFFSET;
         int sourceType = getHdmiPortIndex(phyaddr) + DroidLogicTvUtils.DEVICE_ID_HDMI1;
-
         if (sourceType < DroidLogicTvUtils.DEVICE_ID_HDMI1
                 || sourceType > DroidLogicTvUtils.DEVICE_ID_HDMI4
-                || sourceType != mSourceType)
+                || sourceType != mSourceType) {
             return null;
-
-        Log.d(TAG, "onHdmiDeviceRemoved, sourceType = " + sourceType + ", mSourceType = " + mSourceType);
-        TvInputInfo info = getTvInputInfo(keyDeviceId);
-        if (info == null)
-            return null;
-
-        String id = info.getId();
-        Log.d(TAG, "onHdmiDeviceRemoved, id:" + id);
-        setInputName(info, null);
-        updateInfoListIfNeededLocked(keyDeviceId, info, true);
-        disconnectHdmiCec(sourceType, 0, phyaddr);
-
-        return id;
-    }
-
-    private void setInputName(TvInputInfo mInputInfo, CharSequence name) {
-        if (mInputInfo == null)
-            return;
-        Map<String, String> mCustomLabels;
-        mCustomLabels = TvInputInfo.TvInputSettings.getCustomLabels(getApplicationContext(), mCurrentUserId);
-        if (TextUtils.isEmpty(name)) {
-            mCustomLabels.remove(mInputInfo.getId());
-        } else {
-            mCustomLabels.put(mInputInfo.getId(), name.toString());
         }
-        Log.d(TAG, "setInputName, Id:" + mInputInfo.getId() + " name: " + name);
-        TvInputInfo.TvInputSettings
-                .putCustomLabels(getApplicationContext(), mCustomLabels, mCurrentUserId);
+        TvInputInfo info = getTvInputInfo(keyDeviceId);
+        if (info == null) {
+            Log.e(TAG, "onHdmiDeviceRemoved tv input info null");
+            return null;
+        }
+        updateInfoListIfNeededLocked(keyDeviceId, info, true);
+        return info.getId();
     }
 
     protected final BroadcastReceiver mChannelScanStartReceiver = new BroadcastReceiver() {
@@ -1154,7 +1147,7 @@ public class DroidLogicTvInputService extends TvInputService implements
                     if (enabled && isHdmiDeviceId(mDeviceId)) {
                         if (mDroidLogicHdmiCecManager.getInputSourceDeviceId() == mDeviceId) {
                             Log.d(TAG, "cec settings is enabled and update the active source");
-                            mDroidLogicHdmiCecManager.connectHdmiCec(mDeviceId);
+                            mDroidLogicHdmiCecManager.selectHdmiDevice(-1, mDeviceId);
                         }
                     }
                     break;
