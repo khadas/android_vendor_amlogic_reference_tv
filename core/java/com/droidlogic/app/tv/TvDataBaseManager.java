@@ -1258,6 +1258,7 @@ public class TvDataBaseManager {
                 atvChannelList.add(channelInfo);
             }
         }
+        Collections.sort(atvChannelList, new SortFreqComparator());
         return atvChannelList;
     }
 
