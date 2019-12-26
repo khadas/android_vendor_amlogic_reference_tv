@@ -124,6 +124,10 @@ public class DroidLogicTvUtils
     public static final String SIG_INFO_AV_VCHIP = "av_vchip";
     public static final String SIG_INFO_AV_VCHIP_KEY = "av_aratings";
 
+    //hdmi info
+    public static final String SIG_INFO_HDMI_HDR= "hdmi_hdr";
+    public static final String SIG_INFO_HDMI_AUDIO_FORMAT = "hdmi_audio_format";
+
     //CC
     public static final String SIG_INFO_CC_DATA_INFO = "av_data_info";
     public static final String SIG_INFO_CC_DATA_INFO_KEY = "cc_data_mask";

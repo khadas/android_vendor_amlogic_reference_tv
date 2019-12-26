@@ -50,6 +50,9 @@ import android.content.Intent;
 import java.util.List;
 import android.view.KeyEvent;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public abstract class TvInputBaseSession extends TvInputService.Session implements Handler.Callback {
     private static final boolean DEBUG = true;
     private static final String TAG = "TvInputBaseSession";
@@ -61,6 +64,12 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     protected static final int  MSG_DO_RELEASE              = 12;
     protected static final int  MSG_AUDIO_MUTE              = 13;
     protected static final int  MSG_IMAGETEXT_SET           = 14;
+
+    ////add for get hdmi info
+    protected static final int MSG_UPDATE_HDMI_HDR = 15;
+    protected static final int MSG_UPDATE_HDMI_AUDIO_FORMAT = 16;
+    protected static final int MSG_CLEAR_INFO = 17;
+    protected static final int MSG_DELAY_PERIOD = 2000;//2s
 
     protected static final int TVINPUT_BASE_DELAY_SEND_MSG  = 10; // Filter message within 10ms, only the last message is processed
     private Context mContext;
@@ -82,6 +91,11 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     private int mKeyCodeMediaPlayPauseCount = 0;
     private boolean isSurfaceAlive = true;
 
+    //add for get hdmi info
+    private boolean isHdmiDevice = false;
+    private String mHdmiHdrInfo = null;
+    private String mHdmiAudioFormatInfo = null;
+
     public TvInputBaseSession(Context context, String inputId, int deviceId) {
         super(context);
         mContext = context;
@@ -95,6 +109,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         mSessionHandler = new Handler(context.getMainLooper(), this);
         mTvInputManager = (TvInputManager)mContext.getSystemService(Context.TV_INPUT_SERVICE);
         mDroidLogicHdmiCecManager = DroidLogicHdmiCecManager.getInstance(mContext);
+        isHdmiDevice = (DroidLogicTvUtils.parseTvSourceTypeFromDeviceId(deviceId) == TvControlManager.SourceInput_Type.SOURCE_TYPE_HDMI);
         sendSessionMessage(MSG_REGISTER_BROADCAST);
     }
 
@@ -220,6 +235,9 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
             mOverlayView.setImageVisibility(false);
             mOverlayView.setTextVisibility(false);
         }
+        if (isHdmiDevice) {
+            checkHdmiInfoOnVideoAvailable();
+        }
     }
 
     @Override
@@ -229,6 +247,9 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         Message msg = mSessionHandler.obtainMessage(MSG_IMAGETEXT_SET);
         mSessionHandler.removeMessages(msg.what);
         msg.sendToTarget();
+        if (isHdmiDevice) {
+            checkHdmiInfoOnVideoUnavailable();
+        }
     }
 
     @Override
@@ -333,6 +354,15 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
                     mOverlayView.setTextVisibility(true);
                 }
                 break;
+            case MSG_UPDATE_HDMI_HDR:
+                checkHdmiHdrInfo();
+                break;
+            case MSG_UPDATE_HDMI_AUDIO_FORMAT:
+                checkHdmiAudioFormat();
+                break;
+            case MSG_CLEAR_INFO:
+                clearInfo();
+                break;
         }
         return false;
     }
@@ -405,5 +435,160 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
             Log.d(TAG, "cec device didn't exist");
         }
         return ret;
+    }
+
+    //add for get hdmi info
+    private void checkHdmiInfoOnVideoAvailable() {
+        Log.d(TAG, "checkHdmiInfoOnVideoAvailable");
+        if (mSessionHandler != null) {
+            mSessionHandler.removeMessages(MSG_UPDATE_HDMI_HDR);
+            mSessionHandler.removeMessages(MSG_UPDATE_HDMI_AUDIO_FORMAT);
+            mSessionHandler.removeMessages(MSG_CLEAR_INFO);
+            mSessionHandler.sendEmptyMessageDelayed(MSG_UPDATE_HDMI_HDR, MSG_DELAY_PERIOD);
+            mSessionHandler.sendEmptyMessageDelayed(MSG_UPDATE_HDMI_AUDIO_FORMAT, MSG_DELAY_PERIOD);
+        }
+    }
+
+    private void checkHdmiInfoOnVideoUnavailable() {
+        Log.d(TAG, "checkHdmiInfoOnVideoUnavailable");
+        if (mSessionHandler != null) {
+            mSessionHandler.removeMessages(MSG_UPDATE_HDMI_HDR);
+            mSessionHandler.removeMessages(MSG_UPDATE_HDMI_AUDIO_FORMAT);
+            mSessionHandler.removeMessages(MSG_CLEAR_INFO);
+            mSessionHandler.sendEmptyMessageDelayed(MSG_CLEAR_INFO, MSG_DELAY_PERIOD);
+        }
+    }
+
+    private void sendHdmiHdrInfoByTif(String hdrInfo) {
+        Bundle bundle = new Bundle();
+        bundle.putString(DroidLogicTvUtils.SIG_INFO_HDMI_HDR, hdrInfo);
+        notifySessionEvent(DroidLogicTvUtils.SIG_INFO_HDMI_HDR, bundle);
+    }
+
+    private void sendHdmiAudioFormatByTif(String audioFormat) {
+        Bundle bundle = new Bundle();
+        bundle.putString(DroidLogicTvUtils.SIG_INFO_HDMI_AUDIO_FORMAT, audioFormat);
+        notifySessionEvent(DroidLogicTvUtils.SIG_INFO_HDMI_AUDIO_FORMAT, bundle);
+    }
+
+    private String getHdmiHdrInfo() {
+        String result = null;
+        int hdrType = mSystemControlManager.GetSourceHdrType();
+        Log.d(TAG, "getHdmiHdrInfo = " + hdrType);
+        switch (hdrType) {
+            case 0:
+                result = "UNKOWN";
+                break;
+            case 1:
+                result = "HDR10";
+                break;
+            case 2:
+                result = "HDR10PLUS";
+                break;
+            case 3:
+                result = "DOVI";
+                break;
+            case 4:
+                result = "PRIMESL";
+                break;
+            case 5:
+                result = "HLG";
+                break;
+            case 6:
+                result = "SDR";
+                break;
+            case 7:
+                result = "MVC";
+                break;
+            default:
+                result = "UNKOWN";
+                break;
+        }
+        return result;
+    }
+
+    /*
+    *PCM audios require  display PCM
+    *DD  audios require display Dolby Digital
+    *DDP audios require display Dolby Digital Plus
+    *DTS  audios require display DTS
+    *DTS HD audios require display DTS HD
+    */
+    private String getHdmiAudioFormat() {
+        String result = null;
+        String formatInfo = mAudioManager.getParameters("HDMIIN audio format");
+        Log.d(TAG, "getHdmiAudioFormat = " + formatInfo);
+        int audioFormat = parseFirstValidIntegerByPattern(formatInfo);
+        switch (audioFormat) {
+            case 0:
+                result = "PCM";
+                break;
+            case 1:
+                result = "Dolby Digital";
+                break;
+            case 2:
+                result = "Dolby Digital Plus";
+                break;
+            case 3:
+                result = "DTS";
+                break;
+            case 4:
+                result = "DTS HD";
+                break;
+            case 5:
+                result = "TRUE HD";
+                break;
+            default:
+                break;
+        }
+        return result;
+    }
+
+    private void checkHdmiHdrInfo() {
+        String hdmiHdr = getHdmiHdrInfo();
+        if (!TextUtils.equals(hdmiHdr, mHdmiHdrInfo)) {
+            mHdmiHdrInfo = hdmiHdr;
+            sendHdmiHdrInfoByTif(hdmiHdr);
+        }
+        if (mSessionHandler != null) {
+            mSessionHandler.removeMessages(MSG_UPDATE_HDMI_HDR);
+            mSessionHandler.sendEmptyMessageDelayed(MSG_UPDATE_HDMI_HDR, MSG_DELAY_PERIOD);
+        }
+    }
+
+    private void checkHdmiAudioFormat() {
+        String hdmiAudioFormat = getHdmiAudioFormat();
+        if (!TextUtils.equals(hdmiAudioFormat, mHdmiAudioFormatInfo)) {
+            mHdmiAudioFormatInfo = hdmiAudioFormat;
+            sendHdmiAudioFormatByTif(hdmiAudioFormat);
+        }
+        if (mSessionHandler != null) {
+            mSessionHandler.removeMessages(MSG_UPDATE_HDMI_AUDIO_FORMAT);
+            mSessionHandler.sendEmptyMessageDelayed(MSG_UPDATE_HDMI_AUDIO_FORMAT, MSG_DELAY_PERIOD);
+        }
+    }
+
+    private void clearInfo() {
+        mHdmiHdrInfo = null;
+        mHdmiAudioFormatInfo = null;
+        sendHdmiHdrInfoByTif(null);
+        sendHdmiAudioFormatByTif(null);
+    }
+
+    private int parseFirstValidIntegerByPattern(String info) {
+        int result = -1;
+        try {
+            String regEx="[0-9]+";
+            Pattern p = Pattern.compile(regEx);
+            Matcher m = p.matcher(info);
+            if (m.find()) {
+              result = Integer.valueOf(m.group(0));
+            } else {
+                Log.d(TAG, "parseFirstValidIntergerByPattern not matched");
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "parseFirstValidIntergerByPattern Exception = " + e.getMessage());
+        }
+        return result;
     }
 }
