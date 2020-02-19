@@ -150,9 +150,38 @@ public class TvScanManager {
         }
     }
 
-    public void setSearchSys (boolean value1, boolean value2){
+    public void stopScan() {
         try {
-            mService.setSearchSys(value1, value2);
+            mService.stopScan();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /* Set atv or dtv search, or atv and dtv search.
+     * @param dtv TRUE will search dtv channel, FALSE not.
+     * @param atv TRUE will search atv channel, FALSE not.
+     */
+    public void setSearchSys(boolean dtv, boolean atv){
+        try {
+            mService.setSearchSys(dtv, atv);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /* Set channel broadcast system type.
+     * @param type See TvContract.Channels.TYPE_XXX.
+     * @param atsc_c Default setting 0, When type = TYPE_ATSC_C,
+     * atsc_c is available, it will select frequency table,
+     * STD = 0;
+     * LRC = 1;
+     * HRC = 2;
+     * AUTO = 3;
+     */
+    public void setSearchType(String type, int atsc_c) {
+        try {
+            mService.setSearchType(type, atsc_c);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
