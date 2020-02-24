@@ -254,6 +254,10 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
 
     @Override
      public boolean onSetSurface(Surface surface) {
+        Log.d(TAG, "onSetSurface " + surface + this);
+        Exception e = new Exception();
+        Log.e(TAG, "setSurfaceInService " + e);
+
         if (surface == null) {
             mSessionHandler.removeCallbacksAndMessages(null);
             isSurfaceAlive = false;
@@ -389,9 +393,9 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         Log.d(TAG, "onKeyUp: " + keyCode);
-        boolean ret = false;
+        boolean ret = true;
 
-        if (mDroidLogicHdmiCecManager.hasHdmiCecDevice(mDeviceId) == true) {
+        if (mDroidLogicHdmiCecManager.hasHdmiCecDevice(mDeviceId)) {
             switch (keyCode) {
                 case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
                     mDroidLogicHdmiCecManager.sendKeyEvent((mKeyCodeMediaPlayPauseCount % 2 == 1 ? KeyEvent.KEYCODE_MEDIA_PAUSE : KeyEvent.KEYCODE_MEDIA_PLAY), false);
@@ -399,7 +403,6 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
                     break;
                 case KeyEvent.KEYCODE_BACK:
                     Log.d(TAG, "KEYCODE_BACK shoud not send to live tv if cec device exits");
-                    ret = true;
                     mDroidLogicHdmiCecManager.sendKeyEvent(keyCode, false);
                     break;
                 default:
@@ -408,6 +411,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
             }
         } else {
             Log.d(TAG, "cec device didn't exist");
+            ret = false;
         }
         return ret;
     }
@@ -415,16 +419,15 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.d(TAG, "onKeyDown: " + keyCode);
-        boolean ret = false;
+        boolean ret = true;
 
-        if (mDroidLogicHdmiCecManager.hasHdmiCecDevice(mDeviceId) == true) {
+        if (mDroidLogicHdmiCecManager.hasHdmiCecDevice(mDeviceId)) {
             switch (keyCode) {
                 case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
                     mDroidLogicHdmiCecManager.sendKeyEvent((mKeyCodeMediaPlayPauseCount % 2 == 1 ? KeyEvent.KEYCODE_MEDIA_PAUSE : KeyEvent.KEYCODE_MEDIA_PLAY), true);
                     break;
                 case KeyEvent.KEYCODE_BACK:
                     Log.d(TAG, "KEYCODE_BACK shoud not send to live tv if cec device exits");
-                    ret = true;
                     mDroidLogicHdmiCecManager.sendKeyEvent(keyCode, true);
                     break;
                 default:
@@ -433,6 +436,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
             }
         } else {
             Log.d(TAG, "cec device didn't exist");
+            ret = false;
         }
         return ret;
     }
