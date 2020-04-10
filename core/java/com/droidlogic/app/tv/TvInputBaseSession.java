@@ -67,6 +67,11 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     protected static final int MSG_CLEAR_INFO = 17;
     protected static final int MSG_DELAY_PERIOD = 2000;//2s
 
+    //msg to show dolby vision icon
+    protected static final int MSG_SHOW_DOLBY_VSION = 18;
+    protected static final int CHECK_DOLBY_VISION_MAX_COUNT = 5;
+    protected static final int MSG_DISPLAY_PERIOD = 3000;
+
     protected static final int TVINPUT_BASE_DELAY_SEND_MSG  = 10; // Filter message within 10ms, only the last message is processed
     private Context mContext;
     public int mId;
@@ -91,6 +96,9 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     private boolean isHdmiDevice = false;
     private String mHdmiHdrInfo = null;
     private String mHdmiAudioFormatInfo = null;
+
+    //msg to dolby vision flag
+    private int mCheckDolbyVisonCount = 0;
 
     public TvInputBaseSession(Context context, String inputId, int deviceId) {
         super(context);
@@ -328,6 +336,9 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
                     mContext.registerReceiver(mBroadcastReceiver, intentFilter);
                 break;
             case MSG_DO_PRI_CMD:
+                if (isHdmiDevice && DroidLogicTvUtils.ACTION_TIF_SHOW_DOLBY_VISION.equals((String)msg.obj)) {
+                    showDolbyVisionInitiativelyFor3s();
+                }
                 doAppPrivateCmd((String)msg.obj, msg.getData());
                 break;
             case MSG_SUBTITLE_SHOW:
@@ -362,6 +373,9 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
                 break;
             case MSG_CLEAR_INFO:
                 clearInfo();
+                break;
+            case MSG_SHOW_DOLBY_VSION:
+                dealDolbyVisionDisplay(msg.arg1, msg.arg2, msg.obj);
                 break;
         }
         return false;
@@ -458,6 +472,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
             mSessionHandler.removeMessages(MSG_UPDATE_HDMI_HDR);
             mSessionHandler.removeMessages(MSG_UPDATE_HDMI_AUDIO_FORMAT);
             mSessionHandler.removeMessages(MSG_CLEAR_INFO);
+            mSessionHandler.removeMessages(MSG_DISPLAY_PERIOD);
             mSessionHandler.sendEmptyMessageDelayed(MSG_UPDATE_HDMI_HDR, MSG_DELAY_PERIOD);
             mSessionHandler.sendEmptyMessageDelayed(MSG_UPDATE_HDMI_AUDIO_FORMAT, MSG_DELAY_PERIOD);
         }
@@ -469,11 +484,15 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
             mSessionHandler.removeMessages(MSG_UPDATE_HDMI_HDR);
             mSessionHandler.removeMessages(MSG_UPDATE_HDMI_AUDIO_FORMAT);
             mSessionHandler.removeMessages(MSG_CLEAR_INFO);
+            mSessionHandler.removeMessages(MSG_DISPLAY_PERIOD);
             mSessionHandler.sendEmptyMessageDelayed(MSG_CLEAR_INFO, MSG_DELAY_PERIOD);
         }
     }
 
     private void sendHdmiHdrInfoByTif(String hdrInfo) {
+        if (mSystemControlManager.getPropertyBoolean("vendor.sys.tv.DolbyVision", false)) {
+            hdrInfo = "DOVI";
+        }
         Bundle bundle = new Bundle();
         bundle.putString(DroidLogicTvUtils.SIG_INFO_HDMI_HDR, hdrInfo);
         notifySessionEvent(DroidLogicTvUtils.SIG_INFO_HDMI_HDR, bundle);
@@ -561,6 +580,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         if (!TextUtils.equals(hdmiHdr, mHdmiHdrInfo)) {
             mHdmiHdrInfo = hdmiHdr;
             sendHdmiHdrInfoByTif(hdmiHdr);
+            checkDolbyVisionStatus(hdmiHdr);
         }
         if (mSessionHandler != null) {
             mSessionHandler.removeMessages(MSG_UPDATE_HDMI_HDR);
@@ -602,5 +622,63 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
             Log.d(TAG, "parseFirstValidIntergerByPattern Exception = " + e.getMessage());
         }
         return result;
+    }
+
+    private void checkDolbyVisionStatus(String hdmiHdr) {
+        if (mSessionHandler != null) {
+            mSessionHandler.removeMessages(MSG_SHOW_DOLBY_VSION);
+            mCheckDolbyVisonCount = 0;
+            mSessionHandler.sendMessageDelayed(mSessionHandler.obtainMessage(MSG_SHOW_DOLBY_VSION, 0, 2, null), 0);//use arg2 to control display
+            mSessionHandler.sendMessageDelayed(mSessionHandler.obtainMessage(MSG_SHOW_DOLBY_VSION, 1, 0, hdmiHdr), 0);//use arg1 to start deal display
+        }
+    }
+
+    /*
+    * arg1 = 1 means start to deal
+    * arg2 = 1 means display, arg2 = 2 means hide
+    */
+    private void dealDolbyVisionDisplay(int arg1, int arg2, Object obj) {
+        if (DEBUG) {
+            Log.d(TAG, "dealDolbyVisionDisplay arg1 = " + arg1 + ", arg2 = " + arg2 + ", obj = " + obj);
+        }
+        if (arg1 == 1) {
+            String hdmiHdr = (String)obj;
+            if (isDolbyVisionType(hdmiHdr)) {
+                if (mSessionHandler != null) {
+                    mSessionHandler.removeMessages(MSG_SHOW_DOLBY_VSION);
+                    mSessionHandler.sendMessageDelayed(mSessionHandler.obtainMessage(MSG_SHOW_DOLBY_VSION, 0, 1, null), 0);
+                    mSessionHandler.sendMessageDelayed(mSessionHandler.obtainMessage(MSG_SHOW_DOLBY_VSION, 0, 2, null), MSG_DISPLAY_PERIOD);
+                }
+            }
+        }
+        if (arg2 == 1) {
+            if (mOverlayView != null) {
+                if (!mOverlayView.isDoblyVisionVisible()) {
+                    mOverlayView.setDoblyVisionVisibility(true);
+                }
+            }
+        } else if (arg2 == 2) {
+            if (mOverlayView != null) {
+                if (mOverlayView.isDoblyVisionVisible()) {
+                    mOverlayView.setDoblyVisionVisibility(false);
+                }
+            }
+        }
+    }
+
+    private boolean isDolbyVisionType(String hdmiHdr) {
+        return "DOVI".equals(hdmiHdr) || mSystemControlManager.getPropertyBoolean("vendor.sys.tv.DolbyVision", false);
+    }
+
+    public void showDolbyVisionInitiativelyFor3s() {
+        if (mHdmiHdrInfo != null && isDolbyVisionType(mHdmiHdrInfo)) {
+            if (mOverlayView.isDoblyVisionVisible()) {
+                //reset timeout
+                mSessionHandler.removeMessages(MSG_SHOW_DOLBY_VSION);
+                mSessionHandler.sendMessageDelayed(mSessionHandler.obtainMessage(MSG_SHOW_DOLBY_VSION, 0, 2, null), MSG_DISPLAY_PERIOD);
+            } else {
+                checkDolbyVisionStatus(mHdmiHdrInfo);
+            }
+        }
     }
 }

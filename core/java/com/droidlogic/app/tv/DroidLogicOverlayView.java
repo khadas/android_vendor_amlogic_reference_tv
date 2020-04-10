@@ -26,6 +26,7 @@ public abstract class DroidLogicOverlayView extends FrameLayout {
     protected View mSubtitleView;
     protected TextView mEasTextView;
     protected TextView mTeletextNumber;
+    protected ImageView mDoblyVisionImageView;
 
     public DroidLogicOverlayView(Context context) {
         this(context, null);
@@ -59,6 +60,20 @@ public abstract class DroidLogicOverlayView extends FrameLayout {
         if (mTuningImageView != null) {
             mTuningImageView.setVisibility(visible ? VISIBLE : GONE);
         }
+    }
+
+    public void setDoblyVisionVisibility(boolean visible) {
+        if (mDoblyVisionImageView != null) {
+            mDoblyVisionImageView.setVisibility(visible ? VISIBLE : GONE);
+        }
+    }
+
+    public boolean isDoblyVisionVisible() {
+        boolean result = false;
+        if (mDoblyVisionImageView != null) {
+            result = mDoblyVisionImageView.getVisibility() == VISIBLE;
+        }
+        return result;
     }
 
     public void setText(int resId) {

@@ -327,6 +327,7 @@ public class DroidLogicTvUtils
     //tif private command action
     public static final String ACTION_TIF_BEFORE_TUNE = "tif_before_tune";
     public static final String ACTION_TIF_AFTER_TUNE = "tif_after_tune";
+    public static final String ACTION_TIF_SHOW_DOLBY_VISION = "tif_show_dolby_vision";
 
     public static final String SYSTEM_CAPTION_STYLE_ENABLE = "accessibility_captioning_style_enabled";
 
