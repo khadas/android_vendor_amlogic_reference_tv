@@ -33,6 +33,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
+import android.database.ContentObserver;
 import android.media.tv.TvInputHardwareInfo;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
@@ -89,6 +90,11 @@ public class DroidLogicTvInputService extends TvInputService implements
     private static final int MSG_DO_TUNE = 0;
     private static final int MSG_DO_RELEASE = 1;
     private static final int MSG_DO_SET_SURFACE = 3;
+
+    private static final String HDMI_CONTROL_ENABLED = "hdmi_control_enabled";
+    private static final int ENABLED = 1;
+    private static final int DISABLED = 0;
+
     private static int mSelectPort = -1;
     private static String ACCESSIBILITY_CAPTIONING_PRESET = "accessibility_captioning_preset";
     protected Surface mSurface;
@@ -104,6 +110,7 @@ public class DroidLogicTvInputService extends TvInputService implements
     private TvControlDataManager mTvControlDataManager = null;
     private SystemControlManager mSystemControlManager;
     private TvStoreManager mTvStoreManager;
+    DroidLogicHdmiCecManager mDroidLogicHdmiCecManager;
     private PendingTuneEvent mPendingTune = new PendingTuneEvent();
     private ContentResolver mContentResolver;
     private MediaCodec mMediaCodec1;
@@ -113,6 +120,8 @@ public class DroidLogicTvInputService extends TvInputService implements
     private AudioEffectManager mAudioEffectManager;
     private static int mCurrentUserId = 0;//UserHandle.USER_SYSTEM
     private ActivityManager mActivityManager;
+
+    private Handler mHandler = new Handler();
 
     private HardwareCallback mHardwareCallback = new HardwareCallback(){
         @Override
@@ -176,11 +185,23 @@ public class DroidLogicTvInputService extends TvInputService implements
         mTvControlManager = TvControlManager.getInstance();
         mAudioManager = (AudioManager)this.getSystemService (Context.AUDIO_SERVICE);
         mTvControlDataManager = TvControlDataManager.getInstance(this);
+        mDroidLogicHdmiCecManager = DroidLogicHdmiCecManager.getInstance(this);
         mContentResolver = this.getContentResolver();
         mActivityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         initTvPlaySetting();
         startTvServices();
         mAudioEffectManager = AudioEffectManager.getInstance(getApplicationContext());
+        registerSettingsObserver();
+    }
+
+    private void registerSettingsObserver() {
+        DroidLogicSettingsObserver observer = new DroidLogicSettingsObserver(mHandler);
+        String[] settings = new String[] {
+            HDMI_CONTROL_ENABLED
+        };
+        for (String s : settings) {
+            mContentResolver.registerContentObserver(Global.getUriFor(s), false, observer);
+        }
     }
 
     /**
@@ -220,11 +241,8 @@ public class DroidLogicTvInputService extends TvInputService implements
         }
 
         //if hdmi signal is unstable from stable, disconnect cec.
-        if (mDeviceId >= DroidLogicTvUtils.DEVICE_ID_HDMI1
-                && mDeviceId <= DroidLogicTvUtils.DEVICE_ID_HDMI4) {
-            DroidLogicHdmiCecManager hdmi_cec = DroidLogicHdmiCecManager.getInstance(this);
-            if (hdmi_cec.getInputSourceDeviceId() == mDeviceId)
-                selectHdmiDevice(0, 0, 0);
+        if (isHdmiDeviceId(mDeviceId) && (mDroidLogicHdmiCecManager.getInputSourceDeviceId() == mDeviceId)) {
+            selectHdmiDevice(0, 0, 0);
         }
     }
 
@@ -798,8 +816,7 @@ public class DroidLogicTvInputService extends TvInputService implements
      * @param deviceId the hardware device id of hdmi need to be selected.
      */
     public void selectHdmiDevice(final int deviceId, int logicAddr, int phyAddr) {
-        DroidLogicHdmiCecManager hdmi_cec = DroidLogicHdmiCecManager.getInstance(this);
-        hdmi_cec.selectHdmiDevice(deviceId, logicAddr, phyAddr);
+        mDroidLogicHdmiCecManager.selectHdmiDevice(deviceId, logicAddr, phyAddr);
     }
 
     /**
@@ -807,8 +824,7 @@ public class DroidLogicTvInputService extends TvInputService implements
      * @param device the hardware device id of hdmi need to be selected.
      */
     public void disconnectHdmiCec(int deviceId, int logicAddr, int phyAddr) {
-        DroidLogicHdmiCecManager hdmi_cec = DroidLogicHdmiCecManager.getInstance(this);
-        hdmi_cec.selectHdmiDevice(deviceId, logicAddr, phyAddr);
+        mDroidLogicHdmiCecManager.selectHdmiDevice(deviceId, logicAddr, phyAddr);
     }
 
     private int getHdmiPortIndex(int phyAddr) {
@@ -1115,5 +1131,34 @@ public class DroidLogicTvInputService extends TvInputService implements
     private boolean getAudioDelayEnabled () {
         return SystemControlManager.getInstance()
                 .getPropertyBoolean(AudioEffectManager.PROP_AUDIO_DELAY_ENABLED, false);
+    }
+
+    private boolean isHdmiDeviceId(int deviceId) {
+        return deviceId >= DroidLogicTvUtils.DEVICE_ID_HDMI1 &&
+               deviceId <= DroidLogicTvUtils.DEVICE_ID_HDMI4;
+
+    }
+
+    private class DroidLogicSettingsObserver extends ContentObserver {
+        public DroidLogicSettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            String option = uri.getLastPathSegment();
+            boolean enabled = Global.getInt(mContentResolver,
+                                HDMI_CONTROL_ENABLED, DISABLED) == ENABLED;
+            switch (option) {
+                case HDMI_CONTROL_ENABLED:
+                    if (enabled && isHdmiDeviceId(mDeviceId)) {
+                        if (mDroidLogicHdmiCecManager.getInputSourceDeviceId() == mDeviceId) {
+                            Log.d(TAG, "cec settings is enabled and update the active source");
+                            mDroidLogicHdmiCecManager.connectHdmiCec(mDeviceId);
+                        }
+                    }
+                    break;
+            }
+        }
     }
 }
