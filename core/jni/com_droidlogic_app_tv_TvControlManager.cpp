@@ -676,6 +676,14 @@ static jint GetInputSrcConnectStatus(JNIEnv *env __unused, jclass clazz __unused
     return result;
 }
 
+static jint LoadEdidData(JNIEnv *env __unused, jclass clazz __unused, jint isNeedBlackScreen, jint isDolbyVisionEnable) {
+    const sp<TvServerHidlClient>& Tv = getTvClient();
+    jint result = -1;
+    if (Tv != NULL)
+        result = Tv->loadEdidData(isNeedBlackScreen, isDolbyVisionEnable);
+    return result;
+}
+
 static jint SetHdmiEdidVersion(JNIEnv *env __unused, jclass clazz __unused, jint port_id, jint ver) {
     const sp<TvServerHidlClient>& Tv = getTvClient();
     jint result = -1;
@@ -1212,6 +1220,7 @@ static JNINativeMethod Tv_Methods[] = {
 {"native_IsDviSIgnal", "()I", (void *) IsDviSIgnal },
 {"native_IsVgaTimingInHdmi", "()I", (void *) IsVgaTimingInHdmi },
 {"native_GetInputSrcConnectStatus", "(I)I", (void *) GetInputSrcConnectStatus },
+{"native_LoadEdidData", "(II)I", (void *) LoadEdidData },
 {"native_SetHdmiEdidVersion", "(II)I", (void *) SetHdmiEdidVersion },
 {"native_GetHdmiEdidVersion", "(I)I", (void *) GetHdmiEdidVersion },
 {"native_SaveHdmiEdidVersion", "(II)I", (void *) SaveHdmiEdidVersion },

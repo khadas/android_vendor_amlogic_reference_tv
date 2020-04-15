@@ -690,6 +690,7 @@ public class TvControlManager {
     private native int native_IsDviSIgnal();
     private native int native_IsVgaTimingInHdmi();
     private native int native_GetInputSrcConnectStatus(int srcinput);
+    private native int native_LoadEdidData(int isNeedBlackScreen, int isDolbyVisionEnable);
     private native int native_SetHdmiEdidVersion(int port, int ver);
     private native int native_GetHdmiEdidVersion(int port);
     private native int native_SaveHdmiEdidVersion(int port, int ver);
@@ -713,8 +714,8 @@ public class TvControlManager {
     private native int native_SetDvbTextCoding(String coding);
     private native int native_SetBlackoutEnable(int enble, int isSave);
     private native int native_GetBlackoutEnable();
-	private native int native_SetScreenColorForSignalChange(int screenColor, int isSave);
-	private native int native_GetScreenColorForSignalChange();
+    private native int native_SetScreenColorForSignalChange(int screenColor, int isSave);
+    private native int native_GetScreenColorForSignalChange();
     private native int native_GetATVMinMaxFreq(int minFreq, int maxFreq);
     private native FreqList[] native_DtvGetScanFreqListMode(int mode);
     private native int native_UpdateRRT(int freq, int moudle, int mode);
@@ -1409,6 +1410,24 @@ public class TvControlManager {
     // Tv function END
 
     // HDMI
+    /**
+     * @Function: LoadEdidData
+     * @Description: load all edid bin data
+     * @Param: isNeedBlackScreen, Need Black Screen or not
+     * @Param: isDolbyVisionEnable, dolbyvision enable or not
+     * @Return: 0 success, -1 fail
+     */
+    public int LoadEdidData(int isNeedBlackScreen, int isDolbyVisionEnable) {
+          synchronized (mLock) {
+            try {
+                return native_LoadEdidData(isNeedBlackScreen, isDolbyVisionEnable);
+            } catch (Exception e) {
+                Log.e(TAG, "LoadEdidData:" + e);
+            }
+        }
+        return -1;
+    }
+
     /**
      * @Function: SetHdmiEdidVersion
      * @Description: set hdmi edid version to 1.4 or 2.0

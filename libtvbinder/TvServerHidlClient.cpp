@@ -218,6 +218,10 @@ std::string TvServerHidlClient::getMiscCfg(const std::string& key, const std::st
     return miscCfg;
 }
 
+int TvServerHidlClient::loadEdidData(int32_t isNeedBlackScreen, int32_t isDolbyVisionEnable) {
+    return mTvServer->loadEdidData(isNeedBlackScreen, isDolbyVisionEnable);
+}
+
 int TvServerHidlClient::setHdmiEdidVersion(int32_t port_id, int32_t ver) {
     return mTvServer->setHdmiEdidVersion(port_id, ver);
 }
