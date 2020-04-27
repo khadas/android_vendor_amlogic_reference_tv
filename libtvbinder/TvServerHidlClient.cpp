@@ -269,9 +269,14 @@ int TvServerHidlClient::setLcdEnable(int32_t enable) {
 int TvServerHidlClient::readMacAddress(char *value) {
     hidl_array<int32_t, 6> result;
     mTvServer->readMacAddress([&result](const Result &ret, const hidl_array<int32_t, 6> v) {
+        int i = 0;
         if (Result::OK == ret) {
-            for (int i=0;i<6;i++) {
+            for (i=0;i<6;i++) {
                 result[i] = v[i];
+            }
+        } else {
+            for (i=0;i<6;i++) {
+                result[i] = 0;
             }
         }
     });
