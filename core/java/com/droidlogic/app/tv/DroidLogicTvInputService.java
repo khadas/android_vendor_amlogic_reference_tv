@@ -1147,7 +1147,7 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
                     if (enabled && isHdmiDeviceId(mDeviceId)) {
                         if (mDroidLogicHdmiCecManager.getInputSourceDeviceId() == mDeviceId) {
                             Log.d(TAG, "cec settings is enabled and update the active source");
-                            mDroidLogicHdmiCecManager.selectHdmiDevice(-1, mDeviceId);
+                            mDroidLogicHdmiCecManager.selectHdmiDevice(mDeviceId);
                         }
                     }
                     break;
