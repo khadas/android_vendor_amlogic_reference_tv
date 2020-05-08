@@ -132,12 +132,11 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         msg.sendToTarget();
     }
     public void doRelease() {
-        Log.d(TAG, "doRelease,session: " + this);
-        // When tv not show hdmi cec source, try to take the active source to INACTIVE_DEVICE.
-        // It can be removed when the "Active Source" filter could be removed in hal. Related
-        // with setDeviceIdForCec which finally call HdmiCecControl::TvEventListner::notify
-        // HdmiCecControl::TvEventListner::TV_EVENT_SOURCE_SWITCH.
-        mDroidLogicHdmiCecManager.selectHdmiDevice(HdmiDeviceInfo.ADDR_INTERNAL, HdmiDeviceInfo.DEVICE_INACTIVE);
+        Log.d(TAG, "doRelease,input: " + mInputId + " " + this);
+        // For aml LiveTv and Launcher with TvView, onSetMain and onRelease functions are not called sequencely.
+        // And there is always an active source even it returns to Home. However, for products like Amazon, this
+        // should be modified together with onSetMain, so that the ActiveSource could show the real path.
+        //mDroidLogicHdmiCecManager.selectHdmiDevice(HdmiDeviceInfo.ADDR_INTERNAL, HdmiDeviceInfo.DEVICE_INACTIVE);
         mContext.unregisterReceiver(mBroadcastReceiver);
     }
 
@@ -256,9 +255,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
 
     @Override
      public boolean onSetSurface(Surface surface) {
-        Log.d(TAG, "onSetSurface " + surface + this);
-        Exception e = new Exception();
-        Log.e(TAG, "setSurfaceInService " + e);
+        Log.d(TAG, "onSetSurface " + this);
 
         if (surface == null) {
             mSessionHandler.removeCallbacksAndMessages(null);
@@ -382,7 +379,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     @Override
     public void onSetMain(boolean isMain) {
         TvInputInfo info = mTvInputManager.getTvInputInfo(mInputId);
-        Log.d(TAG, "onSetMain, isMain " + isMain + " deviceId " + mDeviceId + " input " + info);
+        Log.d(TAG, "onSetMain, isMain " + isMain + " input " + mInputId + " " + this);
         if (isMain) {
             if (info == null) {
                 return;

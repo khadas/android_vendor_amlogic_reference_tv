@@ -36,16 +36,7 @@ public class DroidLogicHdmiCecManager {
     private static final String TAG = "DroidLogicHdmiCecManager";
     private static boolean DEBUG = Log.isLoggable("HDMI", Log.DEBUG);
 
-    private static Context mContext;
-    private HdmiControlManager mHdmiControlManager;
-    private HdmiTvClient mTvClient = null;
-    private HdmiClient mClient = null;
-
-    private static DroidLogicHdmiCecManager mInstance;
-    private TvInputManager mTvInputManager;
-    private TvControlDataManager mTvControlDataManager;
-    private TvControlManager mTvControlManager;
-    private SystemControlManager mSystemControlManager;
+    private static final String HDMI_CONTROL_ENABLED = "hdmi_control_enabled";
 
     private static final int DEVICE_SELECT_INTERNAL_DELAY = 1000;
 
@@ -53,14 +44,20 @@ public class DroidLogicHdmiCecManager {
     private static final int MSG_PORT_SELECT = 1;
     private static final int MSG_SEND_KEY_EVENT = 2;
 
-    private static final String HDMI = "HDMI";
-    private static final String HW = "HW";
-    // 0x240004
-    private static final int PHY_LOG_ADDRESS_LENGTH = 6;
-    private static final int DEVICE_ID_LENGTH = 1;
-    private static final String HEX_STRING = "0123456789ABCDEF";
+    private static DroidLogicHdmiCecManager mInstance;
 
-    private static final String HDMI_CONTROL_ENABLED = "hdmi_control_enabled";
+    private Context mContext;
+    private HdmiControlManager mHdmiControlManager;
+    private HdmiTvClient mTvClient;
+    private HdmiClient mClient;
+    private TvInputManager mTvInputManager;
+    private TvControlDataManager mTvControlDataManager;
+    private TvControlManager mTvControlManager;
+    private SystemControlManager mSystemControlManager;
+
+    private int mSelectedLogicalAddress;
+    private int mSelectedPortId;
+    private int mSelectedDeviceId;
 
     static final String PROPERTY_VENDOR_DEVICE_TYPE = "ro.vendor.platform.hdmi.device_type";
 
@@ -69,10 +66,12 @@ public class DroidLogicHdmiCecManager {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_DEVICE_SELECT:
-                    deviceSelect((int)msg.obj);
+                    setDeviceIdForCec(mSelectedDeviceId);
+                    deviceSelect(mSelectedLogicalAddress);
                     break;
                 case MSG_PORT_SELECT:
-                    portSelect((int)msg.obj);
+                    setDeviceIdForCec(mSelectedDeviceId);
+                    portSelect(mSelectedPortId);
                 case MSG_SEND_KEY_EVENT:
                     if (mTvClient == null) {
                         Log.e(TAG, "mHandler sendKeyEvent fail, mTvClient is null ?: " + (mTvClient == null));
@@ -147,20 +146,17 @@ public class DroidLogicHdmiCecManager {
      */
     public void selectHdmiDevice(int logicAddress, int deviceId) {
         Log.d(TAG, "selectHdmiDevice " + logicAddress + " deviceId:" + deviceId);
-
-        // Give cec hal a chance to filter strange <Active Source>
-        setDeviceIdForCec(deviceId);
-
-        // Don't need to worry about repeat actions of device selecting. The validation
-        // Work is done in HdmiCecLocalDeviceTv deviceSelect method.
-        mHandler.removeMessages(MSG_DEVICE_SELECT);
-        mHandler.removeMessages(MSG_PORT_SELECT);
+        removePreviousMessages();
 
         int delayTime = 0;
         if (HdmiDeviceInfo.ADDR_INTERNAL == logicAddress) {
             delayTime = DEVICE_SELECT_INTERNAL_DELAY;
         }
-        Message msg = mHandler.obtainMessage(MSG_DEVICE_SELECT, logicAddress);
+
+        mSelectedDeviceId = deviceId;
+        mSelectedLogicalAddress = logicAddress;
+
+        Message msg = mHandler.obtainMessage(MSG_DEVICE_SELECT);
         mHandler.sendMessageDelayed(msg, delayTime);
     }
 
@@ -169,16 +165,36 @@ public class DroidLogicHdmiCecManager {
      */
     public void selectHdmiDevice(int deviceId) {
         Log.d(TAG, "selectHdmiDevice deviceId:" + deviceId);
-
-        // Give cec hal a chance to filter strange <Active Source>
-        setDeviceIdForCec(deviceId);
+        removePreviousMessages();
 
         int portId = getPortIdByDeviceId(deviceId);
-        mHandler.removeMessages(MSG_DEVICE_SELECT);
-        mHandler.removeMessages(MSG_PORT_SELECT);
+
+        mSelectedDeviceId = deviceId;
+        mSelectedPortId = portId;
 
         Message msg = mHandler.obtainMessage(MSG_PORT_SELECT, portId);
         mHandler.sendMessage(msg);
+    }
+
+    /**
+     * When there is a new device select request, it's need to remove the previous
+     * request first. A customed senario is that when user switches to a different
+     * channel, there is a deviceSelect 0 first and then a deviceSelect 4, we need
+     * to make sure the deviceSelect 0 is not finally performed so that there are
+     * not so many meaningless routing messages.
+     *
+     * Besides, when using Handler remove messages, please be careful that only
+     * when the Message is absolutely equal then Handler could remove it. Handler
+     * can't remove a Message with 'what' and 'obj' using removeMessages(int what).
+     */
+    private void removePreviousMessages() {
+        if (mHandler.hasMessages(MSG_DEVICE_SELECT)) {
+            Log.d(TAG, "removePreviousMessages logical address:" + mSelectedLogicalAddress);
+            mHandler.removeMessages(MSG_DEVICE_SELECT);
+        } else if (mHandler.hasMessages(MSG_PORT_SELECT)) {
+            Log.d(TAG, "removePreviousMessages port id:" + mSelectedPortId);
+            mHandler.removeMessages(MSG_DEVICE_SELECT);
+        }
     }
 
     /**
@@ -190,6 +206,7 @@ public class DroidLogicHdmiCecManager {
             return;
         }
 
+        Log.d(TAG, "deviceSelect " + logicalAddress);
         mTvClient.deviceSelect(logicalAddress, mSelectCallback);
     }
 
@@ -204,6 +221,7 @@ public class DroidLogicHdmiCecManager {
             return;
         }
 
+        Log.d(TAG, "portSelect " + portId);
         mTvClient.portSelect(portId, mSelectCallback);
     }
 
@@ -221,6 +239,7 @@ public class DroidLogicHdmiCecManager {
     }
 
     public void setDeviceIdForCec(int deviceId){
+        // Give cec hal a chance to filter strange <Active Source>
         if (mTvControlManager != null) {
             Log.d(TAG, "setDeviceIdForCec " + deviceId);
             mTvControlManager.setDeviceIdForCec(deviceId);
@@ -239,63 +258,6 @@ public class DroidLogicHdmiCecManager {
             }
         }
         return -1;
-    }
-
-    /**
-     * get logical address from inputid likecom.droidlogic.tvinput/.services.Hdmi2InputService/HDMI240008
-     */
-    public int getLogicalAddressFromInputId(String inputId) {
-        if (TextUtils.isEmpty(inputId)) {
-            Log.e(TAG, "getLogicalAddressFromInputId inputId empty " + inputId);
-            return -1;
-        }
-
-        int index = inputId.indexOf(HDMI);
-        if (index == -1) {
-            Log.e(TAG, "getLogicalAddressFromInputId has on hdmi " + inputId);
-            return -1;
-        }
-
-        int logicalAddress = -1;
-        try {
-            String address = inputId.substring(index + HDMI.length());
-            Log.d(TAG, "getLogicalAddressFromInputId address " + address);
-            if (address.length() == PHY_LOG_ADDRESS_LENGTH) {
-                char logicalAddressChar = address.charAt(PHY_LOG_ADDRESS_LENGTH - 1);
-                logicalAddress = HEX_STRING.indexOf(logicalAddressChar);
-            }
-        } catch(Exception e) {
-            Log.e(TAG, "getLogicalAddressFromInputId " + inputId + e);
-        }
-        Log.d(TAG, "getLogicalAddressFromInputId result " + logicalAddress);
-        return logicalAddress;
-    }
-
-    /**
-     * get deviceId from inputid like com.droidlogic.tvinput/.services.Hdmi2InputService/HW5
-     */
-    public int getDeviceIdFromInputId(String inputId) {
-        if (TextUtils.isEmpty(inputId)) {
-            Log.e(TAG, "getDeviceIdFromInputId inputId empty " + inputId);
-            return -1;
-        }
-
-        int index = inputId.indexOf(HW);
-        if (index == -1) {
-            Log.e(TAG, "getLogicalAddressFromInputId has on hw " + inputId);
-            return -1;
-        }
-
-        int deviceId = -1;
-        try {
-            String address = inputId.substring(index + HW.length());
-            Log.d(TAG, "getDeviceIdFromInputId address " + address);
-            deviceId = Integer.parseInt(address);
-        } catch(Exception e) {
-            Log.e(TAG, "getDeviceIdFromInputId " + inputId + e);
-        }
-        Log.d(TAG, "getDeviceIdFromInputId result " + deviceId);
-        return deviceId;
     }
 
     public boolean hasHdmiCecDevice(int deviceId) {
