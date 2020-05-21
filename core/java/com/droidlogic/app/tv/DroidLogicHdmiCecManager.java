@@ -38,11 +38,12 @@ public class DroidLogicHdmiCecManager {
 
     private static final String HDMI_CONTROL_ENABLED = "hdmi_control_enabled";
 
-    private static final int DEVICE_SELECT_INTERNAL_DELAY = 1000;
+    private static final int DEVICE_SELECT_PROTECTION_TIME = 2000;
 
     private static final int MSG_DEVICE_SELECT = 0;
     private static final int MSG_PORT_SELECT = 1;
-    private static final int MSG_SEND_KEY_EVENT = 2;
+    private static final int MSG_SELECT_PROTECTION = 2;
+    private static final int MSG_SEND_KEY_EVENT = 3;
 
     private static DroidLogicHdmiCecManager mInstance;
 
@@ -59,6 +60,10 @@ public class DroidLogicHdmiCecManager {
     private int mSelectedPortId;
     private int mSelectedDeviceId;
 
+    // If we have selected a valid hdmi source, we should not device select
+    // internal address 0 within the protection time.
+    private boolean mInSelectProtection;
+
     static final String PROPERTY_VENDOR_DEVICE_TYPE = "ro.vendor.platform.hdmi.device_type";
 
     private final Handler mHandler = new Handler() {
@@ -68,10 +73,18 @@ public class DroidLogicHdmiCecManager {
                 case MSG_DEVICE_SELECT:
                     setDeviceIdForCec(mSelectedDeviceId);
                     deviceSelect(mSelectedLogicalAddress);
+
+                    if (mSelectedLogicalAddress != HdmiDeviceInfo.ADDR_INTERNAL) {
+                        mInSelectProtection = true;
+                    }
                     break;
                 case MSG_PORT_SELECT:
                     setDeviceIdForCec(mSelectedDeviceId);
                     portSelect(mSelectedPortId);
+                    mInSelectProtection = true;
+                case MSG_SELECT_PROTECTION:
+                    mInSelectProtection = false;
+                    break;
                 case MSG_SEND_KEY_EVENT:
                     if (mTvClient == null) {
                         Log.e(TAG, "mHandler sendKeyEvent fail, mTvClient is null ?: " + (mTvClient == null));
@@ -140,17 +153,28 @@ public class DroidLogicHdmiCecManager {
         return Collections.unmodifiableList(list);
     }
 
-
     /**
      * Use logicalAddress to switch source in senarios like InputService.Session setMain()
      */
     public void selectHdmiDevice(int logicAddress, int deviceId) {
-        Log.d(TAG, "selectHdmiDevice " + logicAddress + " deviceId:" + deviceId);
-        removePreviousMessages();
+        Log.d(TAG, "selectHdmiDevice " + logicAddress + " deviceId " + deviceId + " " + mInSelectProtection);
 
         int delayTime = 0;
         if (HdmiDeviceInfo.ADDR_INTERNAL == logicAddress) {
-            delayTime = DEVICE_SELECT_INTERNAL_DELAY;
+            // TvInputBaseSession onRelease might could be done either before  or just after the new Session onSetMain.
+            // If the old one onRelease after the new one onSetMain, then the active source will be reset to tv's 0.
+            if (mInSelectProtection) {
+                Log.e(TAG, "selectHdmiDevice protection time and no select internal address");
+                return;
+            } else {
+                // Not directly select internal address, give the incoming hdmi tune a change to remove it.
+                delayTime = DEVICE_SELECT_PROTECTION_TIME;
+            }
+        } else {
+            // For hdmi routing we should remove previous messages, this works to avoid the Routing Change to
+            // internal address 0 during normal hdmi channel switches.
+            removePreviousMessages();
+            mHandler.sendEmptyMessageDelayed(MSG_SELECT_PROTECTION, DEVICE_SELECT_PROTECTION_TIME);
         }
 
         mSelectedDeviceId = deviceId;
@@ -161,16 +185,17 @@ public class DroidLogicHdmiCecManager {
     }
 
     /**
-     * use deviceId to do the portSelect job in senarios like enable cec.
+     * Use deviceId to do the portSelect job in senarios like enable cec.
      */
     public void selectHdmiDevice(int deviceId) {
-        Log.d(TAG, "selectHdmiDevice deviceId:" + deviceId);
-        removePreviousMessages();
-
+        Log.d(TAG, "selectHdmiDevice deviceId " + deviceId);
         int portId = getPortIdByDeviceId(deviceId);
 
         mSelectedDeviceId = deviceId;
         mSelectedPortId = portId;
+
+        removePreviousMessages();
+        mHandler.sendEmptyMessageDelayed(MSG_SELECT_PROTECTION, DEVICE_SELECT_PROTECTION_TIME);
 
         Message msg = mHandler.obtainMessage(MSG_PORT_SELECT, portId);
         mHandler.sendMessage(msg);
@@ -194,6 +219,8 @@ public class DroidLogicHdmiCecManager {
         } else if (mHandler.hasMessages(MSG_PORT_SELECT)) {
             Log.d(TAG, "removePreviousMessages port id:" + mSelectedPortId);
             mHandler.removeMessages(MSG_DEVICE_SELECT);
+        } else if (mHandler.hasMessages(MSG_SELECT_PROTECTION)) {
+            mHandler.removeMessages(MSG_SELECT_PROTECTION);
         }
     }
 

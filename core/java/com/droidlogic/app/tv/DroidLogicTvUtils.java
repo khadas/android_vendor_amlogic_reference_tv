@@ -434,6 +434,9 @@ public class DroidLogicTvUtils
         sUriMatcher.addURI(TvContract.AUTHORITY, "watched_program/#", MATCH_WATCHED_PROGRAM_ID);
     }
 
+    public static final String HW = "HW";
+    public static final String HDMI = "HDMI";
+
     public static boolean isChina(Context mContext) {
         return TextUtils.equals(getCountry(mContext), "CN");
     }
@@ -756,19 +759,57 @@ public class DroidLogicTvUtils
         return temp.length==3 ? true : false;
     }
 
+    /**
+     * get deviceId from inputid like com.droidlogic.tvinput/.services.Hdmi2InputService/HW5
+     * or inputid likec om.droidlogic.tvinput/.services.Hdmi2InputService/HDMI240008
+     */
+    public static int getDeviceIdFromInputId(String inputId) {
+        int deviceId = -1;
+        if (TextUtils.isEmpty(inputId)) {
+            Log.e(TAG, "getDeviceIdFromInputId inputId empty " + inputId);
+            return -1;
+        }
+
+        int index = inputId.indexOf(HW);
+        String address = "";
+        try {
+            if (index != -1) {
+                address = inputId.substring(index + HW.length());
+                deviceId = Integer.parseInt(address);
+            } else if (inputId.indexOf(HDMI) != -1){
+                index = inputId.indexOf(HDMI);
+                address = inputId.substring(index + HDMI.length(), index + HDMI.length() + 1);
+                deviceId = Integer.parseInt(address);
+            } else {
+                Log.e(TAG, "getDeviceIdFromInputId no identifed input " + inputId);
+            }
+        } catch(Exception e) {
+            Log.e(TAG, "getDeviceIdFromInputId " + inputId + e);
+        }
+
+        Log.d(TAG, "getDeviceIdFromInputId result " + deviceId + " of " + inputId);
+        return deviceId;
+    }
+
     public static int getHardwareDeviceId(TvInputInfo info) {
         if (info == null)
             return -1;
 
-        String[] temp = info.getId().split("/");
-        return temp.length==3 ? Integer.parseInt(temp[2].substring(2)) : -1;
+        String inputId = info.getId();
+        return getHardwareDeviceId(inputId);
     }
 
-    public static int getHardwareDeviceId(String input_id) {
-        if (TextUtils.isEmpty(input_id))
-            return -1;
-        String[] temp = input_id.split("/");
-        return temp.length==3 ? Integer.parseInt(temp[2].substring(2)) : -1;
+    public static int getHardwareDeviceId(String inputId) {
+        return getDeviceIdFromInputId(inputId);
+    }
+
+    public static int getPortId(TvInputInfo info) {
+        int portId = 0;
+        int deviceId = getHardwareDeviceId(info);
+        if (deviceId >= DEVICE_ID_HDMI1 && deviceId <= DEVICE_ID_HDMI4) {
+            portId = deviceId - DEVICE_ID_HDMI1 + 1;
+        }
+        return portId;
     }
 
     public static int getSourceType(int device_id) {

@@ -136,7 +136,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         // For aml LiveTv and Launcher with TvView, onSetMain and onRelease functions are not called sequencely.
         // And there is always an active source even it returns to Home. However, for products like Amazon, this
         // should be modified together with onSetMain, so that the ActiveSource could show the real path.
-        //mDroidLogicHdmiCecManager.selectHdmiDevice(HdmiDeviceInfo.ADDR_INTERNAL, HdmiDeviceInfo.DEVICE_INACTIVE);
+        mDroidLogicHdmiCecManager.selectHdmiDevice(HdmiDeviceInfo.ADDR_INTERNAL, HdmiDeviceInfo.DEVICE_INACTIVE);
         mContext.unregisterReceiver(mBroadcastReceiver);
     }
 
