@@ -242,6 +242,17 @@ int TvServerHidlClient::getHdmiColorRangeMode() {
     return mTvServer->getHdmiColorRangeMode();
 }
 
+FormatInfo TvServerHidlClient::getHdmiFormatInfo() {
+    FormatInfo info;
+    mTvServer->getHdmiFormatInfo([&](const FormatInfo formatInfo){
+        info.width     = formatInfo.width;
+        info.height    = formatInfo.height;
+        info.fps       = formatInfo.fps;
+        info.interlace = formatInfo.interlace;
+    });
+    return info;
+}
+
 int TvServerHidlClient::handleGPIO(const std::string& key, int32_t is_out, int32_t edge) {
     return mTvServer->handleGPIO(key, is_out, edge);
 }

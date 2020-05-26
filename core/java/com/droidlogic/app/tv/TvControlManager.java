@@ -727,6 +727,7 @@ public class TvControlManager {
     private native int native_DtvSwitchAudioTrack(int prog_id, int audio_track_id);
     private native int native_DtvSetAudioAD(int enable, int audio_pid, int audio_format);
     private native VideoFormatInfo native_DtvGetVideoFormatInfo();
+    private native VideoFormatInfo native_GetHdmiFormatInfo();
     private native int native_Scan(String fe, String scan);
     private native int native_TvSetFrontEnd(String fe, int force);
     private native int native_TvSetFrontendParms(int feType, int freq, int vStd, int aStd, int vfmt, int soundsys, int p1, int p2);
@@ -4948,6 +4949,16 @@ public class TvControlManager {
         return null;
     }
 
+    public VideoFormatInfo GetHdmiFormatInfo() {
+        synchronized (mLock) {
+            try {
+                return native_GetHdmiFormatInfo();
+            } catch (Exception e) {
+                Log.e(TAG, "GetHdmiFormatInfo:" + e);
+            }
+        }
+        return null;
+    }
     public class AudioFormatInfo {
         public int Format;
         public int SampleRate;

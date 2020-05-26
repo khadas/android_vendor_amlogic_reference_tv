@@ -1046,6 +1046,27 @@ static jobject DtvGetVideoFormatInfo(JNIEnv *env, jclass clazz __unused) {
     return formatInfo;
 }
 
+static jobject GetHdmiFormatInfo(JNIEnv *env __unused, jclass clazz __unused) {
+    const sp<TvServerHidlClient>& Tv = getTvClient();
+    jobject formatInfo = NULL;
+    if (Tv != NULL) {
+        FormatInfo info = Tv->getHdmiFormatInfo();
+        jclass objectClass = (env)->FindClass("com/droidlogic/app/tv/TvControlManager$VideoFormatInfo");
+        jmethodID consID = (env)->GetMethodID(objectClass, "<init>", "()V");
+
+        jfieldID jwidth = (env)->GetFieldID(objectClass, "width", "I");
+        jfieldID jheight = (env)->GetFieldID(objectClass, "height", "I");
+        jfieldID jfps = (env)->GetFieldID(objectClass, "fps", "I");
+        jfieldID jinterlace = (env)->GetFieldID(objectClass, "interlace", "I");
+        formatInfo = (env)->NewObject(objectClass, consID);
+        (env)->SetIntField(formatInfo, jwidth, info.width);
+        (env)->SetIntField(formatInfo, jheight, info.height);
+        (env)->SetIntField(formatInfo, jfps, info.fps);
+        (env)->SetIntField(formatInfo, jinterlace, info.interlace);
+    }
+    return formatInfo;
+}
+
 static jint Scan(JNIEnv *env, jclass clazz __unused, jstring jfeparas, jstring jscanparas) {
     const sp<TvServerHidlClient>& Tv = getTvClient();
     jint result = -1;
@@ -1266,6 +1287,7 @@ static JNINativeMethod Tv_Methods[] = {
 {"native_SetSameSourceEnable", "(I)I", (void *) SetSameSourceEnable },
 {"native_FactoryCleanAllTableForProgram", "()I", (void *) FactoryCleanAllTableForProgram },
 {"native_DtvGetVideoFormatInfo", "()Lcom/droidlogic/app/tv/TvControlManager$VideoFormatInfo;", (void *) DtvGetVideoFormatInfo },
+{"native_GetHdmiFormatInfo", "()Lcom/droidlogic/app/tv/TvControlManager$VideoFormatInfo;", (void *) GetHdmiFormatInfo },
 {"native_SearchRrtInfo", "(IIII)Lcom/droidlogic/app/tv/TvControlManager$RrtSearchInfo;", (void *) SearchRrtInfo },
 {"native_DtvGetScanFreqListMode", "(I)[Lcom/droidlogic/app/tv/TvControlManager$FreqList;", (void *) DtvGetScanFreqListMode },
 {"native_SetPreviewWindow", "(IIII)I", (void *) SetPreviewWindow },

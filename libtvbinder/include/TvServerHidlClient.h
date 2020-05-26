@@ -94,6 +94,7 @@ public:
     int saveHdmiEdidVersion(int32_t port_id, int32_t ver);
     int setHdmiColorRangeMode(int32_t range_mode);
     int getHdmiColorRangeMode();
+    FormatInfo getHdmiFormatInfo();
     int handleGPIO(const std::string& key, int32_t is_out, int32_t edge);
     int vdinUpdateForPQ(int32_t gameStatus, int32_t pcStatus, int32_t autoSwitchFlag);
     int setWssStatus(int status);
