@@ -87,6 +87,7 @@ public class TvScanConfig {
                 }
                 getSupportList.add(temp);
             }
+/* get all from config file.
             // Check the validity of the element
             for (String temp : getSupportList) {
                 if (!defaultStrings.contains(temp)) {
@@ -94,6 +95,7 @@ public class TvScanConfig {
                     getSupportList.remove(temp);
                 }
             }
+*/
             if (0 == getSupportList.size()) {
                 Log.w(TAG, "support list size is 0, use defaultList");
                 return defaultStrings;

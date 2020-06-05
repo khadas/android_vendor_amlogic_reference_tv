@@ -463,9 +463,9 @@ public class DroidLogicTvUtils
 
     public static String getCountry(Context mContext) {
         String country = TvControlDataManager.getInstance(mContext).getString(mContext.getContentResolver(), TV_SEARCH_COUNTRY);
-        if (TextUtils.isEmpty(country) || !TvScanConfig.TV_COUNTRY.contains(country)) {
+        if (TextUtils.isEmpty(country) /*|| !TvScanConfig.TV_COUNTRY.contains(country)*/) {
             String defaultCountry = TvScanConfig.getTvDefaultCountry();
-            Log.i(TAG, "getCountry error, country: " + country + " not support, set default country:" + defaultCountry);
+            Log.i(TAG, "getCountry error, country is null, set default country:" + defaultCountry);
             country = defaultCountry;
             TvControlDataManager.getInstance(mContext).putString(mContext.getContentResolver(), TV_SEARCH_COUNTRY, country);
         }
