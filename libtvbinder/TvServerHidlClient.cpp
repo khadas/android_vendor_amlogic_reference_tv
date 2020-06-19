@@ -537,6 +537,10 @@ int TvServerHidlClient::dtvGetSignalStrength() {
     return mTvServer->dtvGetSignalStrength();
 }
 
+int TvServerHidlClient::dtvGetSignalSNR() {
+    return mTvServer->dtvGetSignalSNR();
+}
+
 int TvServerHidlClient::dtvSetAudioChannleMod(int audioChannelIdx) {
     return mTvServer->dtvSetAudioChannleMod(audioChannelIdx);
 }

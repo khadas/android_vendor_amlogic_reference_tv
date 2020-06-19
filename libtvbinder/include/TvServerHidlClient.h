@@ -148,6 +148,7 @@ public:
     RRTSearchInfo searchRrtInfo(int rating_region_id, int dimension_id, int value_id, int program_id);
     int dtvStopScan();
     int dtvGetSignalStrength();
+    int dtvGetSignalSNR();
     int dtvSetAudioChannleMod(int audioChannelIdx);
     int DtvSwitchAudioTrack3(int audio_pid, int audio_format, int audio_param);
     int DtvSwitchAudioTrack(int prog_id, int audio_track_id);

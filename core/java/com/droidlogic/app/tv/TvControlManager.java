@@ -722,6 +722,7 @@ public class TvControlManager {
     private native RrtSearchInfo native_SearchRrtInfo(int rating_region_id, int dimension_id, int value_id, int programid);
     private native int native_DtvStopScan();
     private native int native_DtvGetSignalStrength();
+    private native int native_DtvGetSignalSNR();
     private native int native_DtvSetAudioChannleMod(int audiochannelmod);
     private native int native_DtvSwitchAudioTrack3(int audio_pid, int audio_format, int audio_param);
     private native int native_DtvSwitchAudioTrack(int prog_id, int audio_track_id);
@@ -4737,7 +4738,14 @@ public class TvControlManager {
     }
 
     public int DtvGetSignalSNR() {
-        return sendCmd(DTV_GET_SNR);
+        synchronized (mLock) {
+            try {
+                return native_DtvGetSignalSNR();
+            } catch (Exception e) {
+                Log.e(TAG, "DtvGetSignalSNR:" + e);
+            }
+        }
+        return -1;
     }
 
     public int DtvGetSignalBER() {

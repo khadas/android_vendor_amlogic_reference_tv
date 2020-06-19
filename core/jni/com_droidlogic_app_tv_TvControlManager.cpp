@@ -993,6 +993,14 @@ static jint DtvGetSignalStrength(JNIEnv *env __unused, jclass clazz __unused) {
     return result;
 }
 
+static jint DtvGetSignalSNR(JNIEnv *env __unused, jclass clazz __unused) {
+    const sp<TvServerHidlClient>& Tv = getTvClient();
+    jint result = -1;
+    if (Tv != NULL)
+        result = Tv->dtvGetSignalSNR();
+    return result;
+}
+
 static jint DtvSetAudioChannleMod(JNIEnv *env __unused, jclass clazz __unused, jint audioChannelIdx) {
     const sp<TvServerHidlClient>& Tv = getTvClient();
     jint result = -1;
@@ -1271,6 +1279,7 @@ static JNINativeMethod Tv_Methods[] = {
 {"native_UpdateRRT", "(III)I", (void *) UpdateRRT },
 {"native_DtvStopScan", "()I", (void *) DtvStopScan },
 {"native_DtvGetSignalStrength", "()I", (void *) DtvGetSignalStrength },
+{"native_DtvGetSignalSNR", "()I", (void *) DtvGetSignalSNR },
 {"native_DtvSetAudioChannleMod", "(I)I", (void *) DtvSetAudioChannleMod },
 {"native_DtvSwitchAudioTrack3", "(III)I", (void *) DtvSwitchAudioTrack3 },
 {"native_DtvSwitchAudioTrack", "(II)I", (void *) DtvSwitchAudioTrack },
