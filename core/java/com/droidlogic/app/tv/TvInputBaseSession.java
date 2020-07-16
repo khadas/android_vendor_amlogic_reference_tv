@@ -94,7 +94,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     protected boolean isUnlockCurrent_NR = false;
     DroidLogicHdmiCecManager mDroidLogicHdmiCecManager = null;
     private int mKeyCodeMediaPlayPauseCount = 0;
-    private boolean isSurfaceAlive = true;
+    public boolean isSurfaceAlive = true;
 
     //add for get hdmi info
     private boolean isHdmiDevice = false;
