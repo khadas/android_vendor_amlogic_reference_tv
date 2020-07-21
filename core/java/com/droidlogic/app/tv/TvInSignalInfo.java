@@ -278,7 +278,8 @@ public class TvInSignalInfo {
         TVIN_SIG_FMT_HDMI_720X576P_50HZ_FRAME_PACKING   (0x44d),
         TVIN_SIG_FMT_HDMI_640X480P_72HZ                 (0x44e),
         TVIN_SIG_FMT_HDMI_640X480P_75HZ                 (0x44f),
-        TVIN_SIG_FMT_HDMI_MAX                           (0x450),
+        TVIN_SIG_FMT_HDMI_1152X864P_75HZ                (0x450),
+        TVIN_SIG_FMT_HDMI_MAX                           (0x451),
 
         TVIN_SIG_FMT_HDMI_THRESHOLD                     (0x600),
         //Video Formats
