@@ -50,7 +50,8 @@ import com.droidlogic.app.tv.DroidLogicTvUtils;
 import com.droidlogic.app.tv.TvControlManager;
 import com.droidlogic.app.tv.TvControlDataManager;
 
-public abstract class TvInputBaseSession extends TvInputService.Session implements Handler.Callback {
+public abstract class TvInputBaseSession extends TvInputService.Session implements Handler.Callback,
+    SystemControlManager.HdrInfoListener {
     private static final boolean DEBUG = true;
     private static final String TAG = "TvInputBaseSession";
 
@@ -124,6 +125,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         mDroidLogicHdmiCecManager = DroidLogicHdmiCecManager.getInstance(mContext);
         isHdmiDevice = (DroidLogicTvUtils.parseTvSourceTypeFromDeviceId(deviceId) == TvControlManager.SourceInput_Type.SOURCE_TYPE_HDMI);
         sendSessionMessage(MSG_REGISTER_BROADCAST);
+        mSystemControlManager.setHdrInfoListener(this);
     }
 
     public void setSessionId(int id) {
@@ -508,15 +510,31 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         return ret;
     }
 
+    @Override
+    public void onHdrInfoChange(int newHdrInfo) {
+        if (DEBUG)
+            Log.d(TAG, "onHdrInfoChange: hdr info is: " + newHdrInfo);
+        String newHdrtype = getHdmiHdrInfo(newHdrInfo);
+        if (!TextUtils.equals(newHdrtype, mHdmiHdrInfo)) {
+            mHdmiHdrInfo = newHdrtype;
+            if (mSessionHandler != null) {
+                mSessionHandler.removeMessages(MSG_UPDATE_HDMI_HDR);
+                mSessionHandler.sendEmptyMessageDelayed(MSG_UPDATE_HDMI_HDR, 0);
+            } else {
+                Log.d(TAG, "onHdrInfoChange: mSessionHandler is null.");
+            }
+        } else {
+            Log.d(TAG, "onHdrInfoChange: same hdr info.");
+        }
+    }
+
     //add for get hdmi info
     private void checkHdmiInfoOnVideoAvailable() {
         Log.d(TAG, "checkHdmiInfoOnVideoAvailable");
         if (mSessionHandler != null) {
-            mSessionHandler.removeMessages(MSG_UPDATE_HDMI_HDR);
             mSessionHandler.removeMessages(MSG_UPDATE_HDMI_AUDIO_FORMAT);
             mSessionHandler.removeMessages(MSG_CLEAR_INFO);
             mSessionHandler.removeMessages(MSG_DISPLAY_PERIOD);
-            mSessionHandler.sendEmptyMessageDelayed(MSG_UPDATE_HDMI_HDR, MSG_DELAY_PERIOD);
             mSessionHandler.sendEmptyMessageDelayed(MSG_UPDATE_HDMI_AUDIO_FORMAT, MSG_DELAY_PERIOD);
         }
     }
@@ -524,7 +542,6 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     private void checkHdmiInfoOnVideoUnavailable() {
         Log.d(TAG, "checkHdmiInfoOnVideoUnavailable");
         if (mSessionHandler != null) {
-            mSessionHandler.removeMessages(MSG_UPDATE_HDMI_HDR);
             mSessionHandler.removeMessages(MSG_UPDATE_HDMI_AUDIO_FORMAT);
             mSessionHandler.removeMessages(MSG_CLEAR_INFO);
             mSessionHandler.removeMessages(MSG_DISPLAY_PERIOD);
@@ -547,10 +564,9 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         notifySessionEvent(DroidLogicTvUtils.SIG_INFO_HDMI_AUDIO_FORMAT, bundle);
     }
 
-    private String getHdmiHdrInfo() {
+    private String getHdmiHdrInfo(int newHdrTypeInfo) {
         String result = null;
-        int hdrType = mSystemControlManager.GetSourceHdrType();
-        switch (hdrType) {
+        switch (newHdrTypeInfo) {
             case 0:
                 result = "UNKOWN";
                 break;
@@ -619,16 +635,8 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     }
 
     private void checkHdmiHdrInfo() {
-        String hdmiHdr = getHdmiHdrInfo();
-        if (!TextUtils.equals(hdmiHdr, mHdmiHdrInfo)) {
-            mHdmiHdrInfo = hdmiHdr;
-            sendHdmiHdrInfoByTif(hdmiHdr);
-            checkDolbyVisionStatus(hdmiHdr);
-        }
-        if (mSessionHandler != null) {
-            mSessionHandler.removeMessages(MSG_UPDATE_HDMI_HDR);
-            mSessionHandler.sendEmptyMessageDelayed(MSG_UPDATE_HDMI_HDR, MSG_DELAY_PERIOD);
-        }
+        sendHdmiHdrInfoByTif(mHdmiHdrInfo);
+        checkDolbyVisionStatus(mHdmiHdrInfo);
     }
 
     private void checkHdmiAudioFormat() {
