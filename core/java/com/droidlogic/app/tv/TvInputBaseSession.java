@@ -279,6 +279,11 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     @Override
     public void onOverlayViewSizeChanged(int width, int height) {
         Log.d(TAG, "onOverlayViewSizeChanged: "+width+","+height);
+        if (width < 720 || height < 480) {
+            mTvControlManager.SetPreviewWindowMode(true);
+        } else {
+            mTvControlManager.SetPreviewWindowMode(false);
+        }
     }
 
     @Override
