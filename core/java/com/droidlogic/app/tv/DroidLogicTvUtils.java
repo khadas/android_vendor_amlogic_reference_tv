@@ -303,11 +303,12 @@ public class DroidLogicTvUtils
     public static final String PROP_NEED_FAST_SWITCH = "tv.need.tvview.fast_switch";
     public static final String TV_SESSION_STATE = "tv_input_session_state";
     public static final String TV_SESSION_COUNT = "tv_input_session_count";
-    public static final String SWITCHING_HOME = "switching_home";
-    public static final String SWITCHING_TVAPP = "switching_tvapp";
-    public static final String PLAYING_HOME = "playing_home";
-    public static final String PLAYING_TVAPP = "playing_tvapp";
-    public static final String STATE_FREE = "free";
+    public static final int STATE_FREE = 0;
+    public static final int STATE_SWITCHING_HOME = 1;
+    public static final int STATE_SWITCHING_TVAPP = 2;
+    public static final int STATE_PLAYING_HOME = 3;
+    public static final int STATE_PLAYING_TVAPP = 4;
+
     /**
      * Other extra names for {@link TvInputInfo.createSetupIntent#intent} except for input id.
      */

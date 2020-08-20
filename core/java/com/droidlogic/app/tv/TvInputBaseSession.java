@@ -176,15 +176,15 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         if (count > 1) {
         } else if (count == 1) {
             if (DroidLogicTvUtils.needPreviewFeture(mSystemControlManager)) {
-                String state = TvControlDataManager.getString(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_STATE);
-                if (TextUtils.equals(state, DroidLogicTvUtils.SWITCHING_HOME)) {
-                    TvControlDataManager.putString(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_STATE, DroidLogicTvUtils.PLAYING_HOME);
-                } else if (TextUtils.equals(state, DroidLogicTvUtils.SWITCHING_TVAPP)) {
-                    TvControlDataManager.putString(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_STATE, DroidLogicTvUtils.PLAYING_TVAPP);
+                int state = TvControlDataManager.getInt(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_STATE, DroidLogicTvUtils.STATE_FREE);
+                if (state == DroidLogicTvUtils.STATE_SWITCHING_HOME) {
+                    TvControlDataManager.putInt(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_STATE, DroidLogicTvUtils.STATE_PLAYING_HOME);
+                } else if (state == DroidLogicTvUtils.STATE_SWITCHING_TVAPP) {
+                    TvControlDataManager.putInt(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_STATE, DroidLogicTvUtils.STATE_PLAYING_TVAPP);
                 }
             }
         } else {
-            TvControlDataManager.putString(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_STATE, DroidLogicTvUtils.STATE_FREE);
+            TvControlDataManager.putInt(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_STATE, DroidLogicTvUtils.STATE_FREE);
             count = 0;
         }
         TvControlDataManager.putInt(mContext.getContentResolver(), DroidLogicTvUtils.TV_SESSION_COUNT, count);
