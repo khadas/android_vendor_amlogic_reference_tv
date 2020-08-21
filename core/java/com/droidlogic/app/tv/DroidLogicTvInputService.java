@@ -20,6 +20,7 @@ import com.droidlogic.app.tv.AudioEffectManager;
 import com.droidlogic.app.tv.ChannelInfo;
 import com.droidlogic.app.tv.DroidLogicHdmiCecManager;
 import com.droidlogic.app.tv.DroidLogicTvUtils;
+import com.droidlogic.app.tv.InputChangeAdapter;
 import com.droidlogic.app.tv.TvControlManager;
 import com.droidlogic.app.tv.TvInSignalInfo;
 import com.droidlogic.app.SystemControlManager;
@@ -194,6 +195,8 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
         startTvServices();
         mAudioEffectManager = AudioEffectManager.getInstance(getApplicationContext());
         registerSettingsObserver();
+
+        InputChangeAdapter.getInstance(this);
     }
 
     private void registerSettingsObserver() {
