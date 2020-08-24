@@ -793,7 +793,7 @@ public class DroidLogicTvUtils
             } else if (inputId.indexOf(HDMI) != -1){
                 index = inputId.indexOf(HDMI);
                 address = inputId.substring(index + HDMI.length(), index + HDMI.length() + 1);
-                deviceId = Integer.parseInt(address);
+                deviceId = Integer.parseInt(address) + DEVICE_ID_HDMI1 -1;
             } else {
                 Log.e(TAG, "getDeviceIdFromInputId no identifed input " + inputId);
             }
