@@ -515,6 +515,11 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
 
                 mSession.notifySessionEvent(DroidLogicTvUtils.SIG_INFO_EVENT, null);
                 break;
+            case DroidLogicTvUtils.DEVICE_ID_SPDIF:
+                if (DEBUG)
+                    Log.d(TAG, "onSigChange: notifyVideoUnavailable(VIDEO_UNAVAILABLE_REASON_AUDIO_ONLY)");
+
+                mSession.notifyVideoUnavailable(TvInputManager.VIDEO_UNAVAILABLE_REASON_AUDIO_ONLY);
             default:
                 break;
             }
