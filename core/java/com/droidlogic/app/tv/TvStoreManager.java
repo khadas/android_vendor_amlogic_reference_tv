@@ -740,7 +740,7 @@ public abstract class TvStoreManager {
 
                 //Calc display number / LCN
                 if (mSortMode.isLCNSort()) {
-                    if (isRealtimeStore)
+                    if (isRealtimeStore && !mScanMode.isDTVManulScan())
                         updateChannelLCN(c, mChannels);
                     else
                         updateChannelLCN(c);
