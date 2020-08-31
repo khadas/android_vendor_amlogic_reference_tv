@@ -200,7 +200,9 @@ public abstract class TvStoreManager {
             mChannelsOld = mTvDataBaseManager.getChannelList(mInputId, TvContract.Channels.SERVICE_TYPE_AUDIO_VIDEO);
             mChannelsOld.addAll(mTvDataBaseManager.getChannelList(mInputId, TvContract.Channels.SERVICE_TYPE_AUDIO));
             //do not count service_other.
-            mDisplayNumber = mChannelsOld.size() + 1;
+            //mDisplayNumber = mChannelsOld.size() + 1;
+            mDisplayNumber = getMaxDisplayNumber(mChannelsOld) + 1;
+            mDisplayNumber2 = new Integer(mDisplayNumber);
             mChannelsOld.addAll(mTvDataBaseManager.getChannelList(mInputId, TvContract.Channels.SERVICE_TYPE_OTHER));
             Log.d(TAG, "Store> channel next:" + mDisplayNumber);
         }
@@ -218,6 +220,24 @@ public abstract class TvStoreManager {
             mChannelsAll = new ArrayList<ChannelInfo>();
         }
     }
+
+    private int getMaxDisplayNumber(ArrayList<ChannelInfo> list) {
+        int result = 0;
+        if (list != null && list.size() > 0) {
+            result = list.size();
+            Iterator<ChannelInfo> iter = list.iterator();
+            while (iter.hasNext()) {
+                ChannelInfo c = iter.next();
+                if (c.getMajorChannelNumber() != -1 && c.getMajorChannelNumber() > result) {
+                    result = c.getMajorChannelNumber();
+                } else if (c.getNumber() > result) {
+                    result = c.getNumber();
+                }
+            }
+        }
+        return result;
+    }
+
     private ChannelInfo createDtvChannelInfo(TvControlManager.ScannerEvent event) {
         String name = null;
         String serviceType;
@@ -964,8 +984,14 @@ public abstract class TvStoreManager {
                 return;
             }
 
-            if (mScanMode.isDTVManulScan())
-               initChannelsExist();
+            if (mScanMode.isDTVManulScan()) {
+                //delete exist same frequency channels to order new channels
+                if (mChannelsAll == null || mChannelsAll.size() == 0) {
+                    mTvDataBaseManager.deleteChannels(mInputId, event.freq);
+                    Log.d(TAG, "dtv prog data delete same frequency firstly " + event.freq);
+                }
+                initChannelsExist();
+            }
              /*get exist channel info list*/
              reinitChannels();
             TvControlManager.FEParas fep =

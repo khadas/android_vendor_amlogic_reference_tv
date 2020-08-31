@@ -98,6 +98,20 @@ public class TvDataBaseManager {
         }
     }
 
+    public void deleteChannels(String inputId, int frequency) {
+        ArrayList<ChannelInfo> channelMap = getChannelList(inputId, ChannelInfo.COMMON_PROJECTION, null, null);
+        if (channelMap != null) {
+            Iterator<ChannelInfo> iter = channelMap.iterator();
+            while (iter.hasNext()) {
+                ChannelInfo c = iter.next();
+                if (c.getFrequency() == frequency) {
+                    //Log.d(TAG, "delete Frequency c.getDisplayNumber()" + c.getDisplayNumber() + "getId:" + c.getId() + "ChannelInfo.getFrequency()" + c.getFrequency());
+                    deleteChannel(c);
+                }
+            }
+        }
+    }
+
     public void deleteAtvOrDtvChannels(boolean isatv) {
         final String atvwhere = Channels.COLUMN_TYPE + "='" + TvContract.Channels.TYPE_PAL +"' or " +
                           Channels.COLUMN_TYPE + "='" + TvContract.Channels.TYPE_NTSC +"' or " +
