@@ -628,11 +628,15 @@ public class TvDataBaseManager {
                     Log.d(TAG, "ATV CH[freq:" + channel.getFrequency() + "] already exist");
                     if (channel.getVideoStd() != atvlist.get(i).getVideoStd()
                             || channel.getAudioStd() != atvlist.get(i).getAudioStd()
-                            || channel.getVfmt() != atvlist.get(i).getVfmt()) {
+                            || channel.getVfmt() != atvlist.get(i).getVfmt()
+                            || channel.getFineTune() != atvlist.get(i).getFineTune()
+                            || channel.getAudioOutPutMode() != atvlist.get(i).getAudioOutPutMode()) {
                         Log.d(TAG, "Update ATV CH[freq:" + channel.getFrequency() + "] video or audio std.");
                         atvlist.get(i).setVideoStd(channel.getVideoStd());
                         atvlist.get(i).setAudioStd(channel.getAudioStd());
                         atvlist.get(i).setVfmt(channel.getVfmt());
+                        atvlist.get(i).setFinetune(channel.getFineTune());
+                        atvlist.get(i).setAudioOutPutMode(channel.getAudioOutPutMode());
                         updateAtvChannel(atvlist.get(i));
                     }
                     newChannelNum = atvlist.size() + 1;
