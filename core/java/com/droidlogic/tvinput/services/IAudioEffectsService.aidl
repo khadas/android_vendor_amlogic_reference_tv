@@ -68,4 +68,5 @@ interface IAudioEffectsService{
     void cleanupAudioEffects();
     void initSoundEffectSettings();
     void resetSoundEffectSettings();
+    void setLRReverse(boolean enable);
 }

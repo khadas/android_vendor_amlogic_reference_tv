@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.ComponentName;
+import android.media.AudioManager;
 import android.os.IBinder;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -24,6 +25,7 @@ public class AudioEffectManager {
     private String TAG = "AudioEffectManager";
     private IAudioEffectsService mAudioEffectService = null;
     private Context mContext;
+    private AudioManager mAudioManager;
 
     private boolean mDebug = true;
     private int RETRY_MAX = 10;
@@ -585,6 +587,20 @@ public class AudioEffectManager {
             mAudioEffectService.resetSoundEffectSettings();
         } catch (RemoteException e) {
             Log.e(TAG, "resetSoundEffectSettings failed:" + e);
+        }
+    }
+    public void setLRReverse(boolean enable) {
+        try {
+            mAudioManager = (AudioManager)mContext.getSystemService (Context.AUDIO_SERVICE);
+            if (true == enable) {
+                mAudioManager.setParameters("ChannelReverse=1");
+                Log.e(TAG, "ChannelReverse=1");
+            } else {
+                    mAudioManager.setParameters("ChannelReverse=0");
+                    Log.e(TAG, "ChannelReverse=0");
+            }
+        } catch (Exception e) {
+                Log.e(TAG, "setLRReverse:" + e);
         }
     }
 }
