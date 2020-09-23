@@ -102,6 +102,8 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     private String mHdmiHdrInfo = null;
     private String mHdmiAudioFormatInfo = null;
 
+    private boolean mHasDeviceSelect;// if hdmi channel has been setMain true
+
     //msg to dolby vision flag
     private int mCheckDolbyVisonCount = 0;
 
@@ -154,7 +156,13 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         // For aml LiveTv and Launcher with TvView, onSetMain and onRelease functions are not called sequencely.
         // And there is always an active source even it returns to Home. However, for products like Amazon, this
         // should be modified together with onSetMain, so that the ActiveSource could show the real path.
-        mDroidLogicHdmiCecManager.selectHdmiDevice(HdmiDeviceInfo.ADDR_INTERNAL, HdmiDeviceInfo.DEVICE_INACTIVE);
+
+        if (mHasDeviceSelect) {
+            mHasDeviceSelect = false;
+            // Select Tv internal address;
+            mDroidLogicHdmiCecManager.selectHdmiDevice(HdmiDeviceInfo.ADDR_INTERNAL, HdmiDeviceInfo.ID_INVALID);
+        }
+
         mContext.unregisterReceiver(mBroadcastReceiver);
 
         if (setSessionStateMachine(SESSION_RELEASED) == 0) {
@@ -444,16 +452,24 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     public void onSetMain(boolean isMain) {
         TvInputInfo info = mTvInputManager.getTvInputInfo(mInputId);
         Log.d(TAG, "onSetMain, isMain " + isMain + " input " + mInputId + " " + this);
-        if (isMain) {
-            if (info == null) {
-                return;
-            }
-            // For projects like Amazon Fireos, it should directly only use the HdmiDeviceInfo
-            // In the TvInputInfo to do deviceSelect, as to solve the auto jump issue.
-            HdmiDeviceInfo hdmiDevice = info.getHdmiDeviceInfo();
-            if (hdmiDevice == null) {
-                hdmiDevice = mDroidLogicHdmiCecManager.getHdmiDeviceInfo(mInputId);
-            }
+        if (!isMain) {
+            return;
+        }
+
+        if (info == null) {
+            Log.e(TAG, "onSetMain can't get tv input info!");
+            return;
+        }
+
+        // For projects like Amazon Fireos, it should directly only use the HdmiDeviceInfo
+        // In the TvInputInfo to do deviceSelect, as to solve the auto jump issue.
+        HdmiDeviceInfo hdmiDevice = info.getHdmiDeviceInfo();
+        if (hdmiDevice == null) {
+            hdmiDevice = mDroidLogicHdmiCecManager.getHdmiDeviceInfo(mInputId);
+        }
+
+        if (mDroidLogicHdmiCecManager.isHdmiDeviceId(mDeviceId)) {
+            mHasDeviceSelect = true;
             if (hdmiDevice != null) {
                 Log.d(TAG, "onSetMain hdmi device " + hdmiDevice);
                 mDroidLogicHdmiCecManager.selectHdmiDevice(hdmiDevice.getLogicalAddress(), mDeviceId);
@@ -461,6 +477,8 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
                 // There is no connected hdmi device, just cold switch
                 mDroidLogicHdmiCecManager.selectHdmiDevice(mDeviceId);
             }
+        } else {
+            mDroidLogicHdmiCecManager.selectHdmiDevice(HdmiDeviceInfo.ADDR_INTERNAL, mDeviceId);
         }
     }
 

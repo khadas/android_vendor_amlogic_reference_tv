@@ -160,7 +160,7 @@ public class DroidLogicHdmiCecManager {
         Log.d(TAG, "selectHdmiDevice " + logicAddress + " deviceId " + deviceId + " " + mInSelectProtection);
 
         int delayTime = 0;
-        if (HdmiDeviceInfo.ADDR_INTERNAL == logicAddress) {
+        if ((HdmiDeviceInfo.ADDR_INTERNAL == logicAddress) && deviceId == HdmiDeviceInfo.ID_INVALID) {
             // TvInputBaseSession onRelease might could be done either before  or just after the new Session onSetMain.
             // If the old one onRelease after the new one onSetMain, then the active source will be reset to tv's 0.
             if (mInSelectProtection) {
@@ -218,7 +218,7 @@ public class DroidLogicHdmiCecManager {
             mHandler.removeMessages(MSG_DEVICE_SELECT);
         } else if (mHandler.hasMessages(MSG_PORT_SELECT)) {
             Log.d(TAG, "removePreviousMessages port id:" + mSelectedPortId);
-            mHandler.removeMessages(MSG_DEVICE_SELECT);
+            mHandler.removeMessages(MSG_PORT_SELECT);
         } else if (mHandler.hasMessages(MSG_SELECT_PROTECTION)) {
             mHandler.removeMessages(MSG_SELECT_PROTECTION);
         }
@@ -289,7 +289,7 @@ public class DroidLogicHdmiCecManager {
 
     public boolean hasHdmiCecDevice(int deviceId) {
         Log.d(TAG, "hasHdmiCecDevice, deviceId: " + deviceId);
-        if (deviceId >= DroidLogicTvUtils.DEVICE_ID_HDMI1 && deviceId <= DroidLogicTvUtils.DEVICE_ID_HDMI4) {
+        if (isHdmiDeviceId(deviceId)) {
             int id = getPortIdByDeviceId(deviceId);
 
             if (mClient == null) {
@@ -313,6 +313,11 @@ public class DroidLogicHdmiCecManager {
 
     public int getInputSourceDeviceId() {
         return  mTvControlDataManager.getInt(mContext.getContentResolver(), DroidLogicTvUtils.TV_CURRENT_DEVICE_ID, 0);
+    }
+
+    public boolean isHdmiDeviceId(int deviceId) {
+        return deviceId >= DroidLogicTvUtils.DEVICE_ID_HDMI1
+                && deviceId <= DroidLogicTvUtils.DEVICE_ID_HDMI4;
     }
 
     public void sendKeyEvent(int keyCode, boolean isPressed) {
