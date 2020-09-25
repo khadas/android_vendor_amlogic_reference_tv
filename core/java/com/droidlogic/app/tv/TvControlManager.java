@@ -180,6 +180,7 @@ public class TvControlManager {
     private AVPlaybackListener mAVPlaybackListener = null;
     private EasEventListener mEasListener = null;
     private AudioEventListener mAudioListener = null;
+    private ResManagerListener mResmanagerListener = null;
 
     private int rrt5XmlLoadStatus = 0;
     public static  int EVENT_RRT_SCAN_START          = 1;
@@ -632,6 +633,12 @@ public class TvControlManager {
                         Log.d(TAG, "tvinput param1:"+param1);
                         Log.d(TAG, "tvinput param2:"+param2);
                         mAudioListener.HandleAudioEvent(cmd, param1, param2);
+                    }
+                    break;
+                 case RES_ONPREEMT_CALLBACK:
+                    Log.i(TAG, "get  RES_ONPREEMT_CALLBACK");
+                    if (mResmanagerListener != null) {
+                        mResmanagerListener.onResourceManagerEvent(parcel.bodyInt[0]);
                     }
                     break;
                  default:
@@ -6332,6 +6339,15 @@ public class TvControlManager {
     public void SetCloseCaptionListener(CloseCaptionListener l) {
         libtv_log_open();
         mCloseCaptionListener = l;
+    }
+
+    public interface ResManagerListener {
+        void onResourceManagerEvent(int cmd);
+    };
+
+    public void SetResourceManagerListener(ResManagerListener l) {
+        libtv_log_open();
+        mResmanagerListener = l;
     }
 
     public enum SourceInput {
