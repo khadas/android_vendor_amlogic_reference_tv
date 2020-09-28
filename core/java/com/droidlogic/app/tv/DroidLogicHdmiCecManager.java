@@ -82,6 +82,7 @@ public class DroidLogicHdmiCecManager {
                     setDeviceIdForCec(mSelectedDeviceId);
                     portSelect(mSelectedPortId);
                     mInSelectProtection = true;
+                    break;
                 case MSG_SELECT_PROTECTION:
                     mInSelectProtection = false;
                     break;
