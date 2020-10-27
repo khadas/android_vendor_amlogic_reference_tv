@@ -1176,6 +1176,9 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
                 case DroidLogicTvUtils.DEVICE_ID_HDMI2:
                 case DroidLogicTvUtils.DEVICE_ID_HDMI3:
                 case DroidLogicTvUtils.DEVICE_ID_HDMI4:
+                    if (mSession != null) {
+                        mSession.resetHdmiHdrInfo(mSystemControlManager.GetSourceHdrType());
+                    }
                 case DroidLogicTvUtils.DEVICE_ID_AV1:
                 case DroidLogicTvUtils.DEVICE_ID_AV2:
                     onSigChange(mTvControlManager.GetCurrentSignalInfo());

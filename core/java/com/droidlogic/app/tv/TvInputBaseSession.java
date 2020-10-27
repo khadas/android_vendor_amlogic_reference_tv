@@ -658,8 +658,15 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     }
 
     private void checkHdmiHdrInfo() {
-        sendHdmiHdrInfoByTif(mHdmiHdrInfo);
-        checkDolbyVisionStatus(mHdmiHdrInfo);
+        if (mHdmiHdrInfo != null) {
+            sendHdmiHdrInfoByTif(mHdmiHdrInfo);
+            checkDolbyVisionStatus(mHdmiHdrInfo);
+        }
+    }
+
+    public void resetHdmiHdrInfo(int hdrType) {
+        mHdmiHdrInfo = getHdmiHdrInfo(hdrType);
+        checkHdmiHdrInfo();
     }
 
     private void checkHdmiAudioFormat() {
