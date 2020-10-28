@@ -264,6 +264,7 @@ public class DroidLogicTvUtils
     public static final String PARA_SCAN_PARA4 = "scan_para4";
     public static final String PARA_SCAN_PARA5 = "scan_para5";
     public static final String PARA_SCAN_PARA6 = "scan_para6";
+    public static final String ACTION_STORE_CHANNEL_STATUS = "droidlogic.intent.action.STORE_STATUS";
 
     /*define number search program type*/
     public static final String ATVPROGRAM = "atv_program";

@@ -23,6 +23,7 @@ import android.os.Message;
 import android.text.TextUtils;
 import android.os.SystemProperties;
 import android.os.HandlerThread;
+import android.content.Intent;
 
 import com.droidlogic.app.tv.TvControlManager;
 import com.droidlogic.app.tv.TvControlManager.FreqList;
@@ -1165,6 +1166,7 @@ public abstract class TvStoreManager {
 
             bundle = getScanEventBundle(event);
             onEvent(DroidLogicTvUtils.SIG_INFO_C_SCAN_EXIT_EVENT, bundle);
+            sendStoreStatus(TvControlManager.EVENT_SCAN_EXIT);
             break;
 
         default:
@@ -1178,6 +1180,14 @@ public abstract class TvStoreManager {
             dealStoreEvent((TvControlManager.ScannerEvent)msg.obj);
             return false;
         }
+    }
+
+    //tell search activity that saving status
+    private void sendStoreStatus(int status) {
+        Intent intent = new Intent(DroidLogicTvUtils.ACTION_STORE_CHANNEL_STATUS);
+        intent.addFlags(0x01000000/*Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND*/);
+        intent.putExtra(DroidLogicTvUtils.ACTION_STORE_CHANNEL_STATUS, status);
+        mContext.sendBroadcast(intent);
     }
 }
 
