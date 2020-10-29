@@ -302,6 +302,7 @@ public class DroidLogicTvUtils
     //used for reference board preview window
     public static final String PROP_NEED_PREVIEW_WINDOW = "tv.need.droidlogic.preview_window";
     public static final String PROP_NEED_FAST_SWITCH = "tv.need.tvview.fast_switch";
+    public static final String PROP_IGNORE_FAST_SWITCH = "tv.ignore.tvview.fast_switch";
     public static final String TV_SESSION_STATE = "tv_input_session_state";
     public static final String TV_SESSION_COUNT = "tv_input_session_count";
     public static final int STATE_FREE = 0;

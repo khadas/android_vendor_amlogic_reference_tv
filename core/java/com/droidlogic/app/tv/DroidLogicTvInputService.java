@@ -1149,6 +1149,11 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
     }
 
     private void enableTvViewFastSwitch (){
+        if (mSystemControlManager.getPropertyBoolean(DroidLogicTvUtils.PROP_IGNORE_FAST_SWITCH, false)) {
+            Log.d(TAG, "app request ignore fast switch once");
+            mSystemControlManager.setProperty(DroidLogicTvUtils.PROP_IGNORE_FAST_SWITCH, "false");
+            return;
+        }
         if (mSession !=null) {
             int device_id = mSession.getDeviceId();
             switch (device_id) {
