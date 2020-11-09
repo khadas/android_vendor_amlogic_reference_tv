@@ -65,15 +65,16 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     protected static final int  MSG_DO_RELEASE              = 12;
     protected static final int  MSG_AUDIO_MUTE              = 13;
     protected static final int  MSG_IMAGETEXT_SET           = 14;
+    protected static final int  MSG_IMAGETEXT_RESET         = 15;
 
     ////add for get hdmi info
-    protected static final int MSG_UPDATE_HDMI_HDR = 15;
-    protected static final int MSG_UPDATE_HDMI_AUDIO_FORMAT = 16;
-    protected static final int MSG_CLEAR_INFO = 17;
+    protected static final int MSG_UPDATE_HDMI_HDR = 30;
+    protected static final int MSG_UPDATE_HDMI_AUDIO_FORMAT = 31;
+    protected static final int MSG_CLEAR_INFO = 32;
     protected static final int MSG_DELAY_PERIOD = 2000;//2s
 
     //msg to show dolby vision icon
-    protected static final int MSG_SHOW_DOLBY_VSION = 18;
+    protected static final int MSG_SHOW_DOLBY_VSION = 40;
     protected static final int CHECK_DOLBY_VISION_MAX_COUNT = 5;
     protected static final int MSG_DISPLAY_PERIOD = 3000;
 
@@ -203,6 +204,9 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
 
     public void doAppPrivateCmd(String action, Bundle bundle) {}
     public void doUnblockContent(TvContentRating rating) {}
+    public boolean isRadioChannel() {
+        return false;
+    }
 
     @Override
     public void onSurfaceChanged(int format, int width, int height) {
@@ -299,8 +303,13 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         Log.d(TAG, "notifyVideoAvailable ");
         super.notifyVideoAvailable();
         if (mOverlayView != null) {
-            mOverlayView.setImageVisibility(false);
-            mOverlayView.setTextVisibility(false);
+            if (isRadioChannel()) {
+                mOverlayView.setImageVisibility(true);
+                mOverlayView.setTextVisibility(false);
+            } else {
+                mOverlayView.setImageVisibility(false);
+                mOverlayView.setTextVisibility(false);
+            }
         }
         if (isHdmiDevice) {
             checkHdmiInfoOnVideoAvailable();
@@ -421,6 +430,12 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
                 if (mOverlayView != null) {
                     mOverlayView.setImageVisibility(true);
                     mOverlayView.setTextVisibility(true);
+                }
+                break;
+            case MSG_IMAGETEXT_RESET:
+                if (mOverlayView != null) {
+                    mOverlayView.setImageVisibility(false);
+                    mOverlayView.setTextVisibility(false);
                 }
                 break;
             case MSG_UPDATE_HDMI_HDR:

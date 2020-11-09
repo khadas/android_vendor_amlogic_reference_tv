@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.graphics.drawable.Drawable;
 
 public abstract class DroidLogicOverlayView extends FrameLayout {
     private static final String TAG = "DroidLogicOverlayView";
@@ -50,6 +51,10 @@ public abstract class DroidLogicOverlayView extends FrameLayout {
 
     public void setImage(int resId) {
         mImageView.setImageResource(resId);
+    }
+
+    public void setImage(Drawable draw) {
+        mImageView.setImageDrawable(draw);
     }
 
     public void setImageVisibility(boolean visible) {
