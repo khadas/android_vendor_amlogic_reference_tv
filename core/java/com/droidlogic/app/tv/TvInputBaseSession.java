@@ -630,7 +630,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     */
     private String getHdmiAudioFormat() {
         String result = null;
-        String formatInfo = mAudioManager.getParameters("HDMIIN audio format");
+        String formatInfo = mAudioManager.getParameters("HDMIIN Audio Type");
         int audioFormat = parseFirstValidIntegerByPattern(formatInfo);
         switch (audioFormat) {
             case 0:
