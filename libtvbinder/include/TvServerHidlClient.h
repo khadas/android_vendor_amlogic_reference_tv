@@ -89,6 +89,7 @@ public:
     int setMiscCfg(const std::string& key, const std::string& val);
     std::string getMiscCfg(const std::string& key, const std::string& def);
     int loadEdidData(int32_t isNeedBlackScreen, int32_t isDolbyVisionEnable);
+    int updateEdidData(int32_t inputSrc, const std::string& edidData);
     int setHdmiEdidVersion(int32_t port_id, int32_t ver);
     int getHdmiEdidVersion(int32_t port_id);
     int saveHdmiEdidVersion(int32_t port_id, int32_t ver);

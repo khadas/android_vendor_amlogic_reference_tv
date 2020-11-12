@@ -698,6 +698,7 @@ public class TvControlManager {
     private native int native_IsVgaTimingInHdmi();
     private native int native_GetInputSrcConnectStatus(int srcinput);
     private native int native_LoadEdidData(int isNeedBlackScreen, int isDolbyVisionEnable);
+    private native int native_UpdateEdidData(int inputsrc, String edidData);
     private native int native_SetHdmiEdidVersion(int port, int ver);
     private native int native_GetHdmiEdidVersion(int port);
     private native int native_SaveHdmiEdidVersion(int port, int ver);
@@ -1437,6 +1438,23 @@ public class TvControlManager {
         return -1;
     }
 
+    /**
+     * @Function: UpdateEdidData
+     * @Description: load edid bin data for special port
+     * @Param: srcInput, the source need update edid
+     * @Param: edidData, edid data
+     * @Return: 0 success, -1 fail
+     */
+    public int UpdateEdidData(SourceInput srcInput, String edidData) {
+          synchronized (mLock) {
+            try {
+                return native_UpdateEdidData(srcInput.toInt(), edidData);
+            } catch (Exception e) {
+                Log.e(TAG, "UpdateEdidData:" + e);
+            }
+        }
+        return -1;
+    }
     /**
      * @Function: SetHdmiEdidVersion
      * @Description: set hdmi edid version to 1.4 or 2.0

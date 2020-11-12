@@ -222,6 +222,10 @@ int TvServerHidlClient::loadEdidData(int32_t isNeedBlackScreen, int32_t isDolbyV
     return mTvServer->loadEdidData(isNeedBlackScreen, isDolbyVisionEnable);
 }
 
+int TvServerHidlClient::updateEdidData(int32_t inputSrc, const std::string& edidData) {
+    return mTvServer->updateEdidData(inputSrc, edidData);
+}
+
 int TvServerHidlClient::setHdmiEdidVersion(int32_t port_id, int32_t ver) {
     return mTvServer->setHdmiEdidVersion(port_id, ver);
 }
