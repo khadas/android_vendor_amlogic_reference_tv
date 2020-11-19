@@ -1261,7 +1261,7 @@ static JNINativeMethod Tv_Methods[] = {
 {"native_IsVgaTimingInHdmi", "()I", (void *) IsVgaTimingInHdmi },
 {"native_GetInputSrcConnectStatus", "(I)I", (void *) GetInputSrcConnectStatus },
 {"native_LoadEdidData", "(II)I", (void *) LoadEdidData },
-{"native_UpdateEdidData", "(ILjava/lang/String)I", (void *) UpdateEdidData },
+{"native_UpdateEdidData", "(ILjava/lang/String;)I", (void *) UpdateEdidData },
 {"native_SetHdmiEdidVersion", "(II)I", (void *) SetHdmiEdidVersion },
 {"native_GetHdmiEdidVersion", "(I)I", (void *) GetHdmiEdidVersion },
 {"native_SaveHdmiEdidVersion", "(II)I", (void *) SaveHdmiEdidVersion },
