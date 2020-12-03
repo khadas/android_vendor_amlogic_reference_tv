@@ -1836,7 +1836,6 @@ public class TvDataBaseManager {
     }
 
     private ArrayList<ContentProviderOperation> epg_ops = new ArrayList<>();
-    private HashMap<Long, List<Program>> epg_map = new HashMap<Long, List<Program>>();
 
     public void clearPrograms() {
         if (epg_ops.size() > 0) {
@@ -1857,7 +1856,6 @@ public class TvDataBaseManager {
 
     public void resetPrograms() {
         clearPrograms();
-        epg_map.clear();
     }
 
     public boolean updatePrograms(Uri channelUri, long channelId, List<Program> newPrograms, Long timeUtcMillis, boolean isAtsc) {
@@ -1866,12 +1864,7 @@ public class TvDataBaseManager {
         if (fetchedProgramsCount == 0) {
             return updated;
         }
-        List<Program> oldPrograms;
-        oldPrograms = epg_map.get(channelId);
-        if (oldPrograms == null) {
-            oldPrograms = getPrograms(TvContract.buildProgramsUriForChannel(channelUri));
-            epg_map.put(channelId, oldPrograms);
-        }
+        List<Program> oldPrograms = getPrograms(TvContract.buildProgramsUriForChannel(channelUri));
 
         //Collections.sort(newPrograms, new ComparatorValues());
         //Collections.sort(oldPrograms, new ComparatorValues());
@@ -1908,7 +1901,6 @@ public class TvDataBaseManager {
                     ? oldPrograms.get(oldProgramsIndex) : null;
             Program newProgram = newPrograms.get(newProgramsIndex);
             boolean addNewProgram = false;
-
             if (oldProgram != null) {
 
                 if (isAtsc && isATSCSpecialProgram(newProgram)) {
@@ -1999,7 +1991,7 @@ public class TvDataBaseManager {
                     updated = isProgramAtTime(newProgram, timeUtcMillis);
                 }
 
-                    Log.d(TAG, "\tepg new:(old none):cid("+newProgram.getChannelId()+")eid("+newProgram.getProgramId()+")desc("+newProgram.getTitle()+")time("+newProgram.getStartTimeUtcMillis()+"-"+newProgram.getEndTimeUtcMillis()+")id("+newProgram.getId()+")");
+                    Log.d(TAG, "\tepg new:(old none):Description("+ newProgram.getDescription() + ")cid("+newProgram.getChannelId()+")eid("+newProgram.getProgramId()+")desc("+newProgram.getTitle()+")time("+newProgram.getStartTimeUtcMillis()+"-"+newProgram.getEndTimeUtcMillis()+")id("+newProgram.getId()+")");
                 }
                 newProgramsIndex++;
             }
@@ -2134,8 +2126,7 @@ public class TvDataBaseManager {
 
         try {
             cursor = mContentResolver.query(uri, null, null, null, null);
-            if (cursor != null) {
-                cursor.moveToNext();
+            if (cursor != null && cursor.moveToNext()) {
                 program = Program.fromCursor(cursor);
             }
         } catch (Exception e) {
