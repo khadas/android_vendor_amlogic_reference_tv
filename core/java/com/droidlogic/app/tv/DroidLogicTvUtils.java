@@ -1447,7 +1447,7 @@ public class DroidLogicTvUtils
 
     public static TvContentRating[] parseDRatings(String jsonString) {
         String RatingDomain = "com.android.tv";
-        Log.d(TAG, "parseDRatings:"+jsonString);
+        if (DEBUG) Log.d(TAG, "parseDRatings:"+jsonString);
         if (jsonString == null || jsonString.isEmpty())
             return null;
 
@@ -1477,7 +1477,7 @@ public class DroidLogicTvUtils
             return null;
         }
 
-        Log.d(TAG, "D rating:"+regionArray.toString());
+        if (DEBUG) Log.d(TAG, "D rating:"+regionArray.toString());
 
         int ArraySize = regionArray.length();
         for (int i = 0; i < regionArray.length(); i++) {
