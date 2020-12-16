@@ -18,6 +18,8 @@ import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
 import android.util.Log;
 import android.os.SystemProperties;
+import android.text.TextUtils;
+
 import java.util.List;
 
 /**
@@ -66,17 +68,28 @@ public class InputChangeAdapter {
                 }
 
                 List<TvInputInfo> tvInputList = manager.getTvInputList();
-                String inputId = null;
+                String inputId = "";
+                 String parentInputId = "";
                 for (TvInputInfo tvInputInfo : tvInputList) {
                     HdmiDeviceInfo hdmiInfo = tvInputInfo.getHdmiDeviceInfo();
                     if (hdmiInfo != null && hdmiInfo.getLogicalAddress() == info.getLogicalAddress()) {
                         inputId = tvInputInfo.getId();
+                        parentInputId = tvInputInfo.getParentId();
                         break;
                     }
                 }
 
-                if (null == inputId) {
+                if (TextUtils.isEmpty(inputId)) {
                     Log.d(TAG, "no input id found for " + info);
+                    return;
+                }
+
+                String currentSelectInput = DroidLogicHdmiCecManager.getInstance(context).getCurrentInput();
+
+                Log.d(TAG, "input id:" + inputId + " parent:" + parentInputId + " current:" + currentSelectInput);
+                if (currentSelectInput.equals(inputId)
+                    || currentSelectInput.equals(parentInputId)) {
+                    Log.d(TAG, "same input id no need to broadcast");
                     return;
                 }
 

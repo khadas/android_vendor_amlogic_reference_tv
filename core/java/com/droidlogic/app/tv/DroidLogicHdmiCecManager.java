@@ -10,35 +10,39 @@
 package com.droidlogic.app.tv;
 
 import android.content.Context;
+import android.content.ContentResolver;
+import android.content.pm.PackageManager;
+import android.database.ContentObserver;
 import android.hardware.hdmi.HdmiControlManager;
 import android.hardware.hdmi.HdmiDeviceInfo;
 import android.hardware.hdmi.HdmiClient;
 import android.hardware.hdmi.HdmiTvClient;
 import android.hardware.hdmi.HdmiTvClient.SelectCallback;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemProperties;
-import android.text.TextUtils;
 import android.provider.Settings;
 import android.provider.Settings.Global;
 import android.media.tv.TvInputHardwareInfo;
 import android.media.tv.TvInputManager;
 import android.media.tv.TvInputInfo;
 import android.util.Log;
+import android.view.KeyEvent;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-
-import com.droidlogic.app.SystemControlManager;
 
 public class DroidLogicHdmiCecManager {
     private static final String TAG = "DroidLogicHdmiCecManager";
     private static boolean DEBUG = Log.isLoggable("HDMI", Log.DEBUG);
 
     private static final String HDMI_CONTROL_ENABLED = "hdmi_control_enabled";
+    private static final String FEATURE_HDMI_CEC = "android.hardware.hdmi.cec";
 
-    private static final int DEVICE_SELECT_PROTECTION_TIME = 2000;
+    private static final int ENABLED = 1;
+
+    private static final int DEVICE_SELECT_PROTECTION_TIME = 1500;
 
     private static final int MSG_DEVICE_SELECT = 0;
     private static final int MSG_PORT_SELECT = 1;
@@ -54,45 +58,36 @@ public class DroidLogicHdmiCecManager {
     private TvInputManager mTvInputManager;
     private TvControlDataManager mTvControlDataManager;
     private TvControlManager mTvControlManager;
-    private SystemControlManager mSystemControlManager;
 
-    private int mSelectedLogicalAddress;
-    private int mSelectedPortId;
-    private int mSelectedDeviceId;
+    private SelectDeviceInfo mCurrentSelect;
+    private SelectDeviceInfo mSelectingDevice;
 
-    // If we have selected a valid hdmi source, we should not device select
-    // internal address 0 within the protection time.
+    private final SelectDeviceInfo INTERNAL_DEVICE = new SelectDeviceInfo(HdmiDeviceInfo.ADDR_INTERNAL);
+
+    // If this class is used then there is tv feature, but cec not sure.
+    private boolean mHasCecFeature;
+
+    // There might be a case where the old session onSetMain false is called after the new one on
+    // onSetMain true. Even though we hope this never happens, we still add a protetion mechanism.
     private boolean mInSelectProtection;
 
-    static final String PROPERTY_VENDOR_DEVICE_TYPE = "ro.vendor.platform.hdmi.device_type";
+    private int mKeyCodeMediaPlayPauseCount;
 
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_DEVICE_SELECT:
-                    setDeviceIdForCec(mSelectedDeviceId);
-                    deviceSelect(mSelectedLogicalAddress);
-
-                    if (mSelectedLogicalAddress != HdmiDeviceInfo.ADDR_INTERNAL) {
-                        mInSelectProtection = true;
-                    }
+                    mTvClient.deviceSelect(mCurrentSelect.getLogicalAddress(), mSelectCallback);
                     break;
                 case MSG_PORT_SELECT:
-                    setDeviceIdForCec(mSelectedDeviceId);
-                    portSelect(mSelectedPortId);
-                    mInSelectProtection = true;
+                    mTvClient.portSelect(mCurrentSelect.getPortId(), mSelectCallback);
                     break;
                 case MSG_SELECT_PROTECTION:
                     mInSelectProtection = false;
                     break;
                 case MSG_SEND_KEY_EVENT:
-                    if (mTvClient == null) {
-                        Log.e(TAG, "mHandler sendKeyEvent fail, mTvClient is null ?: " + (mTvClient == null));
-                        return;
-                    }
-                    Log.d(TAG, "mHandler sendKeyEvent, keyCode: " + msg.arg1 + " isPressed: " + msg.arg2);
-                    mTvClient.sendKeyEvent((int)msg.arg1, (((int)msg.arg2 == 1) ?  true : false));
+                    mClient.sendKeyEvent((int)msg.arg1, (boolean)msg.obj);
                     break;
                 default:
                     break;
@@ -100,7 +95,7 @@ public class DroidLogicHdmiCecManager {
         }
     };
 
-    private SelectCallback mSelectCallback = new SelectCallback() {
+    private final SelectCallback mSelectCallback = new SelectCallback() {
         @Override
         public void onComplete(int result) {
             Log.d(TAG, "select onComplete result = " + result);
@@ -109,97 +104,167 @@ public class DroidLogicHdmiCecManager {
 
     public static synchronized DroidLogicHdmiCecManager getInstance(Context context) {
         if (mInstance == null) {
-            Log.d(TAG, "mInstance is null...");
             mInstance = new DroidLogicHdmiCecManager(context);
         }
         return mInstance;
     }
 
-    public DroidLogicHdmiCecManager(Context context) {
-        Log.d(TAG, "DroidLogicHdmiCecManager create");
+    private DroidLogicHdmiCecManager(Context context) {
         mContext = context;
-        mHdmiControlManager = (HdmiControlManager) context.getSystemService(Context.HDMI_CONTROL_SERVICE);
-
-        if (mHdmiControlManager != null) {
-            List<Integer> mDeviceTypes;
-            mDeviceTypes = getIntList(SystemProperties.get(PROPERTY_VENDOR_DEVICE_TYPE));
-            for (int type : mDeviceTypes) {
-                Log.i(TAG, "DroidLogicHdmiCecManager hdmi device type " + type);
-                if (type == HdmiDeviceInfo.DEVICE_TV) {
-                    mTvClient = mHdmiControlManager.getTvClient();
-                    mClient = mHdmiControlManager.getTvClient();
-                } else if (type == HdmiDeviceInfo.DEVICE_AUDIO_SYSTEM) {
-                    mClient = mHdmiControlManager.getClient(HdmiDeviceInfo.DEVICE_AUDIO_SYSTEM);
-                }
-            }
-        }
-
         mTvInputManager = (TvInputManager) context.getSystemService(Context.TV_INPUT_SERVICE);
         mTvControlDataManager = TvControlDataManager.getInstance(mContext);
-        mTvControlManager = TvControlManager.getInstance();
-        mSystemControlManager = SystemControlManager.getInstance();
-    }
 
-    protected static List<Integer> getIntList(String string) {
-        ArrayList<Integer> list = new ArrayList<>();
-        TextUtils.SimpleStringSplitter splitter = new TextUtils.SimpleStringSplitter(',');
-        splitter.setString(string);
-        for (String item : splitter) {
-            try {
-                list.add(Integer.parseInt(item));
-            } catch (NumberFormatException e) {
-                Log.d(TAG, "Can't parseInt: " + item);
-            }
+        PackageManager pm = context.getPackageManager();
+        mHasCecFeature = pm.hasSystemFeature(FEATURE_HDMI_CEC);
+        Log.i(TAG, "cec feature exist:" + mHasCecFeature);
+        if (!mHasCecFeature) {
+            return;
         }
-        return Collections.unmodifiableList(list);
-    }
 
-    /**
-     * Use logicalAddress to switch source in senarios like InputService.Session setMain()
-     */
-    public void selectHdmiDevice(int logicAddress, int deviceId) {
-        Log.d(TAG, "selectHdmiDevice " + logicAddress + " deviceId " + deviceId + " " + mInSelectProtection);
-
-        int delayTime = 0;
-        if ((HdmiDeviceInfo.ADDR_INTERNAL == logicAddress) && deviceId == HdmiDeviceInfo.ID_INVALID) {
-            // TvInputBaseSession onRelease might could be done either before  or just after the new Session onSetMain.
-            // If the old one onRelease after the new one onSetMain, then the active source will be reset to tv's 0.
-            if (mInSelectProtection) {
-                Log.e(TAG, "selectHdmiDevice protection time and no select internal address");
-                return;
-            } else {
-                // Not directly select internal address, give the incoming hdmi tune a change to remove it.
-                delayTime = DEVICE_SELECT_PROTECTION_TIME;
-            }
+        mHdmiControlManager = (HdmiControlManager) context.getSystemService(Context.HDMI_CONTROL_SERVICE);
+        mTvClient = mHdmiControlManager.getTvClient();
+        if (mTvClient != null) {
+            mClient = mTvClient;
         } else {
-            // For hdmi routing we should remove previous messages, this works to avoid the Routing Change to
-            // internal address 0 during normal hdmi channel switches.
-            removePreviousMessages();
-            mHandler.sendEmptyMessageDelayed(MSG_SELECT_PROTECTION, DEVICE_SELECT_PROTECTION_TIME);
+            // Customers might demands the remote of a soundbar could send key events.
+            mClient = mHdmiControlManager.getClient(HdmiDeviceInfo.DEVICE_AUDIO_SYSTEM);
         }
 
-        mSelectedDeviceId = deviceId;
-        mSelectedLogicalAddress = logicAddress;
+        registerSettingsObserver();
 
-        Message msg = mHandler.obtainMessage(MSG_DEVICE_SELECT);
-        mHandler.sendMessageDelayed(msg, delayTime);
+        InputChangeAdapter.getInstance(mContext);
     }
 
     /**
-     * Use deviceId to do the portSelect job in senarios like enable cec.
-     */
-    public void selectHdmiDevice(int deviceId) {
-        Log.d(TAG, "selectHdmiDevice deviceId " + deviceId);
-        int portId = getPortIdByDeviceId(deviceId);
+     * 1. Device select or Port Select
+     * a. hdmi device id
+     * b. onSetMain true
+     * c. HdmiDeviceInfo in TvInputInfo is null? deviceSelect : portSelect.
 
-        mSelectedDeviceId = deviceId;
-        mSelectedPortId = portId;
+     * 2. When to call internal address 0
+     * This is when there is no hdmi device's Session onSetMain true. We could do it like this:
+     * a. hdmi device id
+     * b. onSetMain false
+     * c. exclude the special case in which there is no need.
+
+     * 3. There are 4 cases in which hdmi device's Session onSetMain false is called.
+     * a. Tune from hdmi device A to hdmi B.--> onSetMain hdmi true remove old messages.
+     * b. Tune from hdmi device to none hdmi device. -->onSetMain false message is not removed.
+     * c. Quit LiveTv to MboxLauncher which has no TvView of TV source.-->onSetMain false message is not removed.
+     * d. Tune from LiveTV's hdmi device A to MboxLauncher's same one.---> If the device id is the same but
+     *    session id is not, and in this scenario the old Session's onSetMain false might happens after the
+     *    new one has been callded onSetMain true, we should abort calling internal address.
+     */
+    public void onSetMain(boolean isMain, String inputId, int deviceId, int sessionId) {
+        if (!mHasCecFeature) {
+            Log.v(TAG, "onSetMain no cec then no need.");
+            return;
+        }
+
+        if (mTvClient == null) {
+            Log.e(TAG, "onSetMain tv client null.");
+            return;
+        }
+
+        mSelectingDevice = new SelectDeviceInfo(inputId, deviceId, sessionId);
+
+        if (isHdmiDeviceId(deviceId)) { // Hdmi device
+            if (isMain) {
+                TvInputInfo info = mTvInputManager.getTvInputInfo(inputId);
+                if (info == null) {
+                    Log.e(TAG, "onSetMain can't get tv input info!");
+                    return;
+                }
+                // Always previously use deviceSelect if we could get the logical address of the source.
+                // For projects like Amazon Fireos, it should directly only use the HdmiDeviceInfo
+                // In the TvInputInfo to do deviceSelect, as to solve the auto jump issue.
+                HdmiDeviceInfo hdmiDevice = info.getHdmiDeviceInfo();
+                if (hdmiDevice == null) {
+                    hdmiDevice = getHdmiDeviceInfo(inputId);
+                }
+
+                if (hdmiDevice != null) {
+                    Log.d(TAG, "onSetMain hdmi device " + hdmiDevice);
+                    mSelectingDevice.setLogicalAddress(hdmiDevice.getLogicalAddress());
+                    // case 0: device select hdmi
+                    deviceSelect();
+                } else {
+                    // case 1: port select hdmi
+                    int portId = getPortIdByDeviceId(deviceId);
+                    mSelectingDevice.setPortId(portId);
+                    portSelect();
+                }
+            } else {
+                // case 3: leave hdmi, try to device select 0
+                if (deviceId == mCurrentSelect.getDeviceId() && (sessionId != mCurrentSelect.getSessionId())) {
+                    // Same hdmi but different session id. In this case the sequence of setMain is not for sure.
+                    return;
+                }
+                mSelectingDevice = INTERNAL_DEVICE;
+                deviceSelectInternalDelayed();
+            }
+        }
+    }
+
+    public String getCurrentInput() {
+        String currentInput = "";
+        if (mCurrentSelect != null) {
+            currentInput = mCurrentSelect.getInputId();
+        }
+        return currentInput;
+    }
+
+    private void registerSettingsObserver() {
+        DroidLogicSettingsObserver observer = new DroidLogicSettingsObserver(mHandler);
+        String[] settings = new String[] {
+            HDMI_CONTROL_ENABLED
+        };
+        for (String s : settings) {
+            mContext.getContentResolver().registerContentObserver(Global.getUriFor(s), false, observer);
+        }
+    }
+
+    /**
+    * generally used to switch source.
+    */
+    private void deviceSelect() {
+        mCurrentSelect = mSelectingDevice;
+
+        Log.d(TAG, "deviceSelect " + mCurrentSelect);
+        removePreviousMessages();
+        mHandler.sendMessage(mHandler.obtainMessage(MSG_DEVICE_SELECT));
+
+        mInSelectProtection = true;
+        mHandler.sendEmptyMessageDelayed(MSG_SELECT_PROTECTION, DEVICE_SELECT_PROTECTION_TIME);
+    }
+
+    private void deviceSelectInternalDelayed() {
+        if (mInSelectProtection) {
+            // If there has just been a valid hdmi tune action, then we should protect it.
+            Log.e(TAG, "selectHdmiDevice protection time and no select internal address");
+            return;
+        }
+        // No remove previous select messages in here.
+        mCurrentSelect = mSelectingDevice;
+        Log.d(TAG, "deviceSelectInternalDelayed " + mCurrentSelect);
+
+        mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_DEVICE_SELECT), DEVICE_SELECT_PROTECTION_TIME);
+    }
+
+    /**
+     * only used in special senarios where can't get logical address like
+     * open cec switch. Tv will not do the tune action and the hdmi device
+     * list has not been created for the connected devices.
+     */
+    private void portSelect() {
+        mCurrentSelect = mSelectingDevice;
+        Log.d(TAG, "portSelect " + mCurrentSelect);
 
         removePreviousMessages();
-        mHandler.sendEmptyMessageDelayed(MSG_SELECT_PROTECTION, DEVICE_SELECT_PROTECTION_TIME);
+        mHandler.sendMessage(mHandler.obtainMessage(MSG_PORT_SELECT));
 
-        Message msg = mHandler.obtainMessage(MSG_PORT_SELECT, portId);
-        mHandler.sendMessage(msg);
+        mInSelectProtection = true;
+        mHandler.sendEmptyMessageDelayed(MSG_SELECT_PROTECTION, DEVICE_SELECT_PROTECTION_TIME);
     }
 
     /**
@@ -208,49 +273,11 @@ public class DroidLogicHdmiCecManager {
      * channel, there is a deviceSelect 0 first and then a deviceSelect 4, we need
      * to make sure the deviceSelect 0 is not finally performed so that there are
      * not so many meaningless routing messages.
-     *
-     * Besides, when using Handler remove messages, please be careful that only
-     * when the Message is absolutely equal then Handler could remove it. Handler
-     * can't remove a Message with 'what' and 'obj' using removeMessages(int what).
      */
     private void removePreviousMessages() {
-        if (mHandler.hasMessages(MSG_DEVICE_SELECT)) {
-            Log.d(TAG, "removePreviousMessages logical address:" + mSelectedLogicalAddress);
-            mHandler.removeMessages(MSG_DEVICE_SELECT);
-        } else if (mHandler.hasMessages(MSG_PORT_SELECT)) {
-            Log.d(TAG, "removePreviousMessages port id:" + mSelectedPortId);
-            mHandler.removeMessages(MSG_PORT_SELECT);
-        } else if (mHandler.hasMessages(MSG_SELECT_PROTECTION)) {
-            mHandler.removeMessages(MSG_SELECT_PROTECTION);
-        }
-    }
-
-    /**
-    * generally used to switch source.
-    */
-    private void deviceSelect(int logicalAddress) {
-        if (mTvClient == null) {
-            Log.e(TAG, "switchActiveSource tv client null.");
-            return;
-        }
-
-        Log.d(TAG, "deviceSelect " + logicalAddress);
-        mTvClient.deviceSelect(logicalAddress, mSelectCallback);
-    }
-
-    /**
-     * only used in special senarios where can't get logical address like
-     * open cec switch. Tv will not do the tune action and the hdmi device
-     * list has not been created for the connected devices.
-     */
-    private void portSelect(int portId) {
-        if (mTvClient == null) {
-            Log.e(TAG, "switchActiveSource tv client null.");
-            return;
-        }
-
-        Log.d(TAG, "portSelect " + portId);
-        mTvClient.portSelect(portId, mSelectCallback);
+        mHandler.removeMessages(MSG_DEVICE_SELECT);
+        mHandler.removeMessages(MSG_PORT_SELECT);
+        mHandler.removeMessages(MSG_SELECT_PROTECTION);
     }
 
     public HdmiDeviceInfo getHdmiDeviceInfo(String iputId) {
@@ -268,10 +295,8 @@ public class DroidLogicHdmiCecManager {
 
     public void setDeviceIdForCec(int deviceId){
         // Give cec hal a chance to filter strange <Active Source>
-        if (mTvControlManager != null) {
-            Log.d(TAG, "setDeviceIdForCec " + deviceId);
-            mTvControlManager.setDeviceIdForCec(deviceId);
-        }
+        Log.d(TAG, "setDeviceIdForCec " + deviceId);
+        TvControlManager.getInstance().setDeviceIdForCec(deviceId);
     }
 
     public int getPortIdByDeviceId(int deviceId) {
@@ -288,30 +313,6 @@ public class DroidLogicHdmiCecManager {
         return -1;
     }
 
-    public boolean hasHdmiCecDevice(int deviceId) {
-        Log.d(TAG, "hasHdmiCecDevice, deviceId: " + deviceId);
-        if (isHdmiDeviceId(deviceId)) {
-            int id = getPortIdByDeviceId(deviceId);
-
-            if (mClient == null) {
-                Log.e(TAG, "hasHdmiCecDevice HdmiClient null!");
-                return false;
-            }
-            if (mTvClient != null) {
-                for (HdmiDeviceInfo info : mTvClient.getDeviceList()) {
-                    if (id == ((int)info.getPortId())) {
-                        Log.d(TAG, "hasHdmiCecDevice find active device " + info);
-                        return true;
-                    }
-                }
-            } else {
-                Log.d(TAG, "hasHdmiCecDevice no check devicelist if it's not tv.");
-                return true;
-            }
-        }
-        return false;
-    }
-
     public int getInputSourceDeviceId() {
         return  mTvControlDataManager.getInt(mContext.getContentResolver(), DroidLogicTvUtils.TV_CURRENT_DEVICE_ID, 0);
     }
@@ -321,8 +322,122 @@ public class DroidLogicHdmiCecManager {
                 && deviceId <= DroidLogicTvUtils.DEVICE_ID_HDMI4;
     }
 
-    public void sendKeyEvent(int keyCode, boolean isPressed) {
-        Message msg = mHandler.obtainMessage(MSG_SEND_KEY_EVENT, keyCode, isPressed ? 1 : 0);
-        mHandler.sendMessageDelayed(msg, 0);
+    public boolean sendKeyEvent(int keyCode, boolean isPressed) {
+        if (!mHasCecFeature) {
+            Log.v(TAG, "sendKeyEvent no cec feature");
+            return false;
+        }
+
+        if (mTvClient == null) {
+            Log.e(TAG, "sendKeyEvent hdmi client null!");
+            return false;
+        }
+        if (KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE == keyCode) {
+            // The play/pause key of TV RCU is keycode of KEYCODE_MEDIA_PLAY_PAUSE, and it's translated into
+            // CEC_KEYCODE_PAUSE in HdmiCecKeycode. This will cause behaviours out of control.
+            if ((mKeyCodeMediaPlayPauseCount % 2) == 1) {
+                keyCode = KeyEvent.KEYCODE_MEDIA_PAUSE;
+            } else {
+                keyCode = KeyEvent.KEYCODE_MEDIA_PLAY;
+            }
+            if (!isPressed) {
+                mKeyCodeMediaPlayPauseCount++;
+            }
+        }
+
+        Message msg = mHandler.obtainMessage(MSG_SEND_KEY_EVENT, keyCode, 0, isPressed);
+        mHandler.sendMessage(msg);
+        return true;
+    }
+
+    private class SelectDeviceInfo {
+        String inputId = "";
+        int deviceId;
+        int sessionId;
+
+        int logicalAddress;
+        int portId;
+
+        SelectDeviceInfo(int logicalAddress) {
+            this.logicalAddress = logicalAddress;
+        }
+
+        SelectDeviceInfo(String inputId, int deviceId, int sessionId) {
+            this.inputId = inputId;
+            this.deviceId = deviceId;
+            this.sessionId = sessionId;
+        }
+
+        String getInputId() {
+            return inputId;
+        }
+
+        int getDeviceId() {
+            return deviceId;
+        }
+
+        int getSessionId() {
+            return sessionId;
+        }
+
+        void setLogicalAddress(int logicalAddress) {
+            this.logicalAddress = logicalAddress;
+        }
+
+        int getLogicalAddress() {
+            return logicalAddress;
+        }
+
+        void setPortId(int portId) {
+            this.portId = portId;
+        }
+
+        int getPortId() {
+            return portId;
+        }
+
+        @Override
+        public String toString() {
+            StringBuffer sb = new StringBuffer();
+            sb.append("current selected device info ");
+            sb.append("inputId: ").append(inputId).append(" ")
+              .append("deviceId: ").append(deviceId).append(" ")
+              .append("sessionId: ").append(sessionId).append(" ")
+              .append("logicalAddress: ").append(logicalAddress).append(" ")
+              .append("portId: ").append(portId);
+            return sb.toString();
+        }
+    }
+
+    private class DroidLogicSettingsObserver extends ContentObserver {
+        public DroidLogicSettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            String option = uri.getLastPathSegment();
+            boolean enabled = Global.getInt(mContext.getContentResolver(),
+                                option, ENABLED) == ENABLED;
+            switch (option) {
+                case HDMI_CONTROL_ENABLED:
+                    if (!enabled) {
+                        // no need to do supplement select
+                        Log.d(TAG, "cec disabled.");
+                        return;
+                    }
+                    if (mCurrentSelect == null) {
+                        Log.d(TAG, "cec enabled while current select is null.");
+                        return;
+                    }
+                    if (isHdmiDeviceId(mCurrentSelect.getDeviceId())
+                        && (getInputSourceDeviceId() == mCurrentSelect.getDeviceId())) {
+                        // In accord with the device channel LiveTv tuned.
+                        Log.d(TAG, "cec settings is enabled! " + mCurrentSelect);
+                        deviceSelect();
+                    }
+                    break;
+            }
+        }
     }
 }

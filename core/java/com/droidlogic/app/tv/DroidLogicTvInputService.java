@@ -195,19 +195,6 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
         initTvPlaySetting();
         startTvServices();
         mAudioEffectManager = AudioEffectManager.getInstance(getApplicationContext());
-        registerSettingsObserver();
-
-        InputChangeAdapter.getInstance(this);
-    }
-
-    private void registerSettingsObserver() {
-        DroidLogicSettingsObserver observer = new DroidLogicSettingsObserver(mHandler);
-        String[] settings = new String[] {
-            HDMI_CONTROL_ENABLED
-        };
-        for (String s : settings) {
-            mContentResolver.registerContentObserver(Global.getUriFor(s), false, observer);
-        }
     }
 
     /**
@@ -1197,29 +1184,6 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
                 case DroidLogicTvUtils.DEVICE_ID_ADTV:
                     //ATV,DTV reset PROP_NEED_FAST_SWITCH in ADTV service
                 break;
-            }
-        }
-    }
-
-    private class DroidLogicSettingsObserver extends ContentObserver {
-        public DroidLogicSettingsObserver(Handler handler) {
-            super(handler);
-        }
-
-        @Override
-        public void onChange(boolean selfChange, Uri uri) {
-            String option = uri.getLastPathSegment();
-            boolean enabled = Global.getInt(mContentResolver,
-                                HDMI_CONTROL_ENABLED, DISABLED) == ENABLED;
-            switch (option) {
-                case HDMI_CONTROL_ENABLED:
-                    if (enabled && isHdmiDeviceId(mDeviceId)) {
-                        if (mDroidLogicHdmiCecManager.getInputSourceDeviceId() == mDeviceId) {
-                            Log.d(TAG, "cec settings is enabled and update the active source");
-                            mDroidLogicHdmiCecManager.selectHdmiDevice(mDeviceId);
-                        }
-                    }
-                    break;
             }
         }
     }

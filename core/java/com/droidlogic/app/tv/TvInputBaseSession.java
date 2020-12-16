@@ -94,8 +94,7 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
 
     protected boolean isBlockNoRatingEnable = false;
     protected boolean isUnlockCurrent_NR = false;
-    DroidLogicHdmiCecManager mDroidLogicHdmiCecManager = null;
-    private int mKeyCodeMediaPlayPauseCount = 0;
+    private DroidLogicHdmiCecManager mDroidLogicHdmiCecManager;
     public boolean isSurfaceAlive = true;
 
     //add for get hdmi info
@@ -154,15 +153,6 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     }
     public void doRelease() {
         Log.d(TAG, "doRelease,input: " + mInputId + " " + this);
-        // For aml LiveTv and Launcher with TvView, onSetMain and onRelease functions are not called sequencely.
-        // And there is always an active source even it returns to Home. However, for products like Amazon, this
-        // should be modified together with onSetMain, so that the ActiveSource could show the real path.
-
-        if (mHasDeviceSelect) {
-            mHasDeviceSelect = false;
-            // Select Tv internal address;
-            mDroidLogicHdmiCecManager.selectHdmiDevice(HdmiDeviceInfo.ADDR_INTERNAL, HdmiDeviceInfo.ID_INVALID);
-        }
 
         mContext.unregisterReceiver(mBroadcastReceiver);
 
@@ -454,6 +444,8 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         return false;
     }
 
+    /****************************** HDMI CEC PART ************************************************/
+
     /**
      * Only in here should the TvInput switch to the active source generally.
      * In the previous design way, lots of places including LiveTv,DroidTvSettings,TvInput etc.
@@ -465,88 +457,31 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
      */
     @Override
     public void onSetMain(boolean isMain) {
-        TvInputInfo info = mTvInputManager.getTvInputInfo(mInputId);
-        Log.d(TAG, "onSetMain, isMain " + isMain + " input " + mInputId + " " + this);
-        if (!isMain) {
-            return;
-        }
 
-        if (info == null) {
-            Log.e(TAG, "onSetMain can't get tv input info!");
-            return;
-        }
+        Log.d(TAG, "onSetMain, isMain " + isMain + " input " + mInputId + " seq " + getSessionId());
 
-        // For projects like Amazon Fireos, it should directly only use the HdmiDeviceInfo
-        // In the TvInputInfo to do deviceSelect, as to solve the auto jump issue.
-        HdmiDeviceInfo hdmiDevice = info.getHdmiDeviceInfo();
-        if (hdmiDevice == null) {
-            hdmiDevice = mDroidLogicHdmiCecManager.getHdmiDeviceInfo(mInputId);
-        }
-
-        if (mDroidLogicHdmiCecManager.isHdmiDeviceId(mDeviceId)) {
-            mHasDeviceSelect = true;
-            if (hdmiDevice != null) {
-                Log.d(TAG, "onSetMain hdmi device " + hdmiDevice);
-                mDroidLogicHdmiCecManager.selectHdmiDevice(hdmiDevice.getLogicalAddress(), mDeviceId);
-            } else {
-                // There is no connected hdmi device, just cold switch
-                mDroidLogicHdmiCecManager.selectHdmiDevice(mDeviceId);
-            }
-        } else {
-            mDroidLogicHdmiCecManager.selectHdmiDevice(HdmiDeviceInfo.ADDR_INTERNAL, mDeviceId);
-        }
+        mDroidLogicHdmiCecManager.onSetMain(isMain, mInputId, mDeviceId, getSessionId());
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        Log.d(TAG, "onKeyUp: " + keyCode);
-        boolean ret = true;
-
-        if (mDroidLogicHdmiCecManager.hasHdmiCecDevice(mDeviceId)) {
-            switch (keyCode) {
-                case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-                    mDroidLogicHdmiCecManager.sendKeyEvent((mKeyCodeMediaPlayPauseCount % 2 == 1 ? KeyEvent.KEYCODE_MEDIA_PAUSE : KeyEvent.KEYCODE_MEDIA_PLAY), false);
-                    mKeyCodeMediaPlayPauseCount++;
-                    break;
-                case KeyEvent.KEYCODE_BACK:
-                    Log.d(TAG, "KEYCODE_BACK shoud not send to live tv if cec device exits");
-                    mDroidLogicHdmiCecManager.sendKeyEvent(keyCode, false);
-                    break;
-                default:
-                    mDroidLogicHdmiCecManager.sendKeyEvent(keyCode, false);
-                    break;
-            }
-        } else {
-            Log.d(TAG, "cec device didn't exist");
-            ret = false;
+        Log.v(TAG, "onKeyUp: " + keyCode);
+        if (!isHdmiDevice) {
+            return false;
         }
-        return ret;
+        return mDroidLogicHdmiCecManager.sendKeyEvent(keyCode, false);
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Log.d(TAG, "onKeyDown: " + keyCode);
-        boolean ret = true;
-
-        if (mDroidLogicHdmiCecManager.hasHdmiCecDevice(mDeviceId)) {
-            switch (keyCode) {
-                case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-                    mDroidLogicHdmiCecManager.sendKeyEvent((mKeyCodeMediaPlayPauseCount % 2 == 1 ? KeyEvent.KEYCODE_MEDIA_PAUSE : KeyEvent.KEYCODE_MEDIA_PLAY), true);
-                    break;
-                case KeyEvent.KEYCODE_BACK:
-                    Log.d(TAG, "KEYCODE_BACK shoud not send to live tv if cec device exits");
-                    mDroidLogicHdmiCecManager.sendKeyEvent(keyCode, true);
-                    break;
-                default:
-                    mDroidLogicHdmiCecManager.sendKeyEvent(keyCode, true);
-                    break;
-            }
-        } else {
-            Log.d(TAG, "cec device didn't exist");
-            ret = false;
+        Log.v(TAG, "onKeyDown: " + keyCode);
+        if (!isHdmiDevice) {
+            return false;
         }
-        return ret;
+        return mDroidLogicHdmiCecManager.sendKeyEvent(keyCode, true);
     }
+
+    /****************************** HDMI CEC PART ************************************************/
 
     @Override
     public void onHdrInfoChange(int newHdrInfo) {
