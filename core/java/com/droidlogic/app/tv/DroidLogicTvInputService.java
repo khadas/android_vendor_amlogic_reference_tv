@@ -24,6 +24,7 @@ import com.droidlogic.app.tv.InputChangeAdapter;
 import com.droidlogic.app.tv.TvControlManager;
 import com.droidlogic.app.tv.TvInSignalInfo;
 import com.droidlogic.app.SystemControlManager;
+import com.droidlogic.app.tv.TvScanConfig;
 
 import android.provider.Settings;
 import android.content.Context;
@@ -1045,15 +1046,17 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
         }
 
         //tv_search_type
-        if (TextUtils.isEmpty(mTvControlDataManager.getString(getContentResolver(),
-                DroidLogicTvUtils.TV_SEARCH_TYPE))) {
+        if (TextUtils.isEmpty(mTvControlDataManager.getString(getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE))) {
             String country = mTvControlManager.getTvDefaultCountry();
             if (!TextUtils.isEmpty(country)) {
-                if (mTvControlManager.GetTvAtvSupport(country)) {
+                Log.i(TAG, "initTvPlaySetting first boot, init search type, curCountry:" + country);
+                if (mTvControlManager.GetTvAtvSupport(country) && !country.equals("MX") && !country.equals("US")) {
                     mTvControlDataManager.putString(getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE, "ATV");
                 } else if (mTvControlManager.GetTvDtvSupport(country)) {
                     mTvControlDataManager.putString(getContentResolver(), DroidLogicTvUtils.TV_SEARCH_TYPE,
-                            mTvControlManager.GetTvDtvSystem(country));
+                            TvScanConfig.GetTvDtvSystemList(country).get(0));
+                } else {
+                    Log.w(TAG, "initTvPlaySetting not support atv and dtv, country:" + country);
                 }
             }
         }

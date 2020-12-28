@@ -500,7 +500,7 @@ public class DroidLogicTvUtils
 
     public static String getSearchType(Context mContext) {
         String type = TvControlDataManager.getInstance(mContext).getString(mContext.getContentResolver(), TV_SEARCH_TYPE);
-        if (type == null) {
+        if (TextUtils.isEmpty(type)) {
             String countryId = getCountry(mContext);
             ArrayList<String> searchTypeList = TvScanConfig.GetTvDtvSystemList(countryId);
             if (TvScanConfig.GetTvAtvSupport(countryId)) {
@@ -524,6 +524,19 @@ public class DroidLogicTvUtils
         }
         Log.d(TAG, "getSearchType = " + type);
         return type;
+    }
+
+    public static boolean isDtvContainsAtscByCountry(String curCountry) {
+        if (!TvScanConfig.GetTvDtvSupport(curCountry) || !TvScanConfig.GetTvAtvSupport(curCountry)) {
+            return false;
+        }
+        ArrayList<String> tempList = TvScanConfig.GetTvDtvSystemList(curCountry);
+        for (int i = TvScanConfig.TV_SEARCH_TYPE_ATSC_C_AUTO_INDEX; i <= TvScanConfig.TV_SEARCH_TYPE_ATSC_T_INDEX; i++) {
+            if (tempList.contains(TvScanConfig.TV_SEARCH_TYPE.get(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void setSearchMode(Context mContext, String mode) {
@@ -637,7 +650,22 @@ public class DroidLogicTvUtils
     }
 
     public static int getAtvDtvModeFlag(Context mContext) {
-        int mode = TvControlDataManager.getInstance(mContext).getInt(mContext.getContentResolver(), TV_SEARCH_ATV_DTV_MODE, TV_SEARCH_ATV);
+        int mode = TvControlDataManager.getInstance(mContext).getInt(mContext.getContentResolver(), TV_SEARCH_ATV_DTV_MODE, -1);
+        if (mode == -1) {
+            String curCountry = getCountry(mContext);
+            if (isDtvContainsAtscByCountry(curCountry)) {
+                mode = TV_SEARCH_ATV_DTV;
+            } else if (TvScanConfig.GetTvDtvSupport(curCountry)) {
+                mode = TV_SEARCH_DTV;
+            } else if (TvScanConfig.GetTvDtvSupport(curCountry)) {
+                mode = TV_SEARCH_ATV;
+            } else {
+                mode = TV_SEARCH_ATV;
+                Log.e(TAG, "getAtvDtvModeFlag invalid scene, curCountry:" + curCountry + ", not support atv and dtv! set default ATV.");
+            }
+            Log.i(TAG, "getAtvDtvModeFlag first boot, init database, curCountry:" + curCountry + ", set mode:" + mode);
+            setAtvDtvModeFlag(mContext, mode);
+        }
         Log.d(TAG, "getAtvDtvModeFlag = " + mode);
         return mode;
     }
