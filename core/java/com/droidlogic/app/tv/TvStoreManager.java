@@ -878,12 +878,14 @@ public abstract class TvStoreManager {
         int size = mlist.size();
         for (int i = 0; i < size; i++) {
             if (freq == mlist.get(i).freq) {
-                return i + 2;
+                //Log.d(TAG, "i-1 is :" + i + ", num is: " + mlist.get(i).channelNum);
+                return mlist.get(i).channelNum;
             }
         }
         for (int i = 0; i < size; i++) {
             if (mlist.get(i).freq - diff < freq && freq < mlist.get(i).freq + diff) {
-                return i + 2;
+                //Log.d(TAG, "i-2 is :" + i + ", num is: " + mlist.get(i).channelNum);
+                return mlist.get(i).channelNum;
             }
         }
        return -1;
