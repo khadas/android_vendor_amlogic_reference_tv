@@ -1883,118 +1883,60 @@ public class TvDataBaseManager {
 
         int oldProgramsIndex = 0;
         int newProgramsIndex = 0;
+        int oldProgramStartIndex = 0;
 
         // Skip the past programs. They will be automatically removed by the system.
-        if (firstNewProgram != null) {
-            for (Program program : oldPrograms) {
-                if (program.getEndTimeUtcMillis() > firstNewProgram.getStartTimeUtcMillis())
-                    break;
-                oldProgramsIndex++;
-            }
-        }
+        //if (firstNewProgram != null) {
+        //    for (Program program : oldPrograms) {
+        //        if (program.getEndTimeUtcMillis() > firstNewProgram.getStartTimeUtcMillis())
+        //            break;
+        //        oldProgramStartIndex++;
+        //    }
+        //}
 
         // Compare the new programs with old programs one by one and update/delete the old one or
         // insert new program if there is no matching program in the database.
         //ArrayList<ContentProviderOperation> ops = new ArrayList<>();
         while (newProgramsIndex < fetchedProgramsCount) {
-            Program oldProgram = oldProgramsIndex < oldPrograms.size()
-                    ? oldPrograms.get(oldProgramsIndex) : null;
             Program newProgram = newPrograms.get(newProgramsIndex);
             boolean addNewProgram = false;
-            if (oldProgram != null) {
-
-                if (isAtsc && isATSCSpecialProgram(newProgram)) {
-                    //Log.d(TAG, "ext desr:"+newProgram.getProgramId());
-                    for (Program program : oldPrograms) {
-                        //Log.d(TAG, "old:"+program.getProgramId());
-                        if (program.getProgramId() == newProgram.getProgramId()) {//same event id
-                            if (TextUtils.equals(program.getDescription(), newProgram.getDescription()))
-                                break;
-                            program.setDescription(newProgram.getDescription());
+            boolean foundMatchEid = false;
+            for (oldProgramsIndex = oldProgramStartIndex; oldProgramsIndex < oldPrograms.size();oldProgramsIndex++) {
+                Program oldProgram = oldPrograms.get(oldProgramsIndex);
+                    if (oldProgram == null) {
+                    oldProgramsIndex ++;
+                    continue;
+                }
+                if (oldProgram.getProgramId() == newProgram.getProgramId()) {
+                    foundMatchEid = true;
+                    if (isAtsc && isATSCSpecialProgram(newProgram)) {
+                        if (!TextUtils.equals(oldProgram.getDescription(), newProgram.getDescription()))
+                        {
+                            oldProgram.setDescription(newProgram.getDescription());
                             epg_ops.add(ContentProviderOperation.newUpdate(
                                     TvContract.Programs.CONTENT_URI)
-                                    .withValues(program.toContentValues())
-                                    .withSelection("channel_id="+channelId+" and start_time_utc_millis="+program.getStartTimeUtcMillis(), null)
+                                    .withValues(oldProgram.toContentValues())
+                                    .withSelection("channel_id="+channelId+" and start_time_utc_millis="+oldProgram.getStartTimeUtcMillis(), null)
                                     .build());
-                            /*Program p = new Program.Builder(program)
-                                .build();
-                            ops.add(ContentProviderOperation.newInsert(TvContract.Programs.CONTENT_URI)
-                                                        .withValues(p.toContentValues())
-                                                        .build());
-                            ops.add(ContentProviderOperation.newDelete(TvContract.buildProgramUri(program.getId()))
-                                                        .build());
-                            */
-                            //Log.d(TAG, "\tepg etm:cid("+program.getChannelId()+")eid("+program.getProgramId()+")");
-                            break;
                         }
-                    }
-                    newProgramsIndex++;
-                } else if ((/*isAtsc && */oldProgram.matchsWithoutDescription(newProgram))
-                    || (oldProgram.equals(newProgram))) {
-                    // Exact match. No need to update. Move on to the next programs.
-                    oldProgramsIndex++;
-                    newProgramsIndex++;
-                    //Log.d(TAG, "\tepg match:cid("+newProgram.getChannelId()+")eid("+newProgram.getProgramId()+")desc("+newProgram.getTitle()+")time("+newProgram.getStartTimeUtcMillis()+"-"+newProgram.getEndTimeUtcMillis()+")");
-                } else if (needsUpdate(oldProgram, newProgram)) {
-                    // Partial match. Update the old program with the new one.
-                    // NOTE: Use 'update' in this case instead of 'insert' and 'delete'. There could
-                    // be application specific settings which belong to the old program.
-                    epg_ops.add(ContentProviderOperation.newUpdate(
-                            TvContract.Programs.CONTENT_URI)
-                            .withValues(newProgram.toContentValues())
-                            .withSelection("channel_id="+channelId+" and start_time_utc_millis="+oldProgram.getStartTimeUtcMillis(), null)
-                            .build());
-                    oldPrograms.set(oldProgramsIndex, newProgram);
-                    oldProgramsIndex++;
-                    newProgramsIndex++;
-
-                    if (!updated) {
-                        updated = isProgramAtTime(newProgram, timeUtcMillis);
-                    }
-
-                    Log.d(TAG, "\tepg update:cid("+newProgram.getChannelId()+")eid("+newProgram.getProgramId()+")desc("+newProgram.getTitle()+")time("+newProgram.getStartTimeUtcMillis()+"-"+newProgram.getEndTimeUtcMillis()+")id("+oldProgram.getId()+")");
-                } else if (oldProgram.getEndTimeUtcMillis() < newProgram.getEndTimeUtcMillis()) {
-                    // No match. Remove the old program first to see if the next program in
-                    // {@code oldPrograms} partially matches the new program.
-                    epg_ops.add(ContentProviderOperation.newDelete(
-                            TvContract.Programs.CONTENT_URI)
-                            .withSelection("channel_id="+channelId+" and start_time_utc_millis="+oldProgram.getStartTimeUtcMillis(), null)
-                            .build());
-                    //oldProgramsIndex++;
-                    oldPrograms.remove(oldProgramsIndex);
-
-                    if (!updated) {
-                        updated = isProgramAtTime(newProgram, timeUtcMillis);
-                    }
-
-                    Log.d(TAG, "\tepg delete:"+oldProgram.getId()+":cid("+oldProgram.getChannelId()+")eid("+oldProgram.getProgramId()+")desc("+oldProgram.getTitle()+")time("+oldProgram.getStartTimeUtcMillis()+"-"+oldProgram.getEndTimeUtcMillis()+")");
-                } else {
-                    if (!isATSCSpecialProgram(newProgram)) {
-                        // No match. The new program does not match any of the old programs. Insert it
-                        // as a new program.
-                        addNewProgram = true;
-                        newProgramsIndex++;
-
-                        if (!updated) {
-                            updated = isProgramAtTime(newProgram, timeUtcMillis);
-                        }
-
-                        Log.d(TAG, "\tepg new:cid("+newProgram.getChannelId()+")eid("+newProgram.getProgramId()+")desc("+newProgram.getTitle()+")time("+newProgram.getStartTimeUtcMillis()+"-"+newProgram.getEndTimeUtcMillis()+")id("+newProgram.getId()+")");
+                    } else if (oldProgram.matchsWithoutDescription(newProgram)
+                      || (oldProgram.equals(newProgram))) {
+                        //Log.d(TAG, "same program");
+                        //just break
+                    } else if (needsUpdate(oldProgram, newProgram)) {
+                        epg_ops.add(ContentProviderOperation.newUpdate(
+                                TvContract.Programs.CONTENT_URI)
+                                .withValues(newProgram.toContentValues())
+                                .withSelection("channel_id="+channelId+" and start_time_utc_millis="+oldProgram.getStartTimeUtcMillis(), null)
+                                .build());
+                        oldPrograms.set(oldProgramsIndex, newProgram);
                     }
                 }
-            } else {
-                if (!isATSCSpecialProgram(newProgram)) {
-                    // No old programs. Just insert new programs.
-                    addNewProgram = true;
-
-                if (!updated) {
-                    updated = isProgramAtTime(newProgram, timeUtcMillis);
-                }
-
-                    Log.d(TAG, "\tepg new:(old none):Description("+ newProgram.getDescription() + ")cid("+newProgram.getChannelId()+")eid("+newProgram.getProgramId()+")desc("+newProgram.getTitle()+")time("+newProgram.getStartTimeUtcMillis()+"-"+newProgram.getEndTimeUtcMillis()+")id("+newProgram.getId()+")");
-                }
-                newProgramsIndex++;
             }
+            if ((foundMatchEid == false) && (!isATSCSpecialProgram(newProgram))) {
+                addNewProgram = true;
+            }
+            newProgramsIndex ++;
 
             if (addNewProgram) {
                  epg_ops.add(ContentProviderOperation
@@ -2003,6 +1945,10 @@ public class TvDataBaseManager {
                         .build());
                  oldPrograms.add(oldProgramsIndex, newProgram);
                  oldProgramsIndex ++;
+            }
+
+            if (!updated) {
+                updated = isProgramAtTime(newProgram, timeUtcMillis);
             }
        }
 
