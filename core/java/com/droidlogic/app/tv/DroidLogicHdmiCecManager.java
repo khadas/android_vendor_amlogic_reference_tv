@@ -186,12 +186,14 @@ public class DroidLogicHdmiCecManager {
                 if (hdmiDevice != null) {
                     Log.d(TAG, "onSetMain hdmi device " + hdmiDevice);
                     mSelectingDevice.setLogicalAddress(hdmiDevice.getLogicalAddress());
+                    mCurrentSelect = mSelectingDevice;
                     // case 0: device select hdmi
                     deviceSelect();
                 } else {
                     // case 1: port select hdmi
                     int portId = getPortIdByDeviceId(deviceId);
                     mSelectingDevice.setPortId(portId);
+                    mCurrentSelect = mSelectingDevice;
                     portSelect();
                 }
             } else {
@@ -228,8 +230,6 @@ public class DroidLogicHdmiCecManager {
     * generally used to switch source.
     */
     private void deviceSelect() {
-        mCurrentSelect = mSelectingDevice;
-
         Log.d(TAG, "deviceSelect " + mCurrentSelect);
         removePreviousMessages();
         mHandler.sendMessage(mHandler.obtainMessage(MSG_DEVICE_SELECT));
@@ -257,7 +257,6 @@ public class DroidLogicHdmiCecManager {
      * list has not been created for the connected devices.
      */
     private void portSelect() {
-        mCurrentSelect = mSelectingDevice;
         Log.d(TAG, "portSelect " + mCurrentSelect);
 
         removePreviousMessages();
@@ -426,6 +425,10 @@ public class DroidLogicHdmiCecManager {
                         Log.d(TAG, "cec disabled.");
                         return;
                     }
+                    if (mTvClient == null) {
+                        Log.d(TAG, "tv client null.");
+                        return;
+                    }
                     if (mCurrentSelect == null) {
                         Log.d(TAG, "cec enabled while current select is null.");
                         return;
@@ -434,7 +437,11 @@ public class DroidLogicHdmiCecManager {
                         && (getInputSourceDeviceId() == mCurrentSelect.getDeviceId())) {
                         // In accord with the device channel LiveTv tuned.
                         Log.d(TAG, "cec settings is enabled! " + mCurrentSelect);
-                        deviceSelect();
+                        if (mCurrentSelect.getLogicalAddress() != 0) {
+                            deviceSelect();
+                        } else if (mCurrentSelect.getPortId() != 0) {
+                            portSelect();
+                        }
                     }
                     break;
             }

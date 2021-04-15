@@ -469,6 +469,9 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
         if (!isHdmiDevice) {
             return false;
         }
+        if (mDroidLogicHdmiCecManager.getHdmiDeviceInfo(mInputId) == null) {
+            return false;
+        }
         return mDroidLogicHdmiCecManager.sendKeyEvent(keyCode, false);
     }
 
@@ -476,6 +479,9 @@ public abstract class TvInputBaseSession extends TvInputService.Session implemen
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.v(TAG, "onKeyDown: " + keyCode);
         if (!isHdmiDevice) {
+            return false;
+        }
+        if (mDroidLogicHdmiCecManager.getHdmiDeviceInfo(mInputId) == null) {
             return false;
         }
         return mDroidLogicHdmiCecManager.sendKeyEvent(keyCode, true);
