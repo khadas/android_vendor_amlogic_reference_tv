@@ -531,6 +531,8 @@ enum tvcmd_e {
 
     DTV_RECORDING_CMD = 1600,
     DTV_PLAY_CMD = 1610,
+
+    CHECK_SOURCE_VALID = 1611,
 };
 
 #endif  //ANDROID_AMLOGIC_TVCMD_H
