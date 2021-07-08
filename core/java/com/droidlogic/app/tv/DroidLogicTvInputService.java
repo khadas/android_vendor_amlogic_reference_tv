@@ -158,7 +158,7 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
                     Log.d(TAG, "open source");
                     createDecoder();
                     decoderRelease();
-                    mHardware.setSurface(mSurface, mConfigs[0]);
+                    mHardware.setSurface(mSurface, isDtvSource() ? mConfigs[1] : mConfigs[0]);
                 }
             } else {
                 if (DEBUG)
@@ -740,7 +740,7 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
         if (mHardware != null && mSurface != null && mConfigs.length > 0 && mSurface.isValid()) {
             createDecoder();
             decoderRelease();
-            mHardware.setSurface(mSurface, mConfigs[0]);
+            mHardware.setSurface(mSurface, isDtvSource() ? mConfigs[1] : mConfigs[0]);
             completeTvViewFastSwitch();
         }
 
@@ -793,7 +793,7 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
                 Log.d(TAG, "enableTvViewFastSwitch");
                 enableTvViewFastSwitch();
             }
-            mHardware.setSurface(null, mConfigs[0]);
+            mHardware.setSurface(null, isDtvSource() ? mConfigs[1] : mConfigs[0]);
             tvPlayStopped(sessionId);
         }
         return ACTION_SUCCESS;
@@ -1186,5 +1186,9 @@ public abstract class DroidLogicTvInputService extends TvInputService implements
                 break;
             }
         }
+    }
+
+    private boolean isDtvSource() {
+        return mDeviceId == DroidLogicTvUtils.DEVICE_ID_ADTV && DroidLogicTvUtils.isDTV(mContext);
     }
 }
