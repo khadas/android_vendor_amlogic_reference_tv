@@ -1,0 +1,71 @@
+subdirs = ["jni",]
+prebuilt_etc {
+    name: "droidlogic_permissions.xml",
+    system_ext_specific: true,
+    sub_dir: "permissions",
+    src: "droidlogic_permissions.xml",
+    filename_from_src: true,
+}
+
+// *** THIS PACKAGE HAS SPECIAL LICENSING CONDITIONS.  PLEASE
+//     CONSULT THE OWNERS AND opensource-licensing@google.com BEFORE
+//     DEPENDING ON IT IN YOUR PROJECT. ***
+package {
+    // See: http://go/android-license-faq
+    // A large-scale-change added 'default_applicable_licenses' to import
+    // all of the 'license_kinds' from "vendor_amlogic_common_frameworks_core_license"
+    // to get the below license kinds:
+    //   SPDX-license-identifier-Apache-2.0
+    //   SPDX-license-identifier-FTL
+    //   SPDX-license-identifier-GPL
+    //   SPDX-license-identifier-LGPL-2.1
+    //   SPDX-license-identifier-MIT
+    //   legacy_by_exception_only (by exception only)
+    //   legacy_notice
+    default_applicable_licenses: [
+        "vendor_amlogic_common_tv_license",
+    ],
+}
+
+android_app {
+    name: "droidlogic-res",
+
+    system_ext_specific: true,
+    platform_apis: true,
+    srcs: [
+        "**/*.java",
+        "src/com/droidlogic/audioservice/services/IAudioSystemCmdService.aidl",
+        "src/com/droidlogic/audioservice/services/IAudioEffectsService.aidl",
+    ],
+
+    libs: [
+        "droidlogic",
+        "droidlogic-tv",
+        "android.hidl.base-V1.0-java",
+        "android.hidl.manager-V1.0-java",
+    ],
+
+    static_libs: [
+        "android.hidl.base-V1.0-java",
+        "vendor.amlogic.hardware.hdmicec-V1.0-java",
+        "vendor.amlogic.hardware.droidvold-V1.0-java",
+        "vendor.amlogic.hardware.systemcontrol-V1.0-java",
+        "vendor.amlogic.hardware.systemcontrol-V1.1-java",
+    ],
+
+    certificate: "platform",
+
+    required: [
+        "droidlogic_permissions.xml",
+        "libjniuevent",
+        ],
+
+
+    optimize: {
+        enabled: false,
+    },
+    resource_dirs: ["res"],
+    privileged: true,
+
+}
+

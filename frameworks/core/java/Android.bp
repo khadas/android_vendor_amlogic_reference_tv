@@ -1,0 +1,52 @@
+// *** THIS PACKAGE HAS SPECIAL LICENSING CONDITIONS.  PLEASE
+//     CONSULT THE OWNERS AND opensource-licensing@google.com BEFORE
+//     DEPENDING ON IT IN YOUR PROJECT. ***
+package {
+    // See: http://go/android-license-faq
+    // A large-scale-change added 'default_applicable_licenses' to import
+    // all of the 'license_kinds' from "vendor_amlogic_common_license"
+    // to get the below license kinds:
+    //   SPDX-license-identifier-Apache-2.0
+    //   SPDX-license-identifier-FTL
+    //   SPDX-license-identifier-GPL
+    //   SPDX-license-identifier-LGPL-2.1
+    //   SPDX-license-identifier-MIT
+    //   legacy_by_exception_only (by exception only)
+    //   legacy_notice
+    default_applicable_licenses: ["vendor_amlogic_common_license"],
+}
+
+java_library {
+    name: "droidlogic-tv",
+    provides_uses_lib: "droidlogic.tv.software.core",
+
+    vendor: true,
+    sdk_version: "system_current",
+    installable: true,
+
+    srcs: [
+        "**/*.java",
+        "com/droidlogic/tvinput/services/ITvScanService.aidl",
+        "com/droidlogic/tvinput/services/IUpdateUiCallbackListener.aidl",
+        "com/droidlogic/audioservice/services/IAudioEffectsService.aidl",
+    ],
+
+    dxflags: ["--core-library"],
+
+    libs: [
+        "droidlogic",
+        "android.hidl.base-V1.0-java",
+        "android.hidl.manager-V1.0-java",
+    ],
+    static_libs: ["vendor.amlogic.hardware.tvserver-V1.0-java"],
+}
+
+prebuilt_etc {
+    name: "droidlogic.tv.software.core.xml",
+
+    vendor: true,
+    proprietary: true,
+    src: "droidlogic.tv.software.core.xml",
+    sub_dir: "permissions",
+
+}
