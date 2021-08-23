@@ -1,12 +1,3 @@
-subdirs = ["jni",]
-prebuilt_etc {
-    name: "droidlogic_permissions.xml",
-    system_ext_specific: true,
-    sub_dir: "permissions",
-    src: "droidlogic_permissions.xml",
-    filename_from_src: true,
-}
-
 // *** THIS PACKAGE HAS SPECIAL LICENSING CONDITIONS.  PLEASE
 //     CONSULT THE OWNERS AND opensource-licensing@google.com BEFORE
 //     DEPENDING ON IT IN YOUR PROJECT. ***
@@ -28,44 +19,37 @@ package {
 }
 
 android_app {
-    name: "droidlogic-res",
+    name: "droidlogic-hybrid-res",
 
+    privileged: true,
     system_ext_specific: true,
     platform_apis: true,
     srcs: [
-        "**/*.java",
+        "src/com/droidlogic/audioservice/services/AudioEffectsService.java",
+        "src/com/droidlogic/audioservice/services/AudioSystemCmdService.java",
+        "src/com/droidlogic/audioservice/settings/SoundEffectManager.java",
         "src/com/droidlogic/audioservice/services/IAudioSystemCmdService.aidl",
         "src/com/droidlogic/audioservice/services/IAudioEffectsService.aidl",
     ],
+    resource_dirs: [],
 
     libs: [
-        "droidlogic",
         "droidlogic-tv",
-        "android.hidl.base-V1.0-java",
-        "android.hidl.manager-V1.0-java",
+        "droidlogic",
     ],
-
     static_libs: [
-        "android.hidl.base-V1.0-java",
-        "vendor.amlogic.hardware.hdmicec-V1.0-java",
-        "vendor.amlogic.hardware.droidvold-V1.0-java",
-        "vendor.amlogic.hardware.systemcontrol-V1.0-java",
-        "vendor.amlogic.hardware.systemcontrol-V1.1-java",
+        "droidlogic-res-lib",
     ],
+    manifest: "AndroidManifest_audioService.xml",
 
     certificate: "platform",
 
     required: [
         "droidlogic_permissions.xml",
         "libjniuevent",
-        ],
-
+     ],
 
     optimize: {
         enabled: false,
     },
-    resource_dirs: ["res"],
-    privileged: true,
-
 }
-
