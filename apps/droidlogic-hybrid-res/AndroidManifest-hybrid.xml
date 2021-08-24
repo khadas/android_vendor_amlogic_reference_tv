@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.droidlogic">
+    package="com.droidlogic"
+    android:sharedUserId="android.uid.system">
 
     <application>
         <uses-library android:name="droidlogic.tv.software.core" />
