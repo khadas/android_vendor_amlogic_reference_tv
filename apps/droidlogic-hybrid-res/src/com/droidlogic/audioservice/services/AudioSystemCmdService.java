@@ -54,7 +54,6 @@ import com.droidlogic.app.tv.DroidLogicTvUtils;
 import com.droidlogic.app.tv.TvControlManager;
 import com.droidlogic.UEventObserver;
 
-
 //this service used to call audio system commands
 public class AudioSystemCmdService extends Service {
     private static final String TAG = AudioSystemCmdService.class.getSimpleName();
@@ -600,6 +599,10 @@ public class AudioSystemCmdService extends Service {
                 if (streamType != AudioManager.STREAM_MUSIC) {
                     return;
                 }
+                boolean mAudioHalControlVolumeEnable = mAudioManager.getParameters(HAL_PARAM_HAL_CONTROL_VOL_EN).equals(HAL_PARAM_HAL_CONTROL_VOL_EN + "=1");
+                if (!mAudioHalControlVolumeEnable) {
+                    showPassthroughWarning();
+                }
                 int index = intent.getIntExtra(AudioManager.EXTRA_VOLUME_STREAM_VALUE, 0);
                 if (index == mCurrentIndex) {
                     return;
@@ -626,6 +629,27 @@ public class AudioSystemCmdService extends Service {
         }
 
         setAudioPortGain();
+    }
+
+    private boolean mShowingPassthroughHint = false;
+
+    private static final String HAL_PARAM_HAL_CONTROL_VOL_EN = "hal_param_hal_control_vol_en";
+    private void showPassthroughWarning() {
+        if (mShowingPassthroughHint) {
+            Slog.d(TAG, "on need to show other passthrough hint");
+            return;
+        }
+        mShowingPassthroughHint = true;
+        mHandler.post(()->{
+            String hint = "To adjust volume, enable CEC control(Settings > Device Preferences > Display &amp; Sound > HDMI CEC) or adjust the TV remote control.";
+            Toast toast = Toast.makeText(mContext, hint, Toast.LENGTH_LONG);
+            toast.addCallback(new Toast.Callback() {
+                public void onToastHidden() {
+                    mShowingPassthroughHint = false;
+                }
+            });
+            toast.show();
+        });
     }
 
     private void handleAudioSinkUpdated() {
