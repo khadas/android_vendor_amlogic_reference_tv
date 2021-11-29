@@ -37,6 +37,7 @@ public class InputChangeAdapter {
 
     private Intent mBootOtp;
     private Context mContext;
+    private boolean mBootComplete;
 
     private InputChangeAdapter() {}
 
@@ -48,6 +49,7 @@ public class InputChangeAdapter {
     }
 
     public void sendBootOtpIntent() {
+        mBootComplete = true;
         if (mBootOtp != null && mContext != null) {
             Log.d(TAG, "send boot otp intent");
             mContext.sendBroadcast(mBootOtp);
@@ -107,7 +109,7 @@ public class InputChangeAdapter {
                 Intent intent = new Intent(ACTION_OTP_INPUT_SOURCE_CHANGE);
                 intent.putExtra(TvInputInfo.EXTRA_INPUT_ID, inputId);
 
-                if (!TextUtils.equals(SystemProperties.get("service.bootvideo.exit", "1"), "0")) {
+                if (!mBootComplete) {
                     Log.d(TAG, "One Touch Play event, but not boot yet");
                     mBootOtp = intent;
                 } else {
