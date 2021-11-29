@@ -52,6 +52,30 @@ public class DroidLogicHdmiCecManager {
     private static final int MSG_SEND_KEY_EVENT = 3;
     private static final int MSG_SWITCH_SELECT = 4;
 
+    /* cec should help directly return the keyevents which DROIDLOGIC livetv apk use */
+    /*          DROIDLOGIC sepcified KEYEVENTS START                                 */
+    //public static final int KEYCODE_TV_SHORTCUTKEY_GLOBALSETUP    = DROID_KEYCODE_TV_SHORTCUTKEY_GLOBALSETUP;
+    //public static final int KEYCODE_TV_SHORTCUTKEY_SOURCE_LIST    = DROID_KEYCODE_TV_SHORTCUTKEY_SOURCE_LIST;
+    public static final int KEYCODE_TV_SHORTCUTKEY_3DMODE         = KeyEvent.KEYCODE_3D_MODE;
+    public static final int KEYCODE_TV_SHORTCUTKEY_VIEWMODE       = KeyEvent.KEYCODE_TV_INPUT_HDMI_1;
+    public static final int KEYCODE_TV_SHORTCUTKEY_VOICEMODE      = KeyEvent.KEYCODE_TV_INPUT_HDMI_2;
+    public static final int KEYCODE_TV_SHORTCUTKEY_DISPAYMODE     = KeyEvent.KEYCODE_TV_INPUT_HDMI_3;
+    //public static final int KEYCODE_TV_SHORTCUTKEY_TVINFO         = DROID_KEYCODE_TV_SHORTCUTKEY_TVINFO;
+    //public static final int KEYCODE_EARLY_POWER                   = DROID_KEYCODE_EARLY_POWER;
+    public static final int KEYCODE_TV_SLEEP                      = KeyEvent.KEYCODE_TV_INPUT_COMPOSITE_2;
+    //public static final int KEYCODE_TV_SOUND_CHANNEL              = DROID_KEYCODE_TV_SOUND_CHANNEL;
+    public static final int KEYCODE_TV_REPEAT                     = KeyEvent.KEYCODE_TV_TELETEXT;
+    //public static final int KEYCODE_TV_SUBTITLE                   = DROID_KEYCODE_TV_SUBTITLE;
+    //public static final int KEYCODE_TV_SWITCH                     = DROID_KEYCODE_TV_SWITCH;
+    //public static final int KEYCODE_TV_WASU                       = DROID_KEYCODE_TV_WASU;
+    //public static final int KEYCODE_TV_VTION                      = DROID_KEYCODE_TV_VTION;
+    public static final int KEYCODE_TV_BROWSER                    = KeyEvent.KEYCODE_EXPLORER;
+    //public static final int KEYCODE_TV_ALTERNATE                  = DROID_KEYCODE_TV_ALTERNATE;
+    public static final int KEYCODE_FAV                           = KeyEvent.KEYCODE_TV_INPUT_HDMI_4;
+    public static final int KEYCODE_LIST                          = KeyEvent.KEYCODE_TV_INPUT_COMPOSITE_1;
+    //public static final int KEYCODE_MEDIA_AUDIO_CONTROL           = DROID_KEYCODE_MEDIA_AUDIO_CONTROL;
+    /*          DROIDLOGIC sepcified KEYEVENTS END                                 */
+
     private static DroidLogicHdmiCecManager mInstance;
 
     private Context mContext;
@@ -371,7 +395,27 @@ public class DroidLogicHdmiCecManager {
                 && deviceId <= DroidLogicTvUtils.DEVICE_ID_HDMI4;
     }
 
+    private boolean isDroidlogicKey(int keycode) {
+        switch (keycode) {
+            case KEYCODE_TV_SHORTCUTKEY_3DMODE:
+            case KEYCODE_TV_SHORTCUTKEY_VIEWMODE:
+            case KEYCODE_TV_SHORTCUTKEY_VOICEMODE:
+            case KEYCODE_TV_SHORTCUTKEY_DISPAYMODE:
+            case KEYCODE_TV_SLEEP:
+            case KEYCODE_TV_REPEAT:
+            case KEYCODE_TV_BROWSER:
+            case KEYCODE_FAV:
+            case KEYCODE_LIST:
+                return true;
+        }
+        return false;
+    }
+
     public boolean sendKeyEvent(int keyCode, boolean isPressed) {
+        if (isDroidlogicKey(keyCode)) {
+            Log.d(TAG, "no send droidlogic key:" + keyCode);
+            return false;
+        }
         if (!mHasCecFeature) {
             Log.v(TAG, "sendKeyEvent no cec feature");
             return false;
