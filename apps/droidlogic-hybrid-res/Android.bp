@@ -34,8 +34,12 @@ android_app {
     resource_dirs: [],
 
     libs: [
-        "droidlogic-tv",
-        "droidlogic",
+        "droidlogic.tv.software.core",
+        "droidlogic.software.core",
+    ],
+    uses_libs: [
+        "droidlogic.tv.software.core",
+        "droidlogic.software.core",
     ],
     static_libs: [
         "droidlogic-res-lib",
@@ -47,6 +51,8 @@ android_app {
     required: [
         "droidlogic_permissions.xml",
         "libjniuevent",
+        "droidlogic.tv.software.core",
+        "droidlogic.software.core",
      ],
 
     optimize: {

@@ -16,5 +16,5 @@
 
 <permissions>
     <library name="droidlogic.tv.software.core"
-            file="/vendor/framework/droidlogic-tv.jar" />
+            file="/vendor/framework/droidlogic.tv.software.core.jar" />
 </permissions>

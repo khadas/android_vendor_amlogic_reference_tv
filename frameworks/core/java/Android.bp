@@ -17,8 +17,7 @@ package {
 }
 
 java_library {
-    name: "droidlogic-tv",
-    provides_uses_lib: "droidlogic.tv.software.core",
+    name: "droidlogic.tv.software.core",
 
     vendor: true,
     sdk_version: "system_current",
@@ -30,11 +29,12 @@ java_library {
         "com/droidlogic/tvinput/services/IUpdateUiCallbackListener.aidl",
         "com/droidlogic/audioservice/services/IAudioEffectsService.aidl",
     ],
+    required: ["droidlogic.tv.software.core.xml"],
 
     dxflags: ["--core-library"],
 
     libs: [
-        "droidlogic",
+        "droidlogic.software.core",
         "android.hidl.base-V1.0-java",
         "android.hidl.manager-V1.0-java",
     ],
@@ -48,5 +48,4 @@ prebuilt_etc {
     proprietary: true,
     src: "droidlogic.tv.software.core.xml",
     sub_dir: "permissions",
-
 }
