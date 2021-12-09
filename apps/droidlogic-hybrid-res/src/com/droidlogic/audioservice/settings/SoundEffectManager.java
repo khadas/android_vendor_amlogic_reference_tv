@@ -209,6 +209,7 @@ public class SoundEffectManager {
     private AudioEffect mDap;
 
     private boolean mSupportVirtualX;
+    private boolean mSupportMs12Dap = false;
     private boolean mEffectInit = false;
 
     private static SoundEffectManager mInstance;
@@ -222,6 +223,7 @@ public class SoundEffectManager {
     private SoundEffectManager (Context context) {
         Log.d(TAG, "SoundEffectManager construction");
         mContext = context;
+        mSupportMs12Dap = OutputModeManager.getInstance(mContext).isAudioSupportMs12System();
     }
 
     public void createAudioEffects() {
@@ -240,8 +242,7 @@ public class SoundEffectManager {
         }
         creatVirtualSurroundAudioEffects();
         creatTrebleBassAudioEffects();
-        boolean isDapValid = OutputModeManager.getInstance(mContext).isAudioSupportMs12System();
-        if (!isDapValid) {
+        if (!mSupportMs12Dap) {
             creatEqAudioEffects();
         }
         creatDbxAudioEffects();
@@ -1054,14 +1055,12 @@ public class SoundEffectManager {
         if (DroidLogicUtils.getAudioDebugEnable()) Log.d(TAG, "saveAudioParameters id:" + id+ ", value:" + value);
         switch (id) {
             case SET_BASS:
-                int soundModeBass = getSoundModeFromDb();
-                if (AudioEffectManager.EQ_SOUND_MODE_CUSTOM == soundModeBass) {
+                if (AudioEffectManager.EQ_SOUND_MODE_CUSTOM == getSoundModeFromDb() || mSupportMs12Dap) {
                     Settings.Global.putInt(mContext.getContentResolver(), DB_ID_SOUND_EFFECT_BASS, value);
                 }
                 break;
             case SET_TREBLE:
-                int soundModeTreble = getSoundModeFromDb();
-                if (AudioEffectManager.EQ_SOUND_MODE_CUSTOM == soundModeTreble) {
+                if (AudioEffectManager.EQ_SOUND_MODE_CUSTOM == getSoundModeFromDb() || mSupportMs12Dap) {
                     Settings.Global.putInt(mContext.getContentResolver(), DB_ID_SOUND_EFFECT_TREBLE, value);
                 }
                 break;
@@ -1162,16 +1161,14 @@ public class SoundEffectManager {
         int result = -1;
         switch (id) {
             case SET_BASS:
-                int soundModeBass = getSoundModeFromDb();
-                if (AudioEffectManager.EQ_SOUND_MODE_CUSTOM == soundModeBass) {
+                if (AudioEffectManager.EQ_SOUND_MODE_CUSTOM == getSoundModeFromDb() || mSupportMs12Dap) {
                     result = Settings.Global.getInt(mContext.getContentResolver(), DB_ID_SOUND_EFFECT_BASS, AudioEffectManager.EFFECT_BASS_DEFAULT);
                 } else {
                     result = AudioEffectManager.EFFECT_BASS_DEFAULT;
                 }
                 break;
             case SET_TREBLE:
-                int soundModeTreble = getSoundModeFromDb();
-                if (AudioEffectManager.EQ_SOUND_MODE_CUSTOM == soundModeTreble) {
+                if (AudioEffectManager.EQ_SOUND_MODE_CUSTOM == getSoundModeFromDb() || mSupportMs12Dap) {
                     result = Settings.Global.getInt(mContext.getContentResolver(), DB_ID_SOUND_EFFECT_TREBLE, AudioEffectManager.EFFECT_TREBLE_DEFAULT);
                 } else {
                     result = AudioEffectManager.EFFECT_TREBLE_DEFAULT;
@@ -1350,7 +1347,9 @@ public class SoundEffectManager {
         AudioTrack trackplayer = new AudioTrack(AudioManager.STREAM_MUSIC, 8000, AudioFormat.CHANNEL_OUT_STEREO,
                 AudioFormat.ENCODING_PCM_16BIT, bufsize, AudioTrack.MODE_STREAM);
         trackplayer.play();
-        trackplayer.write(data, 0, data.length);
+        for (int i = 0; i <= 5; i++) {
+            trackplayer.write(data, 0, data.length);
+        }
         trackplayer.stop();
         trackplayer.release();
     }
