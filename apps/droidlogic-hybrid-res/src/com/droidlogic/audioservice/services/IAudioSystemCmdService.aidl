@@ -20,6 +20,7 @@ interface IAudioSystemCmdService{
     void setParameters(String arg);
     String getParameters(String arg);
     void handleAdtvAudioEvent(int cmd, int param1, int param2);
+    void updateAudioPortGain(int sourceType);
     void openTvAudio(int sourceType);
     void closeTvAudio();
 }
