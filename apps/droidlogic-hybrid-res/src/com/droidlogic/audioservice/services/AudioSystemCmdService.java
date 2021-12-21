@@ -92,80 +92,78 @@ public class AudioSystemCmdService extends Service {
     private TvInputManager mTvInputManager;
     protected TvControlManager mTvControlManager;
     private static final String PATH_AUDIOFORMAT_UEVENT = "/devices/platform/auge_sound";
+    private static final String PATH_TXLX_AUDIOFORMAT_UEVENT = "/devices/platform/aml_snd_tv";
     private static final String ACTION_AUDIO_FORMAT_CHANGE = "droidlogic.audioservice.action.AUDIO_FORMAT";
     private static final String AUDIO_FORMAT_KEY = "audio_format";
     private static final String AUDIO_FORMAT_VALUE_KEY = "audio_format_value";
     private final UEventObserver mObserver = new UEventObserver() {
     @Override
-    public void onUEvent(UEventObserver.UEvent event) {
-        Log.d(TAG, "UEVENT: " + event.toString());
-        Log.d(TAG, "DEVPATH: " + event.get("DEVPATH"));
-
-        if (PATH_AUDIOFORMAT_UEVENT.equals(event.get("DEVPATH", null))) {
-            Log.d(TAG, "audio format string event");
-            String audioFormatStr = event.get("AUDIO_FORMAT", null);
-            if (audioFormatStr == null) {
-                Log.e(TAG, "Error! got audio uevent from kernel, but no AUDIO_FORMAT value set!");
-                return;
+        public void onUEvent(UEventObserver.UEvent event) {
+            if (DroidLogicUtils.getAudioDebugEnable()) {
+                Log.d(TAG, "UEVENT: " + event.toString());
+                Log.d(TAG, "DEVPATH: " + event.get("DEVPATH"));
             }
 
-            Log.d(TAG, "AUDIO_FORMAT = " + audioFormatStr);
-            final int audioFormat = Integer.parseInt(audioFormatStr.substring(audioFormatStr.indexOf("=")+1));
-            Log.d(TAG, "audioFormat = " + audioFormat);
-            if (audioFormat < 0) {
-                Log.d(TAG, "ignoring incorrect audio event");
-                return;
-            } else {
-                String extra = covertAudioFormatIndextToString(audioFormat);
-                Intent intent = new Intent(ACTION_AUDIO_FORMAT_CHANGE);
-                intent.putExtra(AUDIO_FORMAT_KEY, extra);
-                intent.putExtra(AUDIO_FORMAT_VALUE_KEY,audioFormat);
-                mContext.sendBroadcast(intent);
+            if ((PATH_AUDIOFORMAT_UEVENT.equals(event.get("DEVPATH", null))) || PATH_TXLX_AUDIOFORMAT_UEVENT.equals(event.get("DEVPATH", null))) {
+                String audioFormatStr = event.get("AUDIO_FORMAT", null);
+                if (audioFormatStr == null) {
+                    Log.e(TAG, "Error! got audio uevent from kernel, but no AUDIO_FORMAT value set!");
+                    return;
+                }
+                if (DroidLogicUtils.getAudioDebugEnable()) {
+                    Log.d(TAG, "AUDIO_FORMAT = " + audioFormatStr);
+                }
+                final int audioFormat = Integer.parseInt(audioFormatStr.substring(audioFormatStr.indexOf("=")+1));
+                if (audioFormat < 0) {
+                    Log.d(TAG, "ignoring incorrect audio event format:" + audioFormat);
+                    return;
+                } else {
+                    String extra = covertAudioFormatIndextToString(audioFormat);
+                    Intent intent = new Intent(ACTION_AUDIO_FORMAT_CHANGE);
+                    intent.putExtra(AUDIO_FORMAT_KEY, extra);
+                    intent.putExtra(AUDIO_FORMAT_VALUE_KEY,audioFormat);
+                    mContext.sendBroadcast(intent);
+                }
             }
         }
-    }
     };
 
     private String covertAudioFormatIndextToString(int audioFormat) {
-        Log.d(TAG, "covertAudioFormatIndextToEnum: intVal is " + audioFormat);
         String stringValue = " ";
-        if (audioFormat == 0) {
-            stringValue = "PCM";
-        } else if (audioFormat == 1) {
-            stringValue = "DTS Express";
-        } else if (audioFormat == 2) {
-            stringValue = "Dolby Audio";
-        } else if (audioFormat == 3) {
-            stringValue = "DTS";
-        } else if (audioFormat == 4) {
-            stringValue = "Dolby Audio";
-        } else if (audioFormat == 5) {
-            stringValue = "DTS HD";
-        } else if (audioFormat == 6) {
-            stringValue = "Multi PCM";
-        } else if (audioFormat == 7) {
-            stringValue = "Dolby Audio";
-        } else if (audioFormat == 8) {
-            stringValue = "DTS HD";
-        } else if (audioFormat == 9) {
-            stringValue = "PCM";
-        } else if (audioFormat == 10) {
-            stringValue = "Dolby Audio";
-        } else if (audioFormat == 11) {
-            stringValue = "Dolby Audio";
-        } else if (audioFormat == 12) {
-            stringValue = "Dolby Audio";
-        } else if (audioFormat == 13) {
-            stringValue = "Dolby Audio";
-        } else if (audioFormat == 14) {
-            stringValue = "Dolby Audio";
-        } else if (audioFormat == 15) {
-            stringValue = "Dolby Audio";
-        } else {
-            Log.d(TAG, "invalid value");
+        switch (audioFormat) {
+            case 0:
+            case 9:
+                stringValue = "PCM";
+                break;
+            case 1:
+                stringValue = "DTS Express";
+                break;
+            case 3:
+                stringValue = "DTS";
+                break;
+            case 5:
+            case 8:
+                stringValue = "DTS-HD Master Audio";
+                break;
+            case 6:
+                stringValue = "Multi PCM";
+                break;
+            case 2:
+            case 4:
+            case 7:
+            case 10:
+            case 11:
+            case 12:
+            case 13:
+            case 14:
+            case 15:
+                stringValue = "Dolby Audio";
+                break;
+            default:
+                Log.w(TAG, "invalid audioFormat value:" + audioFormat);
+                break;
         }
-
-        Log.d(TAG, "covertAudioFormatIndextToEnum: stringVal is " + stringValue);
+        Log.i(TAG, "covertAudioFormatIndextToEnum: audioFormat:" + audioFormat + ", stringVal:" + stringValue);
         return stringValue;
     }
 
@@ -185,6 +183,9 @@ public class AudioSystemCmdService extends Service {
     private boolean  mMixAdSupported;
     private boolean  mNotImptTvHardwareInputService = false;
     private boolean mForceManagePatch = false;
+    private boolean mIsTvPlatform = false;
+    private static final String PARA_AUDIO_IS_TV        = "hal_param_audio_is_tv";
+    private static final String PARA_AUDIO_IS_TV_ENABLE = "hal_param_audio_is_tv=1";
     private IAudioService mAudioService;
     private AudioRoutesInfo mCurAudioRoutesInfo;
     private Runnable mHandleAudioSinkUpdatedRunnable;
@@ -315,10 +316,12 @@ public class AudioSystemCmdService extends Service {
         filter.addAction(AudioManager.STREAM_MUTE_CHANGED_ACTION);
         mContext.registerReceiver(mVolumeReceiver, filter);
         mObserver.startObserving(PATH_AUDIOFORMAT_UEVENT);
+        mObserver.startObserving(PATH_TXLX_AUDIOFORMAT_UEVENT);
         mNotImptTvHardwareInputService = (mTvInputManager.getHardwareList() == null) || (mTvInputManager.getHardwareList().isEmpty());
         Log.d(TAG, "mNotImptTvHardwareInputService:"+ mNotImptTvHardwareInputService + ", mTvInputManager.getHardwareList():" + mTvInputManager.getHardwareList());
         mForceManagePatch =  SystemProperties.getBoolean("vendor.media.dtv.force.manage.patch", false);
-        Log.d(TAG, "mForceManagePatch :" + mForceManagePatch);
+        mIsTvPlatform =  isTvPlatform();
+        Log.d(TAG, "mForceManagePatch :" + mForceManagePatch + "mIsTvPlatform :" + mIsTvPlatform);
         updateVolume();
 
         getContentResolver().registerContentObserver(Settings.Global.getUriFor(OutputModeManager.DB_ID_AUDIO_OUTPUT_DEVICE_ARC_ENABLE),
@@ -390,6 +393,9 @@ public class AudioSystemCmdService extends Service {
         }
         mDtvDemuxIdCurrentRecive = param3;
         switch (cmd_index) {
+            case AudioSystemCmdManager.AUDIO_SERVICE_CMD_SET_SPDIF_PROTECTION__MODE:
+                mAudioManager.setParameters("hal_param_dtv_spdif_protection_mode=" + param1);
+                break;
             case AudioSystemCmdManager.AUDIO_SERVICE_CMD_SET_DEMUX_INFO:
                 //mAudioManager.setParameters("hal_param_dtv_pid=" + param1);
                 mAudioManager.setParameters("hal_param_dtv_demux_id=" + param2);
@@ -457,7 +463,10 @@ public class AudioSystemCmdService extends Service {
                 updateAudioSourceAndAudioSink();
                 if (mNotImptTvHardwareInputService && !mHasOpenedDecoder)
                     handleAudioSinkUpdated();
-                reStartAdecDecoderIfPossible();
+
+                if (mIsTvPlatform) {
+                    reStartAdecDecoderIfPossible();
+                }
                 synchronized (mLock) {
                     mAudioManager.setParameters("hal_param_dtv_fmt=" + param1);
                     mAudioManager.setParameters("hal_param_dtv_pid=" + param2);
@@ -498,6 +507,10 @@ public class AudioSystemCmdService extends Service {
             case AudioSystemCmdManager.AUDIO_SERVICE_CMD_SET_AUDIO_PATCH_MANAGE_MODE:
                 boolean isDvbPlayback = (param1 == 0);
                 int forceManagePatchMode = param2;
+                if (param3 != 0) {
+                    isDvbPlayback = ((param1 -(param3 << mDtvDemuxIdBase)) == 0);
+                    forceManagePatchMode = (param2 -(param3 << mDtvDemuxIdBase));
+                }
                 boolean hasTif = !(mTvInputManager.getHardwareList() == null || mTvInputManager.getHardwareList().isEmpty());
 
                 if (mForceManagePatch) {
@@ -522,11 +535,56 @@ public class AudioSystemCmdService extends Service {
                     + ", hasTif: " + hasTif
                     + ", so mNotImptTvHardwareInputService set to " + mNotImptTvHardwareInputService);
                 break;
+            case AudioSystemCmdManager.AUDIO_SERVICE_CMD_SET_TSPLAYER_CLIENT_DIED:
+                releaseTvTunerAudioPatch();
+                mAudioPatch = null;
+                mAudioSource = null;
+                mHasStartedDecoder = false;
+                mHasOpenedDecoder = false;
+                mMixAdSupported = false;
+                mCurrentSubFmt = -1;
+                mCurrentSubPid = -1;
+                break;
             default:
                 Log.w(TAG,"HandleAudioEvent unkown audio cmd:" + cmd);
                 break;
         }
     }
+
+    public boolean isTvPlatform() {
+        return mAudioManager.getParameters(PARA_AUDIO_IS_TV).contains(PARA_AUDIO_IS_TV_ENABLE);
+    }
+
+    private void releaseTvTunerAudioPatch() {
+         ArrayList<AudioPatch> patches = new ArrayList<>();
+         int result = mAudioManager.listAudioPatches(patches);
+         if (result != AudioManager.SUCCESS) {
+             throw new RuntimeException("listAudioPatches failed with code " + result);
+         }
+         Log.d(TAG, "patches:" + patches.toString());
+        // Look for a patch that matches the provided user side handle
+         int path_id = 0;
+         for (AudioPatch patch : patches) {
+             for (AudioPortConfig source : patch.sources()) {
+                 if (source.port() instanceof AudioDevicePort) {
+                     AudioDevicePort port = (AudioDevicePort)source.port();
+                     if (port.type() == AudioManager.DEVICE_IN_TV_TUNER) {
+                         // Found it!
+                         HandleAudioEvent(AudioSystemCmdManager.AUDIO_SERVICE_CMD_CLOSE_DECODER, 0, 0, path_id, false);
+                         path_id++;
+                         result = AudioManager.releaseAudioPatch(patch);
+                         if (result != AudioManager.SUCCESS) {
+                             throw new RuntimeException("releaseAudioPatch failed with code " + result);
+                         }
+                         continue;
+                     }
+                 }
+            }
+        }
+
+         // If we didn't find a match, then something went awry, but it's probably not fatal...
+         Log.i(TAG, "releaseAudioPatch finished ");
+     }
 
     private void updateAudioSourceAndAudioSink() {
         mAudioSource = findAudioDevicePort(AudioManager.DEVICE_IN_TV_TUNER, "");
