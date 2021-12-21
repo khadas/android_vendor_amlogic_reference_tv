@@ -214,7 +214,7 @@ public class AudioSystemCmdService extends Service {
             mHandleAudioSinkUpdatedRunnable = new Runnable() {
                 public void run() {
                     synchronized (mLock) {
-                        if (mHasOpenedDecoder ) {
+                        if (mHasReceivedStartDecoderCmd) {
                             if (mNotImptTvHardwareInputService)
                                 handleAudioSinkUpdated();
                             mHasOpenedDecoder = false;
