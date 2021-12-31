@@ -622,12 +622,8 @@ public class AudioSystemCmdService extends Service {
                 Slog.w(TAG, "handleVolumeChange action:" + action + ", Unrecognized intent: " + intent);
                 return;
         }
+
         setAudioPortGain();
-        synchronized (mLock) {
-            if (mNotImptTvHardwareInputService) {
-                updateAudioConfigLocked();
-            }
-        }
     }
 
     private void handleAudioSinkUpdated() {
