@@ -316,7 +316,7 @@ public class AudioSystemCmdService extends Service {
         return mBinder;
     }
 
-    private void setAdFunction(int cmd, int param1, int param2) {
+    private void setAdFunction(int cmd, int param1, int param2, int param3) {
         switch (cmd) {
             case AudioSystemCmdManager.AUDIO_SERVICE_CMD_AD_SWITCH_ENABLE:
                 mAudioManager.setParameters("ad_switch_enable=" + (param1 > 0 ? "1" : "0"));
@@ -328,10 +328,8 @@ public class AudioSystemCmdService extends Service {
                 mAudioManager.setParameters("hal_param_dual_dec_support=" + (param1 > 0 ? "1" : "0"));
                 break;
             case AudioSystemCmdManager.AUDIO_SERVICE_CMD_AD_MIX_SUPPORT://Associated audio mixing on/off
-                mMixAdSupported = (param1 != 0);
-                mAudioManager.setParameters("hal_param_dual_dec_support=" + (param1 > 0 ? "1" : "0"));
-                mAudioManager.setParameters("hal_param_ad_mix_enable=" + (param1 > 0 ? "1" : "0"));
-                Log.d(TAG, "HandleAudioEvent mMixAdSupported:" + mMixAdSupported);
+                mAudioManager.setParameters("hal_param_dual_dec_support=" + param1);
+                mAudioManager.setParameters("hal_param_ad_mix_enable=" + param1);
                 break;
             case AudioSystemCmdManager.AUDIO_SERVICE_CMD_AD_MIX_LEVEL://Associated audio mixing level
                 mAudioManager.setParameters("hal_param_dual_dec_mix_level=" + param2);
@@ -486,7 +484,7 @@ public class AudioSystemCmdService extends Service {
             case AudioSystemCmdManager.AUDIO_SERVICE_CMD_AD_DUAL_SUPPORT:
             case AudioSystemCmdManager.AUDIO_SERVICE_CMD_AD_MIX_SUPPORT:
             case AudioSystemCmdManager.AUDIO_SERVICE_CMD_AD_MIX_LEVEL:
-                setAdFunction(cmd_index, param1, param2);
+                setAdFunction(cmd_index, param1, param2, param3);
                 break;
             case AudioSystemCmdManager.AUDIO_SERVICE_CMD_SET_TSPLAYER_CLIENT_DIED:
                 releaseTvTunerAudioPatch();
