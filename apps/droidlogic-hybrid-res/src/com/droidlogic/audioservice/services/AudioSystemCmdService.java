@@ -437,9 +437,9 @@ public class AudioSystemCmdService extends Service {
                    Log.d(TAG, "ADEC_CLOSE_DECODER mAudioPatch:"
                         + mAudioPatch);
                     mAudioManager.releaseAudioPatch(mAudioPatch);
+                    mAudioPatch = null;
+                    mAudioSource = null;
                 }
-                mAudioPatch = null;
-                mAudioSource = null;
                 mHasStartedDecoder = false;
                 mHasOpenedDecoder = false;
                 mMixAdSupported = false;
@@ -687,7 +687,7 @@ public class AudioSystemCmdService extends Service {
         Log.i(TAG, "reStartAdecDecoderIfPossiblem HasOpenedDecoder:" + mHasOpenedDecoder +
                    " StartDecoderCmd:" + mHasReceivedStartDecoderCmd +
                    ", mMixAdSupported:" + mMixAdSupported);
-        if (mAudioSource != null &&!mAudioSink.isEmpty() && !mHasOpenedDecoder ) {
+        if ( !mHasOpenedDecoder ) {
             mAudioManager.setParameters("hal_param_tuner_in=dtv");
             if (mHasReceivedStartDecoderCmd) {
                 mAudioManager.setParameters("hal_param_dtv_audio_fmt="+mCurrentFmt);
