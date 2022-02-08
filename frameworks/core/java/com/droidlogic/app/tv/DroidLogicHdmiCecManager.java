@@ -180,15 +180,17 @@ public class DroidLogicHdmiCecManager {
                     == HdmiControlManager.HDMI_CEC_CONTROL_ENABLED;
                 if (!enabled) {
                     // no need to do supplement select
-                    Log.d(TAG, "cec disabled.");
+                    return;
+                }
+                if (mTvClient == null) {
+                    Log.d(TAG, "tv client null.");
                     return;
                 }
                 if (mCurrentSelect == null) {
                     Log.d(TAG, "cec enabled while current select is null.");
                     return;
                 }
-                if (isHdmiDeviceId(mCurrentSelect.getDeviceId())
-                    && (getInputSourceDeviceId() == mCurrentSelect.getDeviceId())) {
+                if (isHdmiDeviceId(mCurrentSelect.getDeviceId())) {
                     // In accord with the device channel LiveTv tuned.
                     Log.d(TAG, "cec settings is enabled! " + mCurrentSelect);
                     if (mCurrentSelect.getLogicalAddress() != 0) {
@@ -274,6 +276,9 @@ public class DroidLogicHdmiCecManager {
                 mSelectingDevice = INTERNAL_DEVICE;
                 deviceSelectInternalDelayed();
             }
+        } else if (isMain) {
+            mCurrentSelect = INTERNAL_DEVICE;
+            deviceSelect();
         }
     }
 
