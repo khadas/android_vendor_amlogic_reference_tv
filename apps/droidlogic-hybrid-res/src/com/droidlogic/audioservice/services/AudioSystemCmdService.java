@@ -61,6 +61,7 @@ public class AudioSystemCmdService extends Service {
     private static final String TAG = AudioSystemCmdService.class.getSimpleName();
     private static AudioSystemCmdService mAudioSystemCmdService = null;
     private SystemControlEvent mSystemControlEvent;
+    private List<Integer> mAudioPathIds = new ArrayList<>();
     private SystemControlManager mSystemControlManager;
     private DtvKitAudioEvent mDtvKitAudioEvent = null;
     private ADtvAudioEvent mADtvAudioEvent = null;
@@ -430,19 +431,40 @@ public class AudioSystemCmdService extends Service {
                 }
                 mAudioManager.setParameters("hal_param_dtv_patch_cmd=" + cmd);
                 mHasOpenedDecoder = true;
+                if (mAudioPatch != null) {
+                    if (param3 >=0 && !mAudioPathIds.contains(param3)) {
+                        mAudioPathIds.add(param3);
+                    }
+                } else {
+                    mAudioPathIds.clear();
+                }
+                Log.d(TAG, "OPEN_DECODER("+param3+") audio path count: " + mAudioPathIds.size()+","+mAudioPathIds);
                 break;
             case AudioSystemCmdManager.AUDIO_SERVICE_CMD_CLOSE_DECODER://
                 mAudioManager.setParameters("hal_param_dtv_patch_cmd=" + cmd);
                 if (mAudioPatch != null) {
-                   Log.d(TAG, "ADEC_CLOSE_DECODER mAudioPatch:"
-                        + mAudioPatch);
-                    mAudioManager.releaseAudioPatch(mAudioPatch);
-                    mAudioPatch = null;
-                    mAudioSource = null;
+                    if (param3 >=0) {
+                        if (mAudioPathIds.contains(param3)) {
+                            mAudioPathIds.remove(Integer.valueOf(param3));
+                        } else {
+                            Log.d(TAG, "CLOSE_DECODER("+param3+") maybe already closed");
+                        }
+                    }
+                    Log.d(TAG, "CLOSE_DECODER("+param3+") audio path count: " + mAudioPathIds.size()+","+mAudioPathIds);
+                    if (mAudioPathIds.isEmpty()) {
+                       Log.d(TAG, "ADEC_CLOSE_DECODER mAudioPatch:"
+                            + mAudioPatch);
+                        mAudioManager.releaseAudioPatch(mAudioPatch);
+                        mAudioPatch = null;
+                        mAudioSource = null;
+                        mHasStartedDecoder = false;
+                        mHasOpenedDecoder = false;
+                        mMixAdSupported = false;
+                    }
+                } else {
+                    Log.d(TAG, "CLOSE_DECODER("+param3+") audio patch already released");
+                    mAudioPathIds.clear();
                 }
-                mHasStartedDecoder = false;
-                mHasOpenedDecoder = false;
-                mMixAdSupported = false;
                 break;
 
             case AudioSystemCmdManager.AUDIO_SERVICE_CMD_SET_MEDIA_PRESENTATION_ID:
@@ -557,6 +579,7 @@ public class AudioSystemCmdService extends Service {
         }
 
          // If we didn't find a match, then something went awry, but it's probably not fatal...
+         mAudioPathIds.clear();
          Log.i(TAG, "releaseAudioPatch finished ");
      }
 
@@ -709,6 +732,7 @@ public class AudioSystemCmdService extends Service {
             if (mAudioPatch != null) {
                 mAudioManager.releaseAudioPatch(mAudioPatch);
                 mAudioPatch = null;
+                mAudioPathIds.clear();
                 mHasStartedDecoder = false;
             }
             return;
@@ -726,6 +750,7 @@ public class AudioSystemCmdService extends Service {
         if (mAudioPatch == null) {
             shouldRecreateAudioPatch = true;
             mHasStartedDecoder = false;
+            mAudioPathIds.clear();
         }
 
         for (AudioDevicePort audioSink : mAudioSink) {
@@ -798,6 +823,7 @@ public class AudioSystemCmdService extends Service {
             if (mAudioPatch != null) {
                 shouldApplyGain = true;
             } else {
+                mAudioPathIds.clear();
                 shouldRecreateAudioPatch = true;
             }
         }
