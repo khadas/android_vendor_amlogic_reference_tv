@@ -53,7 +53,6 @@ import com.droidlogic.app.SystemControlManager;
 import com.droidlogic.app.tv.DroidLogicTvUtils;
 import com.droidlogic.app.tv.TvControlManager;
 import com.droidlogic.UEventObserver;
-import com.droidlogic.R;
 
 
 //this service used to call audio system commands
@@ -588,25 +587,6 @@ public class AudioSystemCmdService extends Service {
         findAudioSinkFromAudioPolicy(mAudioSink);
     }
 
-    private boolean mShowingPassthroughHint = false;
-    private static final String HAL_PARAM_HAL_CONTROL_VOL_EN = "hal_param_hal_control_vol_en";
-    private void showPassthroughWarning() {
-        if (mShowingPassthroughHint) {
-            Slog.d(TAG, "on need to show other passthrough hint");
-            return;
-        }
-        mShowingPassthroughHint = true;
-        mHandler.post(()->{
-            Toast toast = Toast.makeText(mContext, R.string.volume_control_hint, Toast.LENGTH_LONG);
-            toast.addCallback(new Toast.Callback() {
-                public void onToastHidden() {
-                    mShowingPassthroughHint = false;
-                }
-            });
-            toast.show();
-        });
-    }
-
     private void handleVolumeChange(Context context, Intent intent) {
         String action = intent.getAction();
         switch (action) {
@@ -614,10 +594,6 @@ public class AudioSystemCmdService extends Service {
                 int streamType = intent.getIntExtra(AudioManager.EXTRA_VOLUME_STREAM_TYPE, -1);
                 if (streamType != AudioManager.STREAM_MUSIC) {
                     return;
-                }
-                boolean mAudioHalControlVolumeEnable = mAudioManager.getParameters(HAL_PARAM_HAL_CONTROL_VOL_EN).equals(HAL_PARAM_HAL_CONTROL_VOL_EN + "=1");
-                if (!mAudioHalControlVolumeEnable) {
-                    showPassthroughWarning();
                 }
                 int index = intent.getIntExtra(AudioManager.EXTRA_VOLUME_STREAM_VALUE, 0);
                 if (index == mCurrentIndex) {
