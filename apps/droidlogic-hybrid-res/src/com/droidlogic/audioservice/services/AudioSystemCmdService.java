@@ -419,7 +419,7 @@ public class AudioSystemCmdService extends Service {
                 break;
             case AudioSystemCmdManager.AUDIO_SERVICE_CMD_OPEN_DECODER:
                 updateAudioSourceAndAudioSink();
-                if (mNotImptTvHardwareInputService && !mHasOpenedDecoder)
+                if (mNotImptTvHardwareInputService)
                     handleAudioSinkUpdated();
                 if (DroidLogicUtils.isTv()) {
                     reStartAdecDecoderIfPossible();
@@ -534,7 +534,12 @@ public class AudioSystemCmdService extends Service {
         } else if (mCurSourceType >= DroidLogicTvUtils.SOURCE_TYPE_HDMI1 && mCurSourceType <= DroidLogicTvUtils.SOURCE_TYPE_HDMI4) {
             curInputSrcDev = AudioManager.DEVICE_IN_HDMI;
         } else {
-            return;
+            if (mNotImptTvHardwareInputService) {
+                 Log.i(TAG,"NON TV setAudioPortGain force DEVICE_IN_TV_TUNER");
+                 curInputSrcDev = AudioManager.DEVICE_IN_TV_TUNER;
+            } else {
+                return;
+            }
         }
         mAudioSource = findAudioDevicePort(curInputSrcDev, "");
         if (mAudioSource != null && mAudioSource.gains().length > 0) {
@@ -816,6 +821,7 @@ public class AudioSystemCmdService extends Service {
                     sinkConfigs.toArray(new AudioPortConfig[sinkConfigs.size()]));
             mAudioPatch = audioPatchArray[0];
             Log.d(TAG,"createAudioPatch end" + mAudioPatch);
+            setAudioPortGain();
         }
     }
 
