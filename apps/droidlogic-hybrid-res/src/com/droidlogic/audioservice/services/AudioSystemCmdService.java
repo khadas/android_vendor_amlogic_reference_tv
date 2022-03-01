@@ -715,7 +715,8 @@ public class AudioSystemCmdService extends Service {
         Log.i(TAG, "reStartAdecDecoderIfPossiblem HasOpenedDecoder:" + mHasOpenedDecoder +
                    " StartDecoderCmd:" + mHasReceivedStartDecoderCmd +
                    ", mMixAdSupported:" + mMixAdSupported);
-        if ( !mHasOpenedDecoder ) {
+        if (!mHasOpenedDecoder) {
+            setAudioPortGain();
             mAudioManager.setParameters("hal_param_tuner_in=dtv");
             if (mHasReceivedStartDecoderCmd) {
                 mAudioManager.setParameters("hal_param_dtv_audio_fmt="+mCurrentFmt);
