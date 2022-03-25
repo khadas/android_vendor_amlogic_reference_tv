@@ -146,10 +146,12 @@ public class DroidLogicTvUtils
     public static final String EVENT_STRENGTH = "strength";
     public static final String EVENT_CHANNEL_NUMBER = "channel_number";
     public static final String EVENT_RADIO_NUMBER = "radio_number";
+    public static final String EVENT_CHANNEL_LIST_UPDATED = "event_channel_list_updated";
 
     //menu display time
     public static final String KEY_MENU_TIME = "menu_time";
-    public static final int DEFUALT_MENU_TIME = 0;
+    public static final int DEFAULT_MENU_TIME = 0;
+    public static final String KEY_NO_SIGNAL_TIMEOUT = "no_signal_timeout";
 
     /**
      * source input type need to switch
@@ -203,6 +205,8 @@ public class DroidLogicTvUtils
 
     public static final String ACTION_STOP_PLAY = "stop_play";
 
+    public static final String ACTION_TIMER_SUSPEND = "droidlogic.intent.action.TIMER_SUSPEND";
+
     public static final String ACTION_TIMEOUT_SUSPEND = "droidlogic.intent.action.suspend";
 
     public static final String ACTION_UPDATE_TV_PLAY = "android.intent.action.update_tv";
@@ -235,6 +239,7 @@ public class DroidLogicTvUtils
     public static final String KEY_ENABLE_NOSIGNAL_TIMEOUT = "enable_nosignal_timeout";
     public static final String PROP_DISABLE_NOSIGNAL_TIMEOUT_FUNCTION = "persist.vendor.tv.disable.nosig.timeout";
     public static final String KEY_ENABLE_SUSPEND_TIMEOUT = "enable_suspend_timeout";
+    public static final String KEY_COMMAND_REQUEST_SUSPEND = "command_request_suspend";
     public static final String ACTION_STOP_EPG_ACTIVITY = "droidlogic.intent.action.stop_epg_activity";
     public static final String ACTION_REMOVE_ALL_DVR_RECORDS = "droidlogic.intent.action.remove_all_dvr_records";
     public static final String ACTION_DVR_RESPONSE = "droidlogic.intent.action.dvr_response";
@@ -265,7 +270,7 @@ public class DroidLogicTvUtils
     public static final String PARA_SCAN_PARA5 = "scan_para5";
     public static final String PARA_SCAN_PARA6 = "scan_para6";
     public static final String ACTION_STORE_CHANNEL_STATUS = "droidlogic.intent.action.STORE_STATUS";
-    public static final String PROP_DROID_TV_SLEEP_TIME = "vendor.tv.sleep_timer";
+    public static final String PROP_DROID_TV_SLEEP_TIME = "tv_sleep_timer";//save it in private db
 
     /*define number search program type*/
     public static final String ATVPROGRAM = "atv_program";
