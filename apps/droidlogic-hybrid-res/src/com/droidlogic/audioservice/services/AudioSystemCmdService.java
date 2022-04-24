@@ -76,6 +76,7 @@ public class AudioSystemCmdService extends Service {
     private int mDesiredFormat = AudioFormat.ENCODING_DEFAULT;
     private int mCurrentFmt = -1;
     private int mCurrentHasDtvVideo = 0;
+    private int mDigitalFormat = 0;
     private int mDtvDemuxIdBase = 20;
     private int mDtvDemuxIdCurrentWork = 0;
     private int mCurSourceType = DroidLogicTvUtils.SOURCE_TYPE_OTHER;
@@ -86,6 +87,15 @@ public class AudioSystemCmdService extends Service {
     private static final String ACTION_AUDIO_FORMAT_CHANGE = "droidlogic.audioservice.action.AUDIO_FORMAT";
     private static final String AUDIO_FORMAT_KEY = "audio_format";
     private static final String AUDIO_FORMAT_VALUE_KEY = "audio_format_value";
+
+    private static final String PARAM_HAL_AUDIO_OUTPUT_FORMAT_PCM        = "digital_audio_format=0";
+    private static final String PARAM_HAL_AUDIO_OUTPUT_FORMAT_AUTO       = "digital_audio_format=5";
+    private static final String PARAM_HAL_AUDIO_OUTPUT_FORMAT_PASSTHROUGH= "digital_audio_format=6";
+    private static final int DIGITAL_AUDIO_FORMAT_PCM                    = 0;
+    private static final int DIGITAL_AUDIO_FORMAT_AUTO                   = 1;
+    private static final int DIGITAL_AUDIO_FORMAT_MANUAL                 = 2;
+    private static final int DIGITAL_AUDIO_FORMAT_PASSTHROUGH            = 3;
+
     private final UEventObserver mObserver = new UEventObserver() {
         @Override
         public void onUEvent(UEventObserver.UEvent event) {
@@ -184,13 +194,19 @@ public class AudioSystemCmdService extends Service {
     final IAudioRoutesObserver.Stub mAudioRoutesObserver = new IAudioRoutesObserver.Stub() {
         @Override
         public void dispatchAudioRoutesChanged(final AudioRoutesInfo newRoutes) {
+            int mPreDigitalFormat = mDigitalFormat;
+            mDigitalFormat = getDigitalFormats();
             Log.i(TAG, "dispatchAudioRoutesChanged cur device:" + newRoutes.mainType +
                     ", pre device:" + mCurAudioRoutesInfo.mainType);
             if (DroidLogicUtils.getAudioDebugEnable()) {
                 Log.d(TAG, "dispatchAudioRoutesChanged newRoutes:" + newRoutes.toString());
                 Log.d(TAG, "dispatchAudioRoutesChanged preRoutes:" + mCurAudioRoutesInfo.toString());
+                Log.d(TAG, "mDigitalFormat "+ mDigitalFormat + "mPreDigitalFormat " + mPreDigitalFormat);
             }
-            if (newRoutes.mainType == mCurAudioRoutesInfo.mainType && newRoutes.toString().equals(mCurAudioRoutesInfo.toString())) {
+
+            if (newRoutes.mainType == mCurAudioRoutesInfo.mainType &&
+                newRoutes.toString().equals(mCurAudioRoutesInfo.toString())
+                && (mDigitalFormat == mPreDigitalFormat)) {
                 return;
             }
             if (DroidLogicUtils.isTv()) {
@@ -291,6 +307,7 @@ public class AudioSystemCmdService extends Service {
         mCurrentIndex = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
         getContentResolver().registerContentObserver(Settings.Global.getUriFor(OutputModeManager.DB_ID_AUDIO_OUTPUT_DEVICE_ARC_ENABLE),
                 false, mAudioOutputParametersObserver);
+        mDigitalFormat =  getDigitalFormats();
     }
 
     private ContentObserver mAudioOutputParametersObserver = new ContentObserver(new Handler()) {
@@ -856,7 +873,20 @@ public class AudioSystemCmdService extends Service {
         }
         return false;
     }
+    private int getDigitalFormats() {
+        Log.d(TAG, "getDigitalFormats value:" + mAudioManager.getParameters("hdmi_format"));
+        if (mAudioManager.getParameters("hdmi_format").contains(PARAM_HAL_AUDIO_OUTPUT_FORMAT_PCM)) {
+          return DIGITAL_AUDIO_FORMAT_PCM;
+        } else if (mAudioManager.getParameters("hdmi_format").contains(PARAM_HAL_AUDIO_OUTPUT_FORMAT_AUTO)){
+          return DIGITAL_AUDIO_FORMAT_AUTO;
+        } else if (mAudioManager.getParameters("hdmi_format").contains(PARAM_HAL_AUDIO_OUTPUT_FORMAT_PASSTHROUGH))  {
+          return DIGITAL_AUDIO_FORMAT_PASSTHROUGH;
+        } else {
+            Log.d(TAG, "getDigitalFormats value:" + mAudioManager.getParameters("hdmi_format"));
+            return mDigitalFormat;
+        }
 
+    }
     private final IAudioSystemCmdService.Stub mBinder = new IAudioSystemCmdService.Stub() {
         public void setParameters(String arg) {
             if (DroidLogicUtils.getAudioDebugEnable()) {
