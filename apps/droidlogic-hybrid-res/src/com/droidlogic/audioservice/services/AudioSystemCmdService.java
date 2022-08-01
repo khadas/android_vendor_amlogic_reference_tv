@@ -77,7 +77,7 @@ public class AudioSystemCmdService extends Service {
     private int mCurrentFmt = -1;
     private int mCurrentHasDtvVideo = 0;
     private int mDigitalFormat = 0;
-    private int mDtvDemuxIdBase = 20;
+    private int mDtvDemuxIdBase = 25;
     private int mDtvDemuxIdCurrentWork = 0;
     private int mCurSourceType = DroidLogicTvUtils.SOURCE_TYPE_OTHER;
     private TvInputManager mTvInputManager;
@@ -386,6 +386,12 @@ public class AudioSystemCmdService extends Service {
             case AudioSystemCmdManager.AUDIO_SERVICE_CMD_SET_MEDIA_SYCN_ID:
                 mAudioManager.setParameters("hal_param_media_sync_id=" + param1);
                 break;
+            case AudioSystemCmdManager.AUDIO_SERVICE_CMD_SET_MEDIA_FIRST_LANG:
+                mAudioManager.setParameters("hal_param_dtv_media_first_lang=" + param1);
+                break;
+            case AudioSystemCmdManager.AUDIO_SERVICE_CMD_SET_MEDIA_SECOND_LANG:
+                mAudioManager.setParameters("hal_param_dtv_media_second_lang=" + param1);
+               break;
             case AudioSystemCmdManager.AUDIO_SERVICE_CMD_SET_HAS_VIDEO:
                 mCurrentHasDtvVideo = param1;
                 mAudioManager.setParameters("hal_param_has_dtv_video=" + param1);
