@@ -19,7 +19,7 @@ package com.droidlogic.audioservice.services;
 interface IAudioEffectsService{
     void createAudioEffects();
     boolean isSupportVirtualX();
-    void setDtsVirtualXMode(int virtalXMode);
+    void setDtsVirtualXMode(int virtualXMode);
     int getDtsVirtualXMode();
     void setDtsTruVolumeHdEnable(boolean enable);
     boolean getDtsTruVolumeHdEnable();

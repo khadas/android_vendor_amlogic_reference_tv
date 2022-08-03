@@ -33,7 +33,7 @@ public class InputChangeAdapter {
     // For test use. Please reboot if you want to change this property.
     private static final String PROP_OTP_INPUT_CHANGE = "persist.vendor.tv.otp.inputchange";
 
-    private volatile static InputChangeAdapter sIntance;
+    private volatile static InputChangeAdapter sInstance;
 
     private Intent mBootOtp;
     private Context mContext;
@@ -121,13 +121,13 @@ public class InputChangeAdapter {
     }
 
     public static InputChangeAdapter getInstance(Context context) {
-        if (null == sIntance) {
+        if (null == sInstance) {
             synchronized(InputChangeAdapter.class) {
-                if (null == sIntance) {
-                    sIntance = new InputChangeAdapter(context);
+                if (null == sInstance) {
+                    sInstance = new InputChangeAdapter(context);
                 }
             }
         }
-        return sIntance;
+        return sInstance;
     }
 }

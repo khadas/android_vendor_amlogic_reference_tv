@@ -49,7 +49,7 @@ public class DroidLogicTvUtils
     public static final String TAG = "DroidLogicTvUtils";
     private static final boolean DEBUG = false;
     /**
-     * final parameters for {@link TvInpuptService.Session.notifySessionEvent}
+     * final parameters for {@link TvInputService.Session.notifySessionEvent}
      */
     public static final String SIG_INFO_EVENT = "sig_info_event";
     public static final String SIG_INFO_TYPE  = "sig_info_type";
@@ -69,7 +69,7 @@ public class DroidLogicTvUtils
     public static final String SIG_INFO_C_SCANNING_FRAME_STABLE_EVENT = "sig_info_c_scanning_frame_stable_event";
 
     public static final String SIG_INFO_C_TYPE = "type";
-    public static final String SIG_INFO_C_PRECENT = "precent";
+    public static final String SIG_INFO_C_PERCENT = "percent";
     public static final String SIG_INFO_C_TOTALCOUNT = "totalcount";
     public static final String SIG_INFO_C_LOCK = "lock";
     public static final String SIG_INFO_C_CNUM = "cnum";
@@ -815,7 +815,7 @@ public class DroidLogicTvUtils
     /**
      * get deviceId from inputid like com.droidlogic.tvinput/.services.Hdmi2InputService/HW5
      * or inputid like com.droidlogic.tvinput/.services.Hdmi2InputService/HDMI200008
-     * or sounbar inputid like com.droidlogic.tvinput/.services.Hdmi2InputService/HDMI120008
+     * or soundbar inputid like com.droidlogic.tvinput/.services.Hdmi2InputService/HDMI120008
      * or none hdmi device like com.droidlogic.tvinput/.services.ADTVInputService/HW16
      */
     public static int getDeviceIdFromInputId(String inputId) {
@@ -1633,7 +1633,7 @@ public class DroidLogicTvUtils
                                  TextUtils.isEmpty(DroidLogicTvUtils.CA_FR_ContentRatingDimensions[Value])) {
                                  continue;
                             }
-                            //canadian frech language rating
+                            //canadian french language rating
                             TvContentRating r = TvContentRating.createRating(RatingDomain, "CA_TV_FR",
                                     DroidLogicTvUtils.CA_FR_ContentRatingDimensions[Value]);
                             RatingList.add(r);
@@ -1748,7 +1748,7 @@ public class DroidLogicTvUtils
         ArrayList<ChannelInfo.Subtitle> SubtitleList = new ArrayList<ChannelInfo.Subtitle>();
         /*
             [
-                //bdig=b_digtal_cc, sn=caption_service_number, lng=language,
+                //bdig=b_digital_cc, sn=caption_service_number, lng=language,
                 //beasy=b_easy_reader, bwar=b_wide_aspect_ratio
                 {bdig:1,sn:0x2,lng:"eng",beasy:0,bwar:1},
                 {bdig:0,l21:1},

@@ -351,7 +351,7 @@ public class AudioSystemCmdService extends Service {
                 mAudioManager.setParameters("hal_param_dual_dec_mix_level=" + param2);
                 break;
             default:
-                Log.w(TAG,"setAdFunction unkown  cmd:" + cmd + ", param1:" + param1);
+                Log.w(TAG,"setAdFunction unknown  cmd:" + cmd + ", param1:" + param1);
                 break;
         }
     }
@@ -538,7 +538,7 @@ public class AudioSystemCmdService extends Service {
                 mMixAdSupported = false;
                 break;
             default:
-                Log.w(TAG,"HandleAudioEvent unkown audio cmd:" + cmd);
+                Log.w(TAG,"HandleAudioEvent unknown audio cmd:" + cmd);
                 break;
         }
     }
@@ -735,7 +735,7 @@ public class AudioSystemCmdService extends Service {
     }
 
     private void reStartAdecDecoderIfPossible() {
-        Log.i(TAG, "reStartAdecDecoderIfPossiblem HasOpenedDecoder:" + mHasOpenedDecoder +
+        Log.i(TAG, "reStartAdecDecoderIfPossible HasOpenedDecoder:" + mHasOpenedDecoder +
                    " StartDecoderCmd:" + mHasReceivedStartDecoderCmd +
                    ", mMixAdSupported:" + mMixAdSupported);
         if (!mHasOpenedDecoder) {

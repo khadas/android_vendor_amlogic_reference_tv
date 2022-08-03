@@ -137,7 +137,7 @@ public class SoundEffectManager {
     public static final int SET_DBX_SOUND_MODE_ADVANCED_SURROUND        = 24;
 
     //SoundMode mode.  Parameter ID
-    public static final int PARAM_SRS_PARAM_DIALOGCLARTY_MODE           = 1;
+    public static final int PARAM_SRS_PARAM_DIALOGCLARITY_MODE          = 1;
     public static final int PARAM_SRS_PARAM_SURROUND_MODE               = 2;
     public static final int PARAM_SRS_PARAM_VOLUME_MODE                 = 3;
     public static final int PARAM_SRS_PARAM_TRUEBASS_ENABLE             = 5;
@@ -430,13 +430,13 @@ public class SoundEffectManager {
         return fl.exists();
     }
 
-    public void setDtsVirtualXMode(int virtalXMode) {
+    public void setDtsVirtualXMode(int virtualXMode) {
         if (null == mVirtualX) {
             Log.e(TAG, "The VirtualX effect is not created, the mode cannot be setDtsVirtualXMode.");
             return;
         }
-        if (DroidLogicUtils.getAudioDebugEnable()) Log.d(TAG, "setDtsVirtualXMode = " + virtalXMode);
-        switch (virtalXMode) {
+        if (DroidLogicUtils.getAudioDebugEnable()) Log.d(TAG, "setDtsVirtualXMode = " + virtualXMode);
+        switch (virtualXMode) {
             case AudioEffectManager.SOUND_EFFECT_VIRTUALX_MODE_OFF:
                 mVirtualX.setParameter(PARAM_DTS_PARAM_MBHL_ENABLE_I32, 0);
                 mVirtualX.setParameter(PARAM_DTS_PARAM_TBHDX_ENABLE_I32, 0);
@@ -453,10 +453,10 @@ public class SoundEffectManager {
                 mVirtualX.setParameter(PARAM_DTS_PARAM_VX_ENABLE_I32, 1);
                 break;
             default:
-                Log.w(TAG, "VirtualX effect mode invalid, mode:" + virtalXMode);
+                Log.w(TAG, "VirtualX effect mode invalid, mode:" + virtualXMode);
                 return;
         }
-        saveAudioParameters(SET_VIRTUALX_MODE, virtalXMode);
+        saveAudioParameters(SET_VIRTUALX_MODE, virtualXMode);
     }
 
     public int getDtsVirtualXMode() {
@@ -834,7 +834,7 @@ public class SoundEffectManager {
             return;
         }
         if (DroidLogicUtils.getAudioDebugEnable()) Log.d(TAG, "setDialogClarityMode = " + mode);
-        mTruSurround.setParameter(PARAM_SRS_PARAM_DIALOGCLARTY_MODE, mode);
+        mTruSurround.setParameter(PARAM_SRS_PARAM_DIALOGCLARITY_MODE, mode);
         saveAudioParameters(SET_DIALOG_CLARITY_MODE, mode);
     }
 

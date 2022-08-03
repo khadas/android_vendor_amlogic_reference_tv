@@ -53,7 +53,6 @@ import android.util.Xml;
 
 //import com.android.internal.util.FastXmlSerializer;
 //import com.android.internal.util.XmlUtils;
-//import libcore.io.IoUtils;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlSerializer;
@@ -80,7 +79,7 @@ public class DroidContentRatingsParser {
     private static final boolean DEBUG = false;
 
     public static final String DOMAIN_RRT_RATINGS = "com.droidlogic.app.tv";
-    public static final int FIXED_REGION_lEVEL_2 = 2;
+    public static final int FIXED_REGION_LEVEL_2 = 2;
 
     private static final String TAG_RATING_SYSTEM_DEFINITIONS = "rating-system-definitions";
     private static final String TAG_RATING_SYSTEM_DEFINITION = "rating-system-definition";
@@ -95,7 +94,7 @@ public class DroidContentRatingsParser {
     private static final String ATTR_DIMENSION_ID = "dimension_id";
     private static final String ATTR_TITLE = "title";
     private static final String ATTR_DESCRIPTION = "description";
-    private static final String ATTR_RADING_ID = "rating_id";
+    private static final String ATTR_RATING_ID = "rating_id";
 
     //private final Context mContext;
     //private Resources mResources;
@@ -270,7 +269,7 @@ public class DroidContentRatingsParser {
                    // Log.w(TAG, "                 attr:"+attr+", value:"+parser.getAttributeValue(i));
                     builder.setDescription(parser.getAttributeValue(i));
                     break;
-                case ATTR_RADING_ID:
+                case ATTR_RATING_ID:
                     //Log.w(TAG, "                 attr:"+attr+", value:"+parser.getAttributeValue(i));
                     break;
             }

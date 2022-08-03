@@ -119,7 +119,7 @@ public abstract class TvStoreManager {
     private Bundle getScanEventBundle(TvControlManager.ScannerEvent mEvent) {
         Bundle bundle = new Bundle();
         bundle.putInt(DroidLogicTvUtils.SIG_INFO_C_TYPE, mEvent.type);
-        bundle.putInt(DroidLogicTvUtils.SIG_INFO_C_PRECENT, mEvent.precent);
+        bundle.putInt(DroidLogicTvUtils.SIG_INFO_C_PERCENT, mEvent.percent);
         bundle.putInt(DroidLogicTvUtils.SIG_INFO_C_TOTALCOUNT, mEvent.totalcount);
         bundle.putInt(DroidLogicTvUtils.SIG_INFO_C_LOCK, mEvent.lock);
         bundle.putInt(DroidLogicTvUtils.SIG_INFO_C_CNUM, mEvent.cnum);
@@ -165,7 +165,7 @@ public abstract class TvStoreManager {
         return bundle;
     }
 
-    private Bundle getDisplayNumBunlde(int displayNum) {
+    private Bundle getDisplayNumBundle(int displayNum) {
         Bundle bundle = new Bundle();
         bundle.putInt(DroidLogicTvUtils.SIG_INFO_C_DISPLAYNUM, displayNum);
         return bundle;
@@ -196,7 +196,7 @@ public abstract class TvStoreManager {
     }
 
     private void initChannelsExist() {
-        //get all old channles exist.
+        //get all old channels exist.
         //init display number count.
         if (mChannelsOld == null) {
             mChannelsOld = mTvDataBaseManager.getChannelList(mInputId, TvContract.Channels.SERVICE_TYPE_AUDIO_VIDEO);
@@ -403,7 +403,7 @@ public abstract class TvStoreManager {
     private void filterChannels(TvControlManager.ScannerEvent event, ChannelInfo channel) {
         if (mChannelsOld != null) {
             Log.d(TAG, "remove channels with freq!="+channel.getFrequency());
-            //remove channles with diff freq from old channles
+            //remove channels with diff freq from old channels
             Iterator<ChannelInfo> iter = mChannelsOld.iterator();
             while (iter.hasNext()) {
                 ChannelInfo c = iter.next();
@@ -623,7 +623,7 @@ public abstract class TvStoreManager {
                     visible = l.visible[0] == 0 ? false : true;
 
                     if ((lcn_1 != -1) && (lcn_2 != -1) && !ignoreDBCheck) {
-                        // check for lcn already exist just on Maunual Scan
+                        // check for lcn already exist just on Manual Scan
                         // look for service with sdlcn equal to l's hdlcn, if found, change the service's lcn to it's hdlcn
                         ChannelInfo ch = null;
                         if (channels != null) {
@@ -685,7 +685,7 @@ public abstract class TvStoreManager {
                 }
                 if (ch != null) {
                     if (!isChannelInListbyId(ch, mChannelsOld)) {//do not check those will be deleted.
-                        Log.d(TAG, "found lcn conflct:" + lcn + " by service["+ch.getOriginalNetworkId()+":"+ch.getTransportStreamId()+":"+ch.getServiceId()+"]");
+                        Log.d(TAG, "found lcn conflict:" + lcn + " by service["+ch.getOriginalNetworkId()+":"+ch.getTransportStreamId()+":"+ch.getServiceId()+"]");
                         lcn = lcn_overflow_start++;
                     }
                 }
@@ -799,7 +799,7 @@ public abstract class TvStoreManager {
                     + "][" + c.getFrequency() + "][" + c.getServiceType() + "][" + c.getDisplayName() + "]");*/
 
                 if (isFinalStore) {
-                    bundle = getDisplayNumBunlde(c.getNumber());
+                    bundle = getDisplayNumBundle(c.getNumber());
                     onEvent(DroidLogicTvUtils.SIG_INFO_C_DISPLAYNUM_EVENT, bundle);
                 }
             }
@@ -1015,9 +1015,9 @@ public abstract class TvStoreManager {
                 int vct = DroidLogicTvUtils.getObjectValueInt(event.paras, "srv", "vct", 0);
                 Log.d(TAG, "srv.vct:"+vct);
                 if (vct == 1 && ((event.majorChannelNumber >> 4) == 0x3f)) {
-                  //one-part channnel numbers for digital cable system.
+                  //one-part channel numbers for digital cable system.
                   //see atsc a/65 page 35, if major_channel_number hi 6 bit is 11 1111
-                  //one_part_number = (major_channel_number & 0x00f) << 10 + mino_channel_number
+                  //one_part_number = (major_channel_number & 0x00f) << 10 + min_channel_number
                   int one_part_number = ((event.majorChannelNumber & 0x00f) << 10) + event.minorChannelNumber;
                   Log.d(TAG, "set one_part_number:"+ one_part_number + " maj:" + event.majorChannelNumber + " min:" +event.minorChannelNumber);
                   if (one_part_number == 0) {
@@ -1044,7 +1044,7 @@ public abstract class TvStoreManager {
               Log.d(TAG, "----Channels physicalNum set DisplayName:" + physicalNum + " getDisplayNumber:" + channel.getDisplayNumber());
             }
             channel.print();
-            /*add seach channel*/
+            /*add search channel*/
             mChannelsExist.add(channel);
             cacheChannel(event, channel);
 
@@ -1053,7 +1053,7 @@ public abstract class TvStoreManager {
                 mDisplayNumber2++;//count for realtime stage
             } else {
                 Log.d(TAG, "final store, num: " + mDisplayNumber);
-                bundle = getDisplayNumBunlde(mDisplayNumber);
+                bundle = getDisplayNumBundle(mDisplayNumber);
                 onEvent(DroidLogicTvUtils.SIG_INFO_C_DISPLAYNUM_EVENT, bundle);
                 mDisplayNumber++;//count for store stage
             }
@@ -1086,14 +1086,14 @@ public abstract class TvStoreManager {
             Log.d(TAG, "onEvent,displayNum:" + mDisplayNumber);
 
             if (isFinalStoreStage) {
-                bundle = getDisplayNumBunlde(mDisplayNumber);
+                bundle = getDisplayNumBundle(mDisplayNumber);
                 onEvent(DroidLogicTvUtils.SIG_INFO_C_DISPLAYNUM_EVENT, bundle);
-                mDisplayNumber++;//count for storestage
+                mDisplayNumber++;//count for stored stage
             }
             break;
 
         case TvControlManager.EVENT_SCAN_PROGRESS:
-            Log.d(TAG, event.precent + "%\tfreq[" + event.freq + "] lock[" + event.lock + "] strength[" + event.strength + "] quality[" + event.quality + "] mode[" + event.mode + "]");
+            Log.d(TAG, event.percent + "%\t freq[" + event.freq + "] lock[" + event.lock + "] strength[" + event.strength + "] quality[" + event.quality + "] mode[" + event.mode + "]");
 
             checkOrPatchBeginLost(event);
 

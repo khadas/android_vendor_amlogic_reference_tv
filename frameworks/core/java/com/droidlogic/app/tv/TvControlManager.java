@@ -128,7 +128,7 @@ public class TvControlManager {
     public static final int AUDIO_OUTMODE_STEREO        = 1;
     public static final int AUDIO_OUTMODE_SAP           = 2;
 
-    //auido std
+    //audio std
     public static final int AUDIO_STANDARD_BTSC         = 0x00;
     public static final int AUDIO_STANDARD_EIAJ         = 0x01;
     public static final int AUDIO_STANDARD_A2_K         = 0x02;
@@ -146,14 +146,14 @@ public class TvControlManager {
     public static final int AUDIO_STANDARD_MONO_M       = 0x15;
     public static final int AUDIO_STANDARD_MONO_L       = 0x16;
 
-    //A2 auido mode
+    //A2 audio mode
     public static final int AUDIO_OUTMODE_A2_MONO       = 0;
     public static final int AUDIO_OUTMODE_A2_STEREO     = 1;
     public static final int AUDIO_OUTMODE_A2_DUAL_A     = 2;
     public static final int AUDIO_OUTMODE_A2_DUAL_B     = 3;
     public static final int AUDIO_OUTMODE_A2_DUAL_AB    = 4;
 
-    //NICAM auido mode
+    //NICAM audio mode
     public static final int AUDIO_OUTMODE_NICAM_MONO    = 0;
     public static final int AUDIO_OUTMODE_NICAM_MONO1   = 1;
     public static final int AUDIO_OUTMODE_NICAM_STEREO  = 2;
@@ -329,7 +329,7 @@ public class TvControlManager {
             scan_ev.type = p.bodyInt.get(0);
             Log.d(TAG, "scan ev type:"+ scan_ev.type);
 
-            scan_ev.precent = p.bodyInt.get(1);
+            scan_ev.percent = p.bodyInt.get(1);
             scan_ev.totalcount = p.bodyInt.get(2);
             scan_ev.lock = p.bodyInt.get(3);
             scan_ev.cnum = p.bodyInt.get(4);
@@ -468,7 +468,7 @@ public class TvControlManager {
                 case EAS_EVENT_CALLBACK:
                      Log.i(TAG,"get EAS_event_callBack");
                      if (mEasListener != null) {
-                        Log.i(TAG,"mEaslister is not null");
+                        Log.i(TAG,"mEasListener is not null");
                         int sectionCount = parcel.bodyInt.get(0);
                         Log.i(TAG,"eas section count = "+sectionCount);
                         for (int count = 0; count<sectionCount; count++) {
@@ -479,7 +479,7 @@ public class TvControlManager {
                             }
                         }
                      } else {
-                        Log.i(TAG,"mEaslister is null");
+                        Log.i(TAG,"mEasListener is null");
                      }
                      break;
 
@@ -530,7 +530,7 @@ public class TvControlManager {
                         }
                     }
                     break;
-                case SIGLE_DETECT_CALLBACK:
+                case SIGNAL_DETECT_CALLBACK:
                     if (mSigInfoChangeLister != null) {
                         TvInSignalInfo sigInfo = new TvInSignalInfo();
                         sigInfo.transFmt = TvInSignalInfo.TransFmt.values()[parcel.bodyInt.get(0)];
@@ -538,7 +538,7 @@ public class TvControlManager {
                         sigInfo.sigStatus = TvInSignalInfo.SignalStatus.values()[parcel.bodyInt.get(2)];
                         sigInfo.reserved = parcel.bodyInt.get(3);
                         mSigInfoChangeLister.onSigChange(sigInfo);
-                        Log.e(TAG,"---SIGLE_DETECT_CALLBACK-----------------");
+                        Log.e(TAG,"---SIGNAL_DETECT_CALLBACK-----------------");
                     }
                     break;
                 case VGA_CALLBACK:
@@ -606,7 +606,7 @@ public class TvControlManager {
                 case CLOSE_CAPTION_CALLBACK:
                     if (mCloseCaptionListener != null) {
                         loop_count = parcel.bodyInt.get(0);
-                        Log.d(TAG, "cc listenner data count =" + loop_count);
+                        Log.d(TAG, "cc listener data count =" + loop_count);
                         for (i = 0; i < loop_count; i++) {
                             dataArray[i] = parcel.bodyInt.get(i+1);
                         }
@@ -717,7 +717,7 @@ public class TvControlManager {
             }
         }
 
-        Log.i(TAG, "connect to tvserve HIDL service success");
+        Log.i(TAG, "connect to tvserver HIDL service success");
     }
 
     public String getSupportInputDevices() {
@@ -889,7 +889,7 @@ public class TvControlManager {
 
     /**
      * @Function: GetCurrentSignalInfo
-     * @Description: Get current signal infomation
+     * @Description: Get current signal information
      * @Param:
      * @Return: refer to class tvin_info_t
      */
@@ -1233,7 +1233,7 @@ public class TvControlManager {
     }
 
     /**
-     * @Function: IsDviSignal
+     * @Function: isDviSignal
      * @Description: To check if current signal is dvi signal
      * @Param:
      * @Return: true, false
@@ -1241,7 +1241,7 @@ public class TvControlManager {
     public boolean IsDviSignal() {
         synchronized (mLock) {
             try {
-                int value = mProxy.isDviSIgnal();
+                int value = mProxy.isDviSignal();
                 Log.d(TAG, "IsDviSignal:" + value);
                  if (value == 1) {
                      return true;
@@ -1270,7 +1270,7 @@ public class TvControlManager {
                      return false;
                  }
             } catch (RemoteException e) {
-                Log.e(TAG, "IsDviSignal:" + e);
+                Log.e(TAG, "IsPcFmtTiming:" + e);
             }
         }
         return false;
@@ -1425,11 +1425,11 @@ public class TvControlManager {
    /**
      * @Function: SetHdmiHdcpKeyEnable
      * @Description: enable or disable hdmi hdcp kdy
-     * @Param: iSenable is enable or disable
+     * @Param: isEnable is enable or disable
      * @Return: 0 success, -1 fail
      */
-    public int SetHdmiHdcpKeyEnable(HdcpKeyIsEnable iSenable) {
-        int val[] = new int[]{iSenable.toInt()};
+    public int SetHdmiHdcpKeyEnable(HdcpKeyIsEnable isEnable) {
+        int val[] = new int[]{isEnable.toInt()};
         return sendCmdIntArray(SET_HDCP_KEY_ENABLE, val);
     }
     // HDMI END
@@ -1840,7 +1840,7 @@ public class TvControlManager {
 
     /**
      * @Function: SetAudioBalance
-     * @Description: Set audio banlance
+     * @Description: Set audio balance
      * @Param: value between 0 and 100
      * @Return: 0 success, -1 fail
      */
@@ -2622,7 +2622,7 @@ public class TvControlManager {
     /**
      * @Function: SetLineInCaptureVolume
      * @Description: set line in capture volume
-     * @Param: left chanel volume(0~84)  right chanel volume(0~84)
+     * @Param: left channel volume(0~84)  right channel volume(0~84)
      * @Return: 0 success, -1 fail
      */
     public int SetLineInCaptureVolume(int l_vol, int r_vol) {
@@ -2871,7 +2871,7 @@ public class TvControlManager {
 
     /**
      * @Function: SSMSavePanelType
-     * @Description: Save panle type for multi-panel select
+     * @Description: Save panel type for multi-panel select
      * @Param: tmp_val panel type id
      * @Return: 0 success, -1 fail
      */
@@ -2882,7 +2882,7 @@ public class TvControlManager {
 
     /**
      * @Function: SSMReadPanelType
-     * @Description: Read panle type id
+     * @Description: Read panel type id
      * @Param:
      * @Return: panel type id
      */
@@ -3329,11 +3329,11 @@ public class TvControlManager {
     /**
      * @Function: SSMSaveHDCPKeyEnable
      * @Description: save hdmi HDCP key enable or disable
-     * @Param: iSenable
+     * @Param: isEnable
      * @Return: 0 success, -1 fail
      */
-    public int SSMSaveHDCPKeyEnable(HdcpKeyIsEnable iSenable) {
-        int val[] = new int[]{iSenable.toInt()};
+    public int SSMSaveHDCPKeyEnable(HdcpKeyIsEnable isEnable) {
+        int val[] = new int[]{isEnable.toInt()};
         return sendCmdIntArray(SSM_SAVE_HDCP_KEY_ENABLE, val);
     }
 
@@ -3494,9 +3494,9 @@ public class TvControlManager {
         String info = "";
         InputStream inputStream = null;
 
-        tmpInfo.linux_ver_info = "unkown";
-        tmpInfo.build_usr_info = "unkown";
-        tmpInfo.build_time_info = "unkown";
+        tmpInfo.linux_ver_info = "unknown";
+        tmpInfo.build_usr_info = "unknown";
+        tmpInfo.build_time_info = "unknown";
 
         try {
             inputStream = new FileInputStream("/proc/version");
@@ -3639,9 +3639,9 @@ public class TvControlManager {
 
     /**
      * @Function: SetSerialSwitch
-     * @Description: Set speical serial switch
+     * @Description: Set special serial switch
      * @Param: dev_id, refer to enum SerialDeviceID
-     *         tmp_val, 1 is enable speical serial, 0 is disable speical serial
+     *         tmp_val, 1 is enable special serial, 0 is disable special serial
      * @Return: 0 success, -1 fail
      */
     public int SetSerialSwitch(SerialDeviceID dev_id, int tmp_val) {
@@ -3693,8 +3693,8 @@ public class TvControlManager {
         public static final int SCAN_ATV_FREQ = 0x3;
         public static final int SCAN_ATV_NONE = 0x7;
 
-        public static final int SCAN_ATV_AUTO_FREQ_LIST = 0x0; /* 0: freq table list sacn mode */
-        public static final int SCAN_ATV_AUTO_ALL_BAND = 0x1;  /* 1: all band sacn mode */
+        public static final int SCAN_ATV_AUTO_FREQ_LIST = 0x0; /* 0: freq table list scan mode */
+        public static final int SCAN_ATV_AUTO_ALL_BAND = 0x1;  /* 1: all band scan mode */
 
         public ScanType() {}
     }
@@ -3734,7 +3734,7 @@ public class TvControlManager {
         /*
                 mode:0xaabbccdd
                 aa - reserved
-                bb - scanlist/contury etc.
+                bb - scanlist/country etc.
                 cc - t/t2 s/s2 c/c2 identifier
                 dd - femode FE_XXXX
         */
@@ -3973,7 +3973,7 @@ public class TvControlManager {
         synchronized (mLock) {
             try {
                 SetTvCurrentLanguage(TvMultilingualText.getLocalLang());
-                return mProxy.atvMunualScan(startFreq, endFreq, videoStd, audioStd);
+                return mProxy.atvManualScan(startFreq, endFreq, videoStd, audioStd);
             } catch (RemoteException e) {
                 Log.e(TAG, "AtvManualScan:" + e);
             }
@@ -4074,7 +4074,7 @@ public class TvControlManager {
             try {
                 return mProxy.getBlackoutEnable();
             } catch (RemoteException e) {
-                Log.e(TAG, "getBlackoutEnalbe:" + e);
+                Log.e(TAG, "getBlackoutEnable:" + e);
             }
         }
         return 0;
@@ -4134,7 +4134,7 @@ public class TvControlManager {
      * @out: dataBuf[0]:freq
      * @out: dataBuf[1]  finefreq
      * @out: dataBuf[2]:video standard
-     * @out: dataBuf[3]:audeo standard
+     * @out: dataBuf[3]:audio standard
      * @out: dataBuf[4]:is auto color std? 1, is auto,   0  is not auto
      * @Return: 0 ok or -1 error
      */
@@ -4373,7 +4373,7 @@ public class TvControlManager {
 
     public class ScannerEvent {
         public int type;
-        public int precent;
+        public int percent;
         public int totalcount;
         public int lock;
         public int cnum;
@@ -4558,15 +4558,15 @@ public class TvControlManager {
         void onRRT5InfoUpdated(int status);
     }
 
-    public int updateRRTRes(int freq, int moudle, int mode) {
+    public int updateRRTRes(int freq, int modulation, int mode) {
         if (rrt5XmlLoadStatus == EVENT_RRT_SCAN_START) {
-            Log.d(TAG, "abandon updateRRTRes,becasue current status is : " + rrt5XmlLoadStatus);
+            Log.d(TAG, "abandon updateRRTRes,because current status is : " + rrt5XmlLoadStatus);
             return -1;
         } else {
             synchronized (mLock) {
                 try {
-                    Log.d(TAG, "updateRRTRes,freq: " + freq+",module:"+moudle+",mode:"+mode);
-                    return mProxy.updateRRT(freq, moudle, mode);
+                    Log.d(TAG, "updateRRTRes,freq: " + freq+",module:"+modulation+",mode:"+mode);
+                    return mProxy.updateRRT(freq, modulation, mode);
                 } catch (RemoteException e) {
                     Log.e(TAG, "updateRRTRes:" + e);
                 }
@@ -4967,7 +4967,7 @@ public class TvControlManager {
 
     public int deleteProgram(int id) {
         int val[] = new int[]{id};
-        sendCmdIntArray(DTV_DETELE_PROGRAM, val);
+        sendCmdIntArray(DTV_DELETE_PROGRAM, val);
         return 0;
     }
 
@@ -4983,24 +4983,24 @@ public class TvControlManager {
         return 0;
     }
 
-    public int PlayATVProgram(int freq, int videoStd, int audioStd, int videoFmt, int soundsys, int fineTune, int audioCompetation) {
-        int val[] = new int[]{4, freq, videoStd, audioStd, videoFmt, soundsys, fineTune, audioCompetation};
+    public int PlayATVProgram(int freq, int videoStd, int audioStd, int videoFmt, int soundsys, int fineTune, int audioCompetition) {
+        int val[] = new int[]{4, freq, videoStd, audioStd, videoFmt, soundsys, fineTune, audioCompetition};
         return sendCmdIntArray(PLAY_PROGRAM, val);
     }
 
-    public int PlayDTVProgram(int mode, int freq, int para1, int para2, int vid, int vfmt, int aid, int afmt, int pcr, int audioCompetation) {
-        int val[] = new int[]{mode, freq, para1, para2, vid, vfmt, aid, afmt, pcr, audioCompetation};
+    public int PlayDTVProgram(int mode, int freq, int para1, int para2, int vid, int vfmt, int aid, int afmt, int pcr, int audioCompetition) {
+        int val[] = new int[]{mode, freq, para1, para2, vid, vfmt, aid, afmt, pcr, audioCompetition};
         return sendCmdIntArray(PLAY_PROGRAM, val);
     }
 
-    public int PlayDTVProgram(int mode, int freq, int para1, int para2, int vid, int vfmt, int aid, int afmt, int pcr, int audioCompetation, boolean adPrepare) {
+    public int PlayDTVProgram(int mode, int freq, int para1, int para2, int vid, int vfmt, int aid, int afmt, int pcr, int audioCompetition, boolean adPrepare) {
         setProperties("media.audio.enable_asso", (adPrepare)? "1" : "0");
-        return PlayDTVProgram(mode, freq, para1, para2, vid, vfmt, aid, afmt, pcr, audioCompetation);
+        return PlayDTVProgram(mode, freq, para1, para2, vid, vfmt, aid, afmt, pcr, audioCompetition);
     }
 
-    public int PlayDTVProgram(int mode, int freq, int para1, int para2, int vid, int vfmt, int aid, int afmt, int pcr, int audioCompetation, boolean adPrepare, int adMixingLevel) {
+    public int PlayDTVProgram(int mode, int freq, int para1, int para2, int vid, int vfmt, int aid, int afmt, int pcr, int audioCompetition, boolean adPrepare, int adMixingLevel) {
         setProperties("media.audio.mix_asso", String.valueOf(adMixingLevel));
-        return PlayDTVProgram(mode, freq, para1, para2, vid, vfmt, aid, afmt, pcr, audioCompetation, adPrepare);
+        return PlayDTVProgram(mode, freq, para1, para2, vid, vfmt, aid, afmt, pcr, audioCompetition, adPrepare);
     }
 
     public static class Paras {
@@ -5153,7 +5153,7 @@ public class TvControlManager {
         }
     }
 
-    public int PlayDTVProgram(FEParas fe, int vid, int vfmt, int aid, int afmt, int pcr, int audioCompetation) {
+    public int PlayDTVProgram(FEParas fe, int vid, int vfmt, int aid, int afmt, int pcr, int audioCompetition) {
         libtv_log_open();
         Parcel cmd = Parcel.obtain();
         Parcel r = Parcel.obtain();
@@ -5165,20 +5165,20 @@ public class TvControlManager {
         cmd.writeInt(aid);
         cmd.writeInt(afmt);
         cmd.writeInt(pcr);
-        cmd.writeInt(audioCompetation);
+        cmd.writeInt(audioCompetition);
         sendCmdToTv(cmd, r);
         tmpRet = r.readInt();
         cmd.recycle();
         r.recycle();
         return tmpRet;
     }
-    public int PlayDTVProgram(FEParas fe, int vid, int vfmt, int aid, int afmt, int pcr, int audioCompetation, boolean adPrepare) {
+    public int PlayDTVProgram(FEParas fe, int vid, int vfmt, int aid, int afmt, int pcr, int audioCompetition, boolean adPrepare) {
         setProperties("media.audio.enable_asso", (adPrepare)? "1" : "0");
-        return PlayDTVProgram(fe, vid, vfmt, aid, afmt, pcr, audioCompetation);
+        return PlayDTVProgram(fe, vid, vfmt, aid, afmt, pcr, audioCompetition);
     }
-    public int PlayDTVProgram(FEParas fe, int vid, int vfmt, int aid, int afmt, int pcr, int audioCompetation, boolean adPrepare, int adMixingLevel) {
+    public int PlayDTVProgram(FEParas fe, int vid, int vfmt, int aid, int afmt, int pcr, int audioCompetition, boolean adPrepare, int adMixingLevel) {
         setProperties("media.audio.mix_asso", String.valueOf(adMixingLevel));
-        return PlayDTVProgram(fe, vid, vfmt, aid, afmt, pcr, audioCompetation, adPrepare);
+        return PlayDTVProgram(fe, vid, vfmt, aid, afmt, pcr, audioCompetition, adPrepare);
     }
 
     public int StopPlayProgram() {
@@ -6333,16 +6333,16 @@ public class TvControlManager {
         }
     }
 
-    public enum atsc_attenna_type_t {
-        AM_ATSC_ATTENNA_TYPE_MIX(0),
-        AM_ATSC_ATTENNA_TYPE_AIR(1),
-        AM_ATSC_ATTENNA_TYPE_CABLE_STD(2),
-        AM_ATSC_ATTENNA_TYPE_CABLE_IRC(3),
-        AM_ATSC_ATTENNA_TYPE_CABLE_HRC(4),
-        AM_ATSC_ATTENNA_TYPE_MAX(5);
+    public enum atsc_antenna_type_t {
+        AM_ATSC_ANTENNA_TYPE_MIX(0),
+        AM_ATSC_ANTENNA_TYPE_AIR(1),
+        AM_ATSC_ANTENNA_TYPE_CABLE_STD(2),
+        AM_ATSC_ANTENNA_TYPE_CABLE_IRC(3),
+        AM_ATSC_ANTENNA_TYPE_CABLE_HRC(4),
+        AM_ATSC_ANTENNA_TYPE_MAX(5);
 
         private int val;
-        atsc_attenna_type_t(int val) {
+        atsc_antenna_type_t(int val) {
             this.val = val;
         }
 
@@ -6567,7 +6567,7 @@ public class TvControlManager {
 	* @Function: setScreenColorForSignalChange
 	* @Description: set screen color for switch source/switch channal/no signal
 	* @Param: screenColor:screen color:0 is black screen; 1 is blue screen
-	* @Param: isSave:wthether want to save setting
+	* @Param: isSave:whether want to save setting
 	* @Return: 0 ok or -1 error
 	*/
 	public int setScreenColorForSignalChange(int screenColor, int isSave) {
@@ -6584,7 +6584,7 @@ public class TvControlManager {
     /**
      * @Function: getScreenColorForSignalChange
      * @Description: get screen color for switch source/switch channal/no signal
-     * @Return: 0 is balck acreen; 1 is blue screen;
+     * @Return: 0 is black screen; 1 is blue screen;
      */
 	public int getScreenColorForSignalChange() {
         synchronized (mLock) {

@@ -195,7 +195,7 @@ public class TvDataBaseManager {
                 } else if (value instanceof Integer) {
                     values.put(columnKey, (Integer)value);
                 } else {
-                    Log.i(TAG, "updateChannelInternalProviderData unkown data type");
+                    Log.i(TAG, "updateChannelInternalProviderData unknown data type");
                     return ret;
                 }
                 ret = true;
@@ -242,7 +242,7 @@ public class TvDataBaseManager {
                 } else if (type == Cursor.FIELD_TYPE_STRING)
                     queryValue = cursor.getString(0);
                 else {
-                    Log.i(TAG, "updateChannelInternalProviderData unkown data type");
+                    Log.i(TAG, "updateChannelInternalProviderData unknown data type");
                     return ret;
                 }
             }
@@ -342,7 +342,7 @@ public class TvDataBaseManager {
         } else if (obj instanceof byte[]) {
             values.put(TvContract.Channels.COLUMN_INTERNAL_PROVIDER_DATA, (byte[])obj);
         } else {
-            Log.i(TAG, "buildSingleChannelInternalProviderData unkown obj type");
+            Log.i(TAG, "buildSingleChannelInternalProviderData unknown obj type");
         }
 
         return values;
@@ -431,7 +431,7 @@ public class TvDataBaseManager {
 
 
     /*update atv channel:
-          if getId() == -1 (from searching): update that with same frequncy
+          if getId() == -1 (from searching): update that with same frequency
           else               (from database): update that with same _ID
       */
     private int updateAtvChannel(ChannelInfo channel) {
@@ -486,7 +486,7 @@ public class TvDataBaseManager {
     }
 
     /*update atv channel:
-          if getId() == -1 (from searching): update that with frequncy diff less than 1Mhz
+          if getId() == -1 (from searching): update that with frequency diff less than 1Mhz
           else               (from database): update that with same _ID
       */
     private int updateAtvChannelFuzzy(ChannelInfo channel) {

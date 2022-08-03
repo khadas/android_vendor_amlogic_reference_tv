@@ -89,7 +89,7 @@ public class TvSatelliteParams implements Parcelable {
         5) toneburst, uncommitted, committed */
     public int diseqc_order;
     public int motor_num;
-    /*1-255, 0 ref positon*/
+    /*1-255, 0 ref position*/
     public int motor_position_num;
     public double sat_longitude;
 

@@ -227,10 +227,10 @@ public class AudioEffectManager {
         return false;
     }
 
-    public void setDtsVirtualXMode(int virtalXMode) {
+    public void setDtsVirtualXMode(int virtualXMode) {
         if (audioEffectServiceIsNull()) return;
         try {
-            mAudioEffectsService.setDtsVirtualXMode(virtalXMode);
+            mAudioEffectsService.setDtsVirtualXMode(virtualXMode);
         } catch (RemoteException e) {
             Log.e(TAG, "setDtsVirtualXMode failed:" + e);
         }

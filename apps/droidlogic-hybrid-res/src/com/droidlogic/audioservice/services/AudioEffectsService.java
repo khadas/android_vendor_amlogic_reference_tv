@@ -115,8 +115,8 @@ public class AudioEffectsService extends Service {
             return mSoundEffectManager.isSupportVirtualX();
         }
 
-        public void setDtsVirtualXMode(int virtalXMode) {
-            mSoundEffectManager.setDtsVirtualXMode(virtalXMode);
+        public void setDtsVirtualXMode(int virtualXMode) {
+            mSoundEffectManager.setDtsVirtualXMode(virtualXMode);
         }
 
         public int getDtsVirtualXMode() {

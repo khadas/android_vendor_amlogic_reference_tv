@@ -73,8 +73,8 @@ public class TvScanConfig {
 
     public static final ArrayList<String> TV_MIN_MAX_FREQ = new ArrayList<String>(){{add("44250000"); add("868250000");}};
 
-    public static final int TV_ATV_AUTO_FREQ_LIST        = 0; /* 0: freq table list sacn mode */
-    public static final int TV_ATV_AUTO_ALL_BAND         = 1;  /* 1: all band sacn mode */
+    public static final int TV_ATV_AUTO_FREQ_LIST        = 0; /* 0: freq table list scan mode */
+    public static final int TV_ATV_AUTO_ALL_BAND         = 1;  /* 1: all band scan mode */
 
     public static ArrayList<String> stringToWordsList(String strings, ArrayList<String> defaultStrings){
         if (!TextUtils.isEmpty(strings)) {

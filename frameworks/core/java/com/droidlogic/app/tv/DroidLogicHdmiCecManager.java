@@ -53,13 +53,13 @@ public class DroidLogicHdmiCecManager {
     private static final int MSG_SWITCH_SELECT = 4;
 
     /* cec should help directly return the keyevents which DROIDLOGIC livetv apk use */
-    /*          DROIDLOGIC sepcified KEYEVENTS START                                 */
+    /*          DROIDLOGIC specified KEYEVENTS START                                 */
     //public static final int KEYCODE_TV_SHORTCUTKEY_GLOBALSETUP    = DROID_KEYCODE_TV_SHORTCUTKEY_GLOBALSETUP;
     //public static final int KEYCODE_TV_SHORTCUTKEY_SOURCE_LIST    = DROID_KEYCODE_TV_SHORTCUTKEY_SOURCE_LIST;
     public static final int KEYCODE_TV_SHORTCUTKEY_3DMODE         = KeyEvent.KEYCODE_3D_MODE;
     public static final int KEYCODE_TV_SHORTCUTKEY_VIEWMODE       = KeyEvent.KEYCODE_TV_INPUT_HDMI_1;
     public static final int KEYCODE_TV_SHORTCUTKEY_VOICEMODE      = KeyEvent.KEYCODE_TV_INPUT_HDMI_2;
-    public static final int KEYCODE_TV_SHORTCUTKEY_DISPAYMODE     = KeyEvent.KEYCODE_TV_INPUT_HDMI_3;
+    public static final int KEYCODE_TV_SHORTCUTKEY_DISPLAYMODE     = KeyEvent.KEYCODE_TV_INPUT_HDMI_3;
     //public static final int KEYCODE_TV_SHORTCUTKEY_TVINFO         = DROID_KEYCODE_TV_SHORTCUTKEY_TVINFO;
     //public static final int KEYCODE_EARLY_POWER                   = DROID_KEYCODE_EARLY_POWER;
     public static final int KEYCODE_TV_SLEEP                      = KeyEvent.KEYCODE_TV_INPUT_COMPOSITE_2;
@@ -74,7 +74,7 @@ public class DroidLogicHdmiCecManager {
     public static final int KEYCODE_FAV                           = KeyEvent.KEYCODE_TV_INPUT_HDMI_4;
     public static final int KEYCODE_LIST                          = KeyEvent.KEYCODE_TV_INPUT_COMPOSITE_1;
     //public static final int KEYCODE_MEDIA_AUDIO_CONTROL           = DROID_KEYCODE_MEDIA_AUDIO_CONTROL;
-    /*          DROIDLOGIC sepcified KEYEVENTS END                                 */
+    /*          DROIDLOGIC specified KEYEVENTS END                                 */
 
     private static DroidLogicHdmiCecManager mInstance;
 
@@ -96,7 +96,7 @@ public class DroidLogicHdmiCecManager {
     private boolean mHasCecFeature;
 
     // There might be a case where the old session onSetMain false is called after the new one on
-    // onSetMain true. Even though we hope this never happens, we still add a protetion mechanism.
+    // onSetMain true. Even though we hope this never happens, we still add a protection mechanism.
     private boolean mInSelectProtection;
 
     private int mKeyCodeMediaPlayPauseCount;
@@ -223,7 +223,7 @@ public class DroidLogicHdmiCecManager {
      * c. Quit LiveTv to MboxLauncher which has no TvView of TV source.-->onSetMain false message is not removed.
      * d. Tune from LiveTV's hdmi device A to MboxLauncher's same one.---> If the device id is the same but
      *    session id is not, and in this scenario the old Session's onSetMain false might happens after the
-     *    new one has been callded onSetMain true, we should abort calling internal address.
+     *    new one has been called onSetMain true, we should abort calling internal address.
      */
     public void onSetMain(boolean isMain, String inputId, int deviceId, int sessionId) {
         if (!mHasCecFeature) {
@@ -347,7 +347,7 @@ public class DroidLogicHdmiCecManager {
 
     /**
      * When there is a new device select request, it's need to remove the previous
-     * request first. A customed senario is that when user switches to a different
+     * request first. A custom senario is that when user switches to a different
      * channel, there is a deviceSelect 0 first and then a deviceSelect 4, we need
      * to make sure the deviceSelect 0 is not finally performed so that there are
      * not so many meaningless routing messages.
@@ -405,7 +405,7 @@ public class DroidLogicHdmiCecManager {
             case KEYCODE_TV_SHORTCUTKEY_3DMODE:
             case KEYCODE_TV_SHORTCUTKEY_VIEWMODE:
             case KEYCODE_TV_SHORTCUTKEY_VOICEMODE:
-            case KEYCODE_TV_SHORTCUTKEY_DISPAYMODE:
+            case KEYCODE_TV_SHORTCUTKEY_DISPLAYMODE:
             case KEYCODE_TV_SLEEP:
             case KEYCODE_TV_REPEAT:
             case KEYCODE_TV_BROWSER:

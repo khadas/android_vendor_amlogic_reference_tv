@@ -38,7 +38,7 @@ public class PrebuiltChannelsManager {
     private final String TV_INPUT_ID = "com.droidlogic.tvinput/.services.ADTVInputService/HW16";
 
     private Context mContext;
-    public FileWriter mFileWritter;
+    public FileWriter mFileWriter;
     public BufferedWriter mBufferWriter;
 
     public FileReader mFileReader;
@@ -446,7 +446,7 @@ public class PrebuiltChannelsManager {
             Log.i(TAG, "not need load channel info file, db channel count:" + channelListAll.size());
             return RETURN_VALUE_FAILED;
         }
-        ArrayList<ChannelInfo> configFileChannelList = readChannelInfoFromFlile();
+        ArrayList<ChannelInfo> configFileChannelList = readChannelInfoFromFile();
         ret = saveChannelInfoListToDb(configFileChannelList);
         fileReadDeInit();
         return ret;
@@ -499,8 +499,8 @@ public class PrebuiltChannelsManager {
             }
             Log.i(TAG, "create " + FILE_PATH_TV_PRESET_CHANNEL_TABLE + " file!!!");
             tvChannelInfoFile.createNewFile();
-            mFileWritter = new FileWriter(tvChannelInfoFile);
-            mBufferWriter = new BufferedWriter(mFileWritter);
+            mFileWriter = new FileWriter(tvChannelInfoFile);
+            mBufferWriter = new BufferedWriter(mFileWriter);
         } catch (Exception e) {
             Log.e(TAG,"file write operation failed!");
             e.printStackTrace();
@@ -511,9 +511,9 @@ public class PrebuiltChannelsManager {
 
     private int fileWriteDeInit() {
         try {
-            mFileWritter.flush();
+            mFileWriter.flush();
             mBufferWriter.close();
-            mFileWritter.close();
+            mFileWriter.close();
         } catch (IOException e) {
             Log.e(TAG,"file close failed!");
             e.printStackTrace();
@@ -534,7 +534,7 @@ public class PrebuiltChannelsManager {
         return RETURN_VALUE_SUCCESS;
     }
 
-    private ArrayList<ChannelInfo> readChannelInfoFromFlile() {
+    private ArrayList<ChannelInfo> readChannelInfoFromFile() {
         ArrayList<ChannelInfo> channelInfoList = new ArrayList<ChannelInfo>();
         try {
             String oneLineString ="";
