@@ -88,9 +88,9 @@ public class AudioSystemCmdService extends Service {
     private static final String AUDIO_FORMAT_KEY = "audio_format";
     private static final String AUDIO_FORMAT_VALUE_KEY = "audio_format_value";
 
-    private static final String PARAM_HAL_AUDIO_OUTPUT_FORMAT_PCM        = "digital_audio_format=0";
-    private static final String PARAM_HAL_AUDIO_OUTPUT_FORMAT_AUTO       = "digital_audio_format=5";
-    private static final String PARAM_HAL_AUDIO_OUTPUT_FORMAT_PASSTHROUGH= "digital_audio_format=6";
+    private static final String PARAM_HAL_AUDIO_OUTPUT_FORMAT_PCM        = "hdmi_format=0";
+    private static final String PARAM_HAL_AUDIO_OUTPUT_FORMAT_AUTO       = "hdmi_format=5";
+    private static final String PARAM_HAL_AUDIO_OUTPUT_FORMAT_PASSTHROUGH= "hdmi_format=6";
     private static final int DIGITAL_AUDIO_FORMAT_PCM                    = 0;
     private static final int DIGITAL_AUDIO_FORMAT_AUTO                   = 1;
     private static final int DIGITAL_AUDIO_FORMAT_MANUAL                 = 2;
