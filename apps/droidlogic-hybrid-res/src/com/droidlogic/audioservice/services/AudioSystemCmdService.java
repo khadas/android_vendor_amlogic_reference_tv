@@ -35,6 +35,7 @@ import android.media.IAudioService;
 import android.media.tv.TvInputManager;
 import android.net.Uri;
 import android.os.IBinder;
+
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.Bundle;
@@ -53,6 +54,8 @@ import com.droidlogic.app.SystemControlManager;
 import com.droidlogic.app.tv.DroidLogicTvUtils;
 import com.droidlogic.app.tv.TvControlManager;
 import com.droidlogic.UEventObserver;
+import com.droidlogic.R;
+
 
 //this service used to call audio system commands
 public class AudioSystemCmdService extends Service {
@@ -666,8 +669,7 @@ public class AudioSystemCmdService extends Service {
         }
         mShowingPassthroughHint = true;
         mHandler.post(()->{
-            String hint = "To adjust volume, enable CEC control(Settings > Device Preferences > Display & Sound > HDMI CEC) or adjust the TV remote control.";
-            Toast toast = Toast.makeText(mContext, hint, Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(mContext, R.string.volume_control_hint, Toast.LENGTH_LONG);
             toast.addCallback(new Toast.Callback() {
                 public void onToastHidden() {
                     mShowingPassthroughHint = false;
