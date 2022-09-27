@@ -622,9 +622,11 @@ public class AudioSystemCmdService extends Service {
                 if (streamType != AudioManager.STREAM_MUSIC) {
                     return;
                 }
-                boolean mAudioHalControlVolumeEnable = mAudioManager.getParameters(HAL_PARAM_HAL_CONTROL_VOL_EN).equals(HAL_PARAM_HAL_CONTROL_VOL_EN + "=1");
-                if (!mAudioHalControlVolumeEnable) {
-                    showPassthroughWarning();
+                if (!DroidLogicUtils.isTv()) {
+                    boolean mAudioHalControlVolumeEnable = mAudioManager.getParameters(HAL_PARAM_HAL_CONTROL_VOL_EN).equals(HAL_PARAM_HAL_CONTROL_VOL_EN + "=1");
+                    if (!mAudioHalControlVolumeEnable) {
+                        showPassthroughWarning();
+                    }
                 }
                 int index = intent.getIntExtra(AudioManager.EXTRA_VOLUME_STREAM_VALUE, 0);
                 if (index == mCurrentIndex) {
