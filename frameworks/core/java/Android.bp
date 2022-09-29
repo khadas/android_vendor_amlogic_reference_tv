@@ -27,7 +27,6 @@ java_library {
         "**/*.java",
         "com/droidlogic/tvinput/services/ITvScanService.aidl",
         "com/droidlogic/tvinput/services/IUpdateUiCallbackListener.aidl",
-        "com/droidlogic/audioservice/services/IAudioEffectsService.aidl",
     ],
     required: ["droidlogic.tv.software.core.xml"],
 
