@@ -485,4 +485,8 @@ public class TvMTSSetting {
 
         return mode;
     }
+
+    public static void setVolumeCompensate(int value) {
+        TvControlManager.getInstance().SetCurProgVolumeCompesition(value);
+    }
 }

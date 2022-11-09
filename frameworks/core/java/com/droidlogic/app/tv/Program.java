@@ -52,6 +52,7 @@ public final class Program implements Comparable<Program> {
     private int mScheduledRecordStatus;
     private String mVersion;
     private String mEitExt;
+    private String mPackageName;
 
     public static final int RECORD_STATUS_NOT_STARTED = 0;
     public static final int RECORD_STATUS_APPOINTED = 1;
@@ -71,6 +72,7 @@ public final class Program implements Comparable<Program> {
         mScheduledRecordStatus = 0;
         mVersion = null;
         mEitExt = null;
+        mPackageName = null;
     }
 
     public long getId() {
@@ -186,12 +188,20 @@ public final class Program implements Comparable<Program> {
         mEitExt = ext;
     }
 
+    public String getPackageName() {
+        return mPackageName;
+    }
+
+    public void setPackageName(String name) {
+        mPackageName = name;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(mChannelId, mStartTimeUtcMillis, mEndTimeUtcMillis,
                 mTitle, mEpisodeTitle, mDescription, mLongDescription, mVideoWidth, mVideoHeight,
                 mPosterArtUri, mThumbnailUri, mContentRatings, mCanonicalGenres, mSeasonNumber,
-                mEpisodeNumber);
+                mEpisodeNumber, mPackageName);
     }
 
     @Override
@@ -216,7 +226,8 @@ public final class Program implements Comparable<Program> {
                 && mSeasonNumber == program.mSeasonNumber
                 && mEpisodeNumber == program.mEpisodeNumber
                 && TextUtils.equals(mVersion, program.mVersion)
-                && TextUtils.equals(mEitExt, program.mEitExt);
+                && TextUtils.equals(mEitExt, program.mEitExt)
+                && TextUtils.equals(mPackageName, program.mPackageName);
     }
 
     public boolean matchsWithoutDescription(Program program) {
@@ -264,7 +275,8 @@ public final class Program implements Comparable<Program> {
                 .append(", genres=").append(mCanonicalGenres)
                 .append(", isAppointed=").append(mIsAppointed)
                 .append(", scheduledRecordStatus=").append(mScheduledRecordStatus)
-                .append(", ext=").append(mVersion).append(":"+mEitExt);
+                .append(", ext=").append(mVersion).append(":"+mEitExt)
+                .append(", package=").append(mPackageName);
         return builder.append("}").toString();
     }
 
@@ -293,6 +305,7 @@ public final class Program implements Comparable<Program> {
         mScheduledRecordStatus = other.mScheduledRecordStatus;
         mVersion = other.mVersion;
         mEitExt = other.mEitExt;
+        mPackageName = other.mPackageName;
     }
 
     public ContentValues toContentValues() {
@@ -386,6 +399,9 @@ public final class Program implements Comparable<Program> {
             values.put(TvContract.Programs.COLUMN_INTERNAL_PROVIDER_FLAG3, mEitExt);
         } else {
             values.putNull(TvContract.Programs.COLUMN_INTERNAL_PROVIDER_FLAG3);
+        }
+        if (!TextUtils.isEmpty(mPackageName)) {
+            values.put(TvContract.Programs.COLUMN_PACKAGE_NAME, mPackageName);
         }
         return values;
     }
@@ -624,6 +640,11 @@ public final class Program implements Comparable<Program> {
             return this;
         }
 
+        public Builder setPackageName(String name) {
+            mProgram.mPackageName = name;
+            return this;
+        }
+
         public Program build() {
             return mProgram;
         }
@@ -633,7 +654,7 @@ public final class Program implements Comparable<Program> {
         if (TextUtils.isEmpty(commaSeparatedRatings)) {
             return null;
         }
-        String[] ratings = commaSeparatedRatings.split("\\s*,\\s*");
+        String[] ratings = commaSeparatedRatings.split(",(?=\\S)");
         TvContentRating[] contentRatings = new TvContentRating[ratings.length];
         for (int i = 0; i < contentRatings.length; ++i) {
             contentRatings[i] = TvContentRating.unflattenFromString(ratings[i]);

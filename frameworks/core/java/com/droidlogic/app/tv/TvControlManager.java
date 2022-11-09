@@ -56,6 +56,11 @@ import java.lang.reflect.Method;
 
 import static com.droidlogic.app.tv.TvControlCommand.*;
 import com.droidlogic.app.tv.EasEvent;
+import com.droidlogic.app.tv.RrtEvent;
+
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 //import android.hidl.manager.V1_0.IServiceManager;
 //import android.hidl.manager.V1_0.IServiceNotification;
@@ -188,8 +193,9 @@ public class TvControlManager {
     private ScanningFrameStableListener mScanningFrameStableListener = null;
     private VframBMPEventListener mVframBMPListener = null;
     private EpgEventListener mEpgListener = null;
-    private RRT5SourceUpdateListener mRrtListener = null;
+    private RrtEventListener mRrtListener = null;
     private AVPlaybackListener mAVPlaybackListener = null;
+    private PlayerInstanceNoListener mPlayerInstanceNoListener = null;
     private EasEventListener mEasListener = null;
     private AudioEventListener mAudioListener = null;
 
@@ -435,6 +441,14 @@ public class TvControlManager {
                         mAVPlaybackListener.onEvent(msgType, programID);
                     }
                     break;
+                case TSPLAYER_INSTANCENO_CALLBACK:
+                    if (mPlayerInstanceNoListener != null) {
+                        int msgType = parcel.bodyInt.get(0);
+                        int type = parcel.bodyInt.get(1);
+                        int ID = parcel.bodyInt.get(2);
+                        mPlayerInstanceNoListener.PlayerInsEvent(msgType, type, ID);
+                    }
+                    break;
                 case SOURCE_CONNECT_CALLBACK:
                     if (mSourceConnectChangeListener != null) {
                         int source = parcel.bodyInt.get(0);
@@ -456,10 +470,12 @@ public class TvControlManager {
 
                 case RRT_EVENT_CALLBACK:
                     if (mRrtListener != null) {
-                        int result = parcel.bodyInt.get(0);
-                        Log.e(TAG, "RRT_EVENT_CALLBACK:" + result);
-                        rrt5XmlLoadStatus = result;
-                        mRrtListener.onRRT5InfoUpdated(result);
+                        int sectionCount = parcel.bodyInt.get(0);
+                        Log.i(TAG,"rrt section count = "+sectionCount);
+                        RrtEvent curRrtEvent = new RrtEvent();
+                        curRrtEvent.readRrtEvent(parcel);
+                        curRrtEvent.printRrtEventInfo();
+                        mRrtListener.processDetailsChannelAlert(curRrtEvent);
                     } else {
                         Log.i(TAG,"mRrtListener is null");
                     }
@@ -468,7 +484,7 @@ public class TvControlManager {
                 case EAS_EVENT_CALLBACK:
                      Log.i(TAG,"get EAS_event_callBack");
                      if (mEasListener != null) {
-                        Log.i(TAG,"mEasListener is not null");
+                        Log.i(TAG,"mEasLister is not null");
                         int sectionCount = parcel.bodyInt.get(0);
                         Log.i(TAG,"eas section count = "+sectionCount);
                         for (int count = 0; count<sectionCount; count++) {
@@ -479,7 +495,7 @@ public class TvControlManager {
                             }
                         }
                      } else {
-                        Log.i(TAG,"mEasListener is null");
+                        Log.i(TAG,"mEasLister is null");
                      }
                      break;
 
@@ -902,6 +918,18 @@ public class TvControlManager {
                 info.sigFmt = TvInSignalInfo.SignalFmt.valueOf(hidlInfo.fmt);
                 info.sigStatus = TvInSignalInfo.SignalStatus.values()[hidlInfo.status];
                 info.reserved = hidlInfo.frameRate;
+                if (isBlockedByChannelLock()) {
+                    //means:
+                    //1. channel lock config on,
+                    //2. channel lock global on
+                    //3. channel locked
+                    //4. source = atv
+                    if (info.sigStatus == TvInSignalInfo.SignalStatus.TVIN_SIG_STATUS_UNSTABLE
+                        || info.sigStatus == TvInSignalInfo.SignalStatus.TVIN_SIG_STATUS_NOTSUP
+                        || info.sigStatus == TvInSignalInfo.SignalStatus.TVIN_SIG_STATUS_STABLE) {
+                        info.sigStatus = TvInSignalInfo.SignalStatus.TVIN_SIG_STATUS_BLOCKED;
+                    }
+                }
                 return info;
             } catch (RemoteException e) {
                 Log.e(TAG, "GetCurrentSignalInfo:" + e);
@@ -1233,7 +1261,7 @@ public class TvControlManager {
     }
 
     /**
-     * @Function: isDviSignal
+     * @Function: IsDviSignal
      * @Description: To check if current signal is dvi signal
      * @Param:
      * @Return: true, false
@@ -1241,14 +1269,14 @@ public class TvControlManager {
     public boolean IsDviSignal() {
         synchronized (mLock) {
             try {
-                int value = mProxy.isDviSignal();
+                int value = -1 /*mProxy.isDviSignal()*/;
                 Log.d(TAG, "IsDviSignal:" + value);
                  if (value == 1) {
                      return true;
                  } else {
                      return false;
                  }
-            } catch (RemoteException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "IsDviSignal:" + e);
             }
         }
@@ -1420,6 +1448,39 @@ public class TvControlManager {
         }
         return -1;
 
+    }
+
+    /**
+     * @Function: SetDLGEnable
+     * @Description: control DLG func open/close
+     * @Param: 1:ENABLE,0:DISABLE
+     * @Return: 0 success, -1 fail
+     */
+    public int SetDLGEnable(int isEnable) {
+          synchronized (mLock) {
+            try {
+                return mProxy.Tv_SetDLGEnable(isEnable);
+            } catch (Exception e) {
+                Log.e(TAG, "SetDLGEnable:" + e);
+            }
+        }
+        return -1;
+    }
+
+        /**
+     * @Function: GetDLGEnable
+     * @Description: get DLG status
+     * @Return: 1:enable, 0: disable, -1: get fail
+     */
+    public int GetDLGEnable() {
+          synchronized (mLock) {
+            try {
+                return mProxy.Tv_GetDLGEnable();
+            } catch (Exception e) {
+                Log.e(TAG, "SetDLGEnable:" + e);
+            }
+        }
+        return -1;
     }
 
    /**
@@ -3973,8 +4034,8 @@ public class TvControlManager {
         synchronized (mLock) {
             try {
                 SetTvCurrentLanguage(TvMultilingualText.getLocalLang());
-                return mProxy.atvManualScan(startFreq, endFreq, videoStd, audioStd);
-            } catch (RemoteException e) {
+                return 0/*mProxy.atvManualScan(startFreq, endFreq, videoStd, audioStd)*/;
+            } catch (Exception e) {
                 Log.e(TAG, "AtvManualScan:" + e);
             }
         }
@@ -4054,6 +4115,117 @@ public class TvControlManager {
     public int clearAllProgram(int arg0){
         int val[] = new int[]{arg0};
         return sendCmdIntArray(TV_CLEAR_ALL_PROGRAM, val);
+    }
+
+     /**
+     * @Function: IsAllmInfo
+     * @Description: IsAllmInfo status
+     * @Param:
+     * @Return: true: enable; false: disable;
+     */
+    public boolean IsAllmInfo() {
+        synchronized (mLock) {
+            try {
+                int value = mProxy.GetAllmInfo();
+                Log.d(TAG, "IsAllmInfo:" + value);
+                 if (value == 1) {
+                     return true;
+                 } else {
+                     return false;
+                 }
+            } catch (Exception e) {
+                Log.e(TAG, "IsAllmInfo:" + e);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @Function: SetVRREnable
+     * @Description: SetVRREnable or disable
+     * @Param: true: enable; false: disenable
+     * @Return: 0 ok or -1 error
+     */
+    public int SetVRREnable(int enable) {
+        synchronized (mLock) {
+            try {
+                return mProxy.SetVRREnable(enable);
+            } catch (Exception e) {
+                Log.e(TAG, "SetVRREnable:" + e);
+            }
+        }
+        return -1;
+    }
+
+     /**
+     * @Function: GetVRREnable
+     * @Description: GetVRREnable status
+     * @Param:
+     * @Return: 1: enable ; 0: disable ; -1: fail
+     */
+    public int GetVRREnable() {
+        synchronized (mLock) {
+            try {
+                return mProxy.GetVRREnable();
+            } catch (Exception e) {
+                Log.e(TAG, "GetVRREnable:" + e);
+            }
+        }
+        return -1;
+    }
+
+     //VRR mode
+     public static final int VDIN_VRR_OFF = 0;
+     public static final int VDIN_VRR_BASIC = 1;
+     public static final int VDIN_VRR_FREESYNC = 2;
+     public static final int VDIN_VRR_FREESYNC_PREMIUM = 3;
+     public static final int VDIN_VRR_FREESYNC_PREMIUM_PRO = 4;
+     public static final int VDIN_VRR_FREESYNC_PREMIUM_G_SYNC = 5;
+     public static final int VDIN_VRR_NUM = 6;
+
+     /**
+     * @Function: GetVRRMode
+     * @Description: Get VRR Mode status
+     * @Param:
+     * @Return: refer to  Vrr Mode, -1 means error.
+     */
+    public int GetVRRMode() {
+        synchronized (mLock) {
+            try {
+                return mProxy.GetVRRMode();
+            } catch (Exception e) {
+                Log.e(TAG, "GetVRREnable:" + e);
+            }
+        }
+        return -1;
+    }
+
+    public String GetVRRModeString() {
+        int mode = GetVRRMode();
+        String modestring = "";
+        switch (mode) {
+            case VDIN_VRR_BASIC:
+                modestring = "Vrr Basic";
+                break;
+            case VDIN_VRR_FREESYNC:
+                modestring = "FreeSync";
+                break;
+            case VDIN_VRR_FREESYNC_PREMIUM:
+                modestring = "FreeSync Premium";
+                break;
+            case VDIN_VRR_FREESYNC_PREMIUM_PRO:
+                modestring = "FreeSync Premium Pro";
+                break;
+            case VDIN_VRR_FREESYNC_PREMIUM_G_SYNC:
+                modestring = "FreeSync_Premium G Sync";
+                break;
+            case VDIN_VRR_NUM:
+                modestring = "VRR NUM";
+                break;
+            default:
+                modestring = "VRR OFF";
+        }
+        return modestring;
     }
 
     //enable: 0  is disable , 1  is enable.      when enable it , can black video for switching program
@@ -4448,6 +4620,7 @@ public class TvControlManager {
 
     public static class ScanMode {
         private int scanMode;
+        public static final int TV_SCAN_DTVMODE_MANUAL = 0x02;
 
         ScanMode(int ScanMode) {
             scanMode = ScanMode;
@@ -4550,12 +4723,12 @@ public class TvControlManager {
     }
 
     //rrt
-    public void SetRRT5SourceUpdateListener(RRT5SourceUpdateListener l) {
+    public void setRrtListener(RrtEventListener l) {
         mRrtListener = l;
     }
 
-    public interface RRT5SourceUpdateListener {
-        void onRRT5InfoUpdated(int status);
+    public interface RrtEventListener {
+        void processDetailsChannelAlert(RrtEvent ev);
     }
 
     public int updateRRTRes(int freq, int modulation, int mode) {
@@ -6112,6 +6285,9 @@ public class TvControlManager {
     public final static int EVENT_AV_TIMESHIFT_PLAY_FAIL = 7;
     public final static int EVENT_AV_TIMESHIFT_START_TIME_CHANGED = 8;
     public final static int EVENT_AV_TIMESHIFT_CURRENT_TIME_CHANGED = 9;
+    public final static int EVENT_AV_PLAYER_BLOCKED = 10;
+    public final static int EVENT_AV_PLAYER_UNBLOCK = 11;
+    public final static int EVENT_PLAY_INSTANCE     = 12;
     public final static int AUDIO_UNMUTE_FOR_TV                 = 0;
     public final static int AUDIO_MUTE_FOR_TV                   = 1;
 
@@ -6122,6 +6298,15 @@ public class TvControlManager {
     public void SetAudioEventListener (AudioEventListener l) {
         libtv_log_open();
         mAudioListener  = l;
+    }
+
+    public interface PlayerInstanceNoListener {
+        void PlayerInsEvent(int msgType, int type, int Id);
+    };
+
+    public void SetPlayerInstanceNoListener(PlayerInstanceNoListener l) {
+        libtv_log_open();
+        mPlayerInstanceNoListener = l;
     }
 
     public interface AVPlaybackListener {
@@ -6617,5 +6802,70 @@ public class TvControlManager {
             }
         }
         return -1;
+    }
+
+    public class BasicVdecStatusInfo {
+        public int decode_time_cost;/*us*/
+        public int frame_width;
+        public int frame_height;
+        public int frame_rate;
+        public int error_count;
+        public int frame_count;
+        public int error_frame_count;
+        public int drop_frame_count;
+        public int double_write_mode;//original samp_cnt;
+    }
+
+    public BasicVdecStatusInfo getBasicVdecSTatusInfo(int vdecId) {
+
+        synchronized (mLock) {
+            BasicVdecStatusInfo vInfo = new BasicVdecStatusInfo();
+            try {
+//                BasicVdecState info = mProxy.getBasicVdecStatusInfo(vdecId);
+//                vInfo.decode_time_cost = info.decode_time_cost;
+//                vInfo.frame_width = info.frame_width;
+//                vInfo.frame_height = info.frame_height;
+//                vInfo.frame_rate = info.frame_rate;
+//                vInfo.error_count = info.error_count;
+//                vInfo.frame_count =  info.frame_count;
+//                vInfo.error_frame_count = info.error_frame_count;
+//                vInfo.drop_frame_count = info.drop_frame_count;
+//                vInfo.double_write_mode = info.double_write_mode;
+                return vInfo;
+            } catch (Exception e) {
+                Log.e(TAG, "SetSameSourceEnable:" + e);
+            }
+        }
+        return null;
+    }
+
+    public String request(String resource, String jsonParameters) {
+        String invalidRet = "{\"ret\":1}";
+        if (resource == null || jsonParameters == null) {
+            return invalidRet;
+        }
+
+        synchronized (mLock) {
+            try {
+                return mProxy.request(resource, jsonParameters);
+            } catch (Exception e) {
+                Log.e(TAG, "request:" + e);
+            }
+        }
+        return invalidRet;
+    }
+
+    public boolean isBlockedByChannelLock() {
+        boolean ret = false;
+        String tmp = request("ADTV.isCurrentChannelblocked", "");
+        try {
+            JSONObject data = new JSONObject(tmp);
+            int callRet = data.optInt("ret", 0);
+            if (callRet == 0) {
+                ret = data.optBoolean("blocked", false);
+            }
+        } catch (JSONException e) {
+        }
+        return ret;
     }
 }

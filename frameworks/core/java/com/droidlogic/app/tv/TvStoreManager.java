@@ -807,12 +807,14 @@ public abstract class TvStoreManager {
         if (atvchannelsnew != null && atvchannelsnew.size() > 0) {
             atvchannelsupdate = getNeedUpdateChannel(atvchannelsnew);
             atvchannelsinsert= getNeedInsertChannel(atvchannelsnew);
-            mTvDataBaseManager.updateOrinsertChannelInList(atvchannelsupdate, atvchannelsinsert, false);
+            mTvDataBaseManager.updateOrinsertChannelInList(atvchannelsupdate, atvchannelsinsert,
+                false, mScanMode.isATVManualScan());
         }
         if (dtvchannelsnew != null && dtvchannelsnew.size() > 0) {
             dtvchannelsupdate = getNeedUpdateChannel(dtvchannelsnew);
             dtvchannelsinsert= getNeedInsertChannel(dtvchannelsnew);
-            mTvDataBaseManager.updateOrinsertChannelInList(dtvchannelsupdate, dtvchannelsinsert, true);
+            mTvDataBaseManager.updateOrinsertChannelInList(dtvchannelsupdate, dtvchannelsinsert,
+                true, mScanMode.isDTVManulScan());
         }
 
         if (isFinalStore) {
@@ -982,15 +984,19 @@ public abstract class TvStoreManager {
             Log.d(TAG, "dtv prog data");
 
             checkOrPatchBeginLost(event);
-
-            if (!isFinalStoreStage)
-                isRealtimeStore = true;
-
             if (mScanMode == null) {
                 Log.d(TAG, "mScanMode is null, store return.");
                 return;
             }
-
+            if (!isFinalStoreStage) {
+                isRealtimeStore = true;
+            } else {
+                if ((mScanMode.getDTVMode() & 0xFF) == TvControlManager.ScanMode.TV_SCAN_DTVMODE_MANUAL) {
+                    // Log.d(TAG, "manual search.");
+                } else {
+                    return;
+                }
+            }
             if (mScanMode.isDTVManulScan()) {
                 //delete exist same frequency channels to order new channels
                 if (mChannelsAll == null || mChannelsAll.size() == 0) {
@@ -1043,7 +1049,7 @@ public abstract class TvStoreManager {
                  channel.setDisplayNumber(""+physicalNum+"-"+channel.getServiceId());
               Log.d(TAG, "----Channels physicalNum set DisplayName:" + physicalNum + " getDisplayNumber:" + channel.getDisplayNumber());
             }
-            channel.print();
+            //channel.print();
             /*add search channel*/
             mChannelsExist.add(channel);
             cacheChannel(event, channel);

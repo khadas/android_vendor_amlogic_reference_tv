@@ -129,6 +129,7 @@ public class DroidLogicTvUtils
     //hdmi info
     public static final String SIG_INFO_HDMI_HDR= "hdmi_hdr";
     public static final String SIG_INFO_HDMI_AUDIO_FORMAT = "hdmi_audio_format";
+    public static final String ALLM_INFO_DISPLAY = "HDMI ALLM change to game mode";
 
     //CC
     public static final String SIG_INFO_CC_DATA_INFO = "av_data_info";

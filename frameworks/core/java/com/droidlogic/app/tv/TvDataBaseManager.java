@@ -80,7 +80,7 @@ public class TvDataBaseManager {
     private ContentResolver mContentResolver;
 
     public TvDataBaseManager (Context context) {
-        mContext = context;
+        mContext = context.getApplicationContext();
         mContentResolver = mContext.getContentResolver();
     }
 
@@ -351,6 +351,8 @@ public class TvDataBaseManager {
     private String getFavOrHiddenSetFlagKey(String key) {
         String result = null;
         if (ChannelInfo.KEY_HIDDEN.equals(key)) {
+            result = ChannelInfo.KEY_HIDDEN;
+        }else if (ChannelInfo.KEY_SET_HIDDEN.equals(key)) {
             result = ChannelInfo.KEY_SET_HIDDEN;
         } else if (ChannelInfo.KEY_IS_FAVOURITE.equals(key)) {
             result = ChannelInfo.KEY_SET_FAVOURITE;
@@ -1092,11 +1094,16 @@ public class TvDataBaseManager {
     }
 
     public void updateOrinsertChannelInList(ArrayList<ChannelInfo> updatelist, ArrayList<ChannelInfo> insertlist, boolean isdtv) {
+            updateOrinsertChannelInList(updatelist, insertlist, isdtv, true);
+        }
+
+    public void updateOrinsertChannelInList(ArrayList<ChannelInfo> updatelist,
+        ArrayList<ChannelInfo> insertlist, boolean isdtv, boolean manualscan) {
         ArrayList<ContentProviderOperation> ops = new ArrayList<>();
         if (updatelist != null) {
             for (ChannelInfo one : updatelist) {
                 long id = one.getId();
-                if (id == -1) {
+                if (id == -1 && manualscan) {
                     id = queryChannelIdInDb(one);
                     Log.d(TAG, "updateOrinsertChannelInList find id = " + id);
                 }
@@ -1120,6 +1127,8 @@ public class TvDataBaseManager {
             Log.e(TAG, "updateOrinsertChannelInList Failed = " + e.getMessage());
         }
         ops.clear();
+        // notify livetv immediately after R.
+        notifyChange();
     }
 
     private ContentProviderOperation creatOperation(boolean isdtv, boolean isupdate, long id, ChannelInfo ch) {

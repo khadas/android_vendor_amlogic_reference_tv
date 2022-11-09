@@ -39,7 +39,8 @@ public class TvInSignalInfo {
         TVIN_SIG_STATUS_NOSIG,
         TVIN_SIG_STATUS_UNSTABLE,
         TVIN_SIG_STATUS_NOTSUP,
-        TVIN_SIG_STATUS_STABLE
+        TVIN_SIG_STATUS_STABLE,
+        TVIN_SIG_STATUS_BLOCKED,
     };
 
     /* tvin signal format table */

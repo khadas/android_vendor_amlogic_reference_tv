@@ -38,6 +38,7 @@ public class ChannelInfo {
 
     public static final String[] COMMON_PROJECTION = {
         Channels._ID,
+        Channels.COLUMN_PACKAGE_NAME,
         Channels.COLUMN_INPUT_ID,
         Channels.COLUMN_TYPE,
         Channels.COLUMN_SERVICE_TYPE,
@@ -130,6 +131,7 @@ public class ChannelInfo {
     public static final String KEY_ACCESS_CONTROL = "access";
     public static final String KEY_HIDDEN = "hidden";
     public static final String KEY_SET_HIDDEN = "set_hidden";
+    public static final String KEY_SET_DELETE = "set_delete";
     public static final String KEY_HIDE_GUIDE = "hideGuide";
     public static final String KEY_VCT = "vct";
     public static final String KEY_EITV = "eitv";
@@ -155,6 +157,7 @@ public class ChannelInfo {
     public static final String LABEL_ARC = "ARC";
 
     private long mId;
+    private String mPackageName;
     private String mInputId;
     private String mType;
     private String mServiceType;
@@ -227,6 +230,8 @@ public class ChannelInfo {
     private int mSourceId;
     private int mAccessControlled;
     private int mHidden;
+    private int mSetHidden;
+    private int mSetDelete;
     private int mHideGuide;
     private String mVct;
     private int[] mEitVersions;
@@ -254,6 +259,9 @@ public class ChannelInfo {
         int index = cursor.getColumnIndex(Channels._ID);
         if (index >= 0)
             builder.setId(cursor.getLong(index));
+        index = cursor.getColumnIndex(Channels.COLUMN_PACKAGE_NAME);
+        if (index >= 0)
+            builder.setPackageName(cursor.getString(index));
         index = cursor.getColumnIndex(Channels.COLUMN_INPUT_ID);
         if (index >= 0)
             builder.setInputId(cursor.getString(index));
@@ -443,6 +451,10 @@ public class ChannelInfo {
                 builder.setAccessControled(Integer.parseInt(parsedMap.get(KEY_ACCESS_CONTROL)));
             if (parsedMap != null && parsedMap.get(KEY_HIDDEN) != null)
                 builder.setHidden("true".equals(parsedMap.get(KEY_HIDDEN)) ? 1 : 0);
+            if (parsedMap != null && parsedMap.get(KEY_SET_HIDDEN) != null)
+                builder.setSetHidden(Integer.parseInt(parsedMap.get(KEY_SET_HIDDEN)));
+            if (parsedMap != null && parsedMap.get(KEY_SET_DELETE) != null)
+                builder.setSetDelete(Integer.parseInt(parsedMap.get(KEY_SET_DELETE)));
             if (parsedMap != null && parsedMap.get(KEY_HIDE_GUIDE) != null)
                 builder.setHideGuide(Integer.parseInt(parsedMap.get(KEY_HIDE_GUIDE)));
             if (parsedMap != null && parsedMap.get(KEY_VCT) != null)
@@ -488,6 +500,10 @@ public class ChannelInfo {
 
     public long getId() {
         return mId;
+    }
+
+    public String getPackageName() {
+        return mPackageName;
     }
 
     public String getInputId() {
@@ -720,6 +736,14 @@ public class ChannelInfo {
 
     public int getHidden() {
         return mHidden;
+    }
+
+    public int getSetHidden() {
+        return mSetHidden;
+    }
+
+    public int getSetDelete() {
+        return mSetDelete;
     }
 
     public int getHideGuide() {
@@ -1006,6 +1030,14 @@ public class ChannelInfo {
         mLCN2 = lcn;
     }
 
+    public void setSetHidden(int setHidden) {
+        mSetHidden = setHidden;
+    }
+
+    public void setSetDelete(int setDelete) {
+        mSetDelete = setDelete;
+    }
+
     public void setEitVersions(int[] versions) {
         mEitVersions = versions;
     }
@@ -1022,6 +1054,7 @@ public class ChannelInfo {
         if (this == channel)
             return;
         this.mId = channel.mId;
+        this.mPackageName = channel.mPackageName;
         this.mInputId = channel.mInputId;
         this.mType = channel.mType;
         this.mServiceType = channel.mServiceType;
@@ -1039,6 +1072,7 @@ public class ChannelInfo {
 
         public Builder() {
             mChannel.mId = -1L;
+            mChannel.mPackageName = "";
             mChannel.mInputId = "";
             mChannel.mType = "";
             mChannel.mServiceType= "";
@@ -1110,6 +1144,8 @@ public class ChannelInfo {
             mChannel.mSourceId = -1;
             mChannel.mAccessControlled = 0;
             mChannel.mHidden = 0;
+            mChannel.mSetHidden = 0;
+            mChannel.mSetDelete = 0;
             mChannel.mHideGuide = 0;
             mChannel.mVct = null;
             mChannel.mEitVersions = null;
@@ -1119,6 +1155,11 @@ public class ChannelInfo {
 
         public Builder setId(long id) {
             mChannel.mId = id;
+            return this;
+        }
+
+        public Builder setPackageName(String name) {
+            mChannel.mPackageName = name;
             return this;
         }
 
@@ -1433,6 +1474,16 @@ public class ChannelInfo {
             return this;
         }
 
+        public Builder setSetHidden(int setHidden) {
+            mChannel.mSetHidden = setHidden;
+            return this;
+        }
+
+        public Builder setSetDelete(int setDelete) {
+            mChannel.mSetDelete = setDelete;
+            return this;
+        }
+
         public Builder setHideGuide(int hide) {
             mChannel.mHideGuide = hide;
             return this;
@@ -1550,7 +1601,9 @@ public class ChannelInfo {
             || mType.equals(TvContract.Channels.TYPE_DVB_S)
             || mType.equals(TvContract.Channels.TYPE_ATSC_T)
             || mType.equals(TvContract.Channels.TYPE_ATSC_C)
-            || mType.equals(TvContract.Channels.TYPE_ISDB_T));
+            || mType.equals(TvContract.Channels.TYPE_ISDB_T)
+            || mType.equals(TvContract.Channels.TYPE_DVB_T2)
+            || mType.equals(TvContract.Channels.TYPE_DVB_S2));
     }
 
     public boolean isAtscChannel() {
@@ -1587,6 +1640,7 @@ public class ChannelInfo {
     }
     public String toString() {
         return "Id = " + mId +
+                "\n Package = " + mPackageName +
                 "\n InputId = " + mInputId +
                 "\n Type = " + mType +
                 "\n ServiceType = " + mServiceType +
@@ -1641,6 +1695,8 @@ public class ChannelInfo {
                 "\n mSourceId = " + mSourceId +
                 "\n AccessControled = " + mAccessControlled +
                 "\n Hidden = " + mHidden +
+                "\n SetHidden = " + mSetHidden +
+                "\n SetDelete = " + mSetDelete +
                 "\n HideGuide = " + mHideGuide +
                 "\n Ratings = " + mContentRatings +
                 "\n SignalType = " + mSignalType +
