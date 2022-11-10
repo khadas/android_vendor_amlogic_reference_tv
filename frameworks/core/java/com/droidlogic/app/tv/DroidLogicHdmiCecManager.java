@@ -37,7 +37,6 @@ import java.util.Collections;
 
 public class DroidLogicHdmiCecManager {
     private static final String TAG = "DroidLogicHdmiCecManager";
-    private static boolean DEBUG = Log.isLoggable("HDMI", Log.DEBUG);
 
     private static final String HDMI_CONTROL_ENABLED = "hdmi_control_enabled";
     private static final String FEATURE_HDMI_CEC = "android.hardware.hdmi.cec";
