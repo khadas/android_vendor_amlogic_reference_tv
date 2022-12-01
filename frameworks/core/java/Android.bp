@@ -40,6 +40,31 @@ java_library {
     static_libs: ["vendor.amlogic.hardware.tvserver-V1.0-java"],
 }
 
+
+java_library {
+    name: "droidlogic-tv",
+
+    vendor: true,
+    sdk_version: "system_current",
+    installable: true,
+
+    srcs: [
+        "**/*.java",
+        "com/droidlogic/tvinput/services/ITvScanService.aidl",
+        "com/droidlogic/tvinput/services/IUpdateUiCallbackListener.aidl",
+    ],
+    required: ["droidlogic.tv.software.core.xml"],
+
+    dxflags: ["--core-library"],
+
+    libs: [
+        "droidlogic.software.core",
+        "android.hidl.base-V1.0-java",
+        "android.hidl.manager-V1.0-java",
+    ],
+    static_libs: ["vendor.amlogic.hardware.tvserver-V1.0-java"],
+}
+
 prebuilt_etc {
     name: "droidlogic.tv.software.core.xml",
 
