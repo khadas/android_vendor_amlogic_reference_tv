@@ -1484,6 +1484,26 @@ public class TvControlManager {
     }
 
    /**
+    * @Function: IsSupportDLG.
+    * @Description: get if support DLG func.
+    * @Return: true or false.
+    */
+   public boolean IsSupportDLG() {
+         synchronized (mLock) {
+           try {
+                if (mProxy.isSupportDLG() == 0) {
+                    return true;
+                } else {
+                    return false;
+                }
+           } catch (Exception e) {
+               Log.e(TAG, "IsSupportDLG:" + e);
+           }
+       }
+       return false;
+   }
+
+   /**
      * @Function: SetHdmiHdcpKeyEnable
      * @Description: enable or disable hdmi hdcp kdy
      * @Param: isEnable is enable or disable
