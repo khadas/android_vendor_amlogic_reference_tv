@@ -1269,7 +1269,7 @@ public class TvControlManager {
     public boolean IsDviSignal() {
         synchronized (mLock) {
             try {
-                int value = -1 /*mProxy.isDviSignal()*/;
+                int value = mProxy.isDviSignal();
                 Log.d(TAG, "IsDviSignal:" + value);
                  if (value == 1) {
                      return true;
