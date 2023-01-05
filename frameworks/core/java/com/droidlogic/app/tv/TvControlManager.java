@@ -73,6 +73,7 @@ import vendor.amlogic.hardware.tvserver.V1_0.ConnectType;
 import vendor.amlogic.hardware.tvserver.V1_0.Result;
 import vendor.amlogic.hardware.tvserver.V1_0.FreqList;
 import vendor.amlogic.hardware.tvserver.V1_0.RRTSearchInfo;
+import vendor.amlogic.hardware.tvserver.V1_0.BasicVdecState;
 
 public class TvControlManager {
     private static final String TAG = "TvControlManager";
@@ -6841,16 +6842,16 @@ public class TvControlManager {
         synchronized (mLock) {
             BasicVdecStatusInfo vInfo = new BasicVdecStatusInfo();
             try {
-//                BasicVdecState info = mProxy.getBasicVdecStatusInfo(vdecId);
-//                vInfo.decode_time_cost = info.decode_time_cost;
-//                vInfo.frame_width = info.frame_width;
-//                vInfo.frame_height = info.frame_height;
-//                vInfo.frame_rate = info.frame_rate;
-//                vInfo.error_count = info.error_count;
-//                vInfo.frame_count =  info.frame_count;
-//                vInfo.error_frame_count = info.error_frame_count;
-//                vInfo.drop_frame_count = info.drop_frame_count;
-//                vInfo.double_write_mode = info.double_write_mode;
+                BasicVdecState info = mProxy.getBasicVdecStatusInfo(vdecId);
+                vInfo.decode_time_cost = info.decode_time_cost;
+                vInfo.frame_width = info.frame_width;
+                vInfo.frame_height = info.frame_height;
+                vInfo.frame_rate = info.frame_rate;
+                vInfo.error_count = info.error_count;
+                vInfo.frame_count =  info.frame_count;
+                vInfo.error_frame_count = info.error_frame_count;
+                vInfo.drop_frame_count = info.drop_frame_count;
+                vInfo.double_write_mode = info.double_write_mode;
                 return vInfo;
             } catch (Exception e) {
                 Log.e(TAG, "SetSameSourceEnable:" + e);
