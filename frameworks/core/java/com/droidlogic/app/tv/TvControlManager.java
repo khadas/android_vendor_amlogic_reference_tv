@@ -698,9 +698,10 @@ public class TvControlManager {
         */
         connectToProxy();
 
-        String LogFlg = TvMiscConfigGet(OPEN_TV_LOG_FLG, "");
+        /*String LogFlg = TvMiscConfigGet(OPEN_TV_LOG_FLG, "");
         if ("log_open".equals(LogFlg))
             tvLogFlg =true;
+        */
     }
 
     private static final int TVSERVER_DEATH_COOKIE = 1000;
