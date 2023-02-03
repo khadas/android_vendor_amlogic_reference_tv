@@ -99,6 +99,7 @@ public class DroidLogicHdmiCecManager {
     private boolean mInSelectProtection;
 
     private int mKeyCodeMediaPlayPauseCount;
+    private int mKeyCodeMedia;
 
     private final Handler mHandler = new Handler() {
         @Override
@@ -317,13 +318,13 @@ public class DroidLogicHdmiCecManager {
     }
 
     private void deviceSelectInternalDelayed() {
+        mCurrentSelect = mSelectingDevice;
         if (mInSelectProtection) {
             // If there has just been a valid hdmi tune action, then we should protect it.
             Log.e(TAG, "selectHdmiDevice protection time and no select internal address");
             return;
         }
         // No remove previous select messages in here.
-        mCurrentSelect = mSelectingDevice;
         Log.d(TAG, "deviceSelectInternalDelayed " + mCurrentSelect);
 
         mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_DEVICE_SELECT), DEVICE_SELECT_PROTECTION_TIME);
@@ -430,15 +431,19 @@ public class DroidLogicHdmiCecManager {
             return false;
         }
         if (KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE == keyCode) {
-            // The play/pause key of TV RCU is keycode of KEYCODE_MEDIA_PLAY_PAUSE, and it's translated into
-            // CEC_KEYCODE_PAUSE in HdmiCecKeycode. This will cause behaviours out of control.
-            if ((mKeyCodeMediaPlayPauseCount % 2) == 0) {
-                keyCode = KeyEvent.KEYCODE_MEDIA_PAUSE;
-            } else {
-                keyCode = KeyEvent.KEYCODE_MEDIA_PLAY;
-            }
             if (isPressed) {
+                // The play/pause key of TV RCU is keycode of KEYCODE_MEDIA_PLAY_PAUSE, and it's translated into
+                // CEC_KEYCODE_PAUSE in HdmiCecKeycode. This will cause behavior out of control.
+                if ((mKeyCodeMediaPlayPauseCount % 2) == 0) {
+                    keyCode = KeyEvent.KEYCODE_MEDIA_PAUSE;
+                } else {
+                    keyCode = KeyEvent.KEYCODE_MEDIA_PLAY;
+                }
+                mKeyCodeMedia = keyCode;
                 mKeyCodeMediaPlayPauseCount++;
+            } else {
+                // Use the previous saved media keycode.
+                keyCode = mKeyCodeMedia;
             }
         }
         Log.d(TAG, "sendKeyEvent keycode:" + keyCode + " pressed:" + isPressed);
