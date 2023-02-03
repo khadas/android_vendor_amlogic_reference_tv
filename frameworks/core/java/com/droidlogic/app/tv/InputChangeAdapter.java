@@ -43,7 +43,7 @@ public class InputChangeAdapter {
 
     private Runnable mBootOtp;
     private Context mContext;
-    private boolean mBootComplete = true;
+    private boolean mBootComplete = false;
     private Handler mHandler = new Handler();
 
     private InputChangeAdapter() {}
