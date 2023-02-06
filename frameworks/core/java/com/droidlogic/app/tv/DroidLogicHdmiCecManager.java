@@ -9,8 +9,12 @@
 
 package com.droidlogic.app.tv;
 
+import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContentResolver;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.hardware.hdmi.HdmiControlManager;
@@ -23,11 +27,14 @@ import android.hardware.hdmi.HdmiSwitchClient;
 import android.hardware.hdmi.HdmiSwitchClient.OnSelectListener;
 
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.media.tv.TvContract;
 import android.media.tv.TvInputHardwareInfo;
 import android.media.tv.TvInputManager;
 import android.media.tv.TvInputInfo;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 
@@ -44,12 +51,14 @@ public class DroidLogicHdmiCecManager {
     private static final int ENABLED = 1;
 
     private static final int DEVICE_SELECT_PROTECTION_TIME = 1500;
+    private static final long ONE_TOUCH_PLAY_PROTECTION_TIME = 10000;
 
     private static final int MSG_DEVICE_SELECT = 0;
     private static final int MSG_PORT_SELECT = 1;
     private static final int MSG_SELECT_PROTECTION = 2;
     private static final int MSG_SEND_KEY_EVENT = 3;
     private static final int MSG_SWITCH_SELECT = 4;
+    private static final int MSG_ONE_TOUCH_PLAY_END = 5;
 
     /* cec should help directly return the keyevents which DROIDLOGIC livetv apk use */
     /*          DROIDLOGIC specified KEYEVENTS START                                 */
@@ -74,6 +83,8 @@ public class DroidLogicHdmiCecManager {
     public static final int KEYCODE_LIST                          = KeyEvent.KEYCODE_TV_INPUT_COMPOSITE_1;
     //public static final int KEYCODE_MEDIA_AUDIO_CONTROL           = DROID_KEYCODE_MEDIA_AUDIO_CONTROL;
     /*          DROIDLOGIC specified KEYEVENTS END                                 */
+
+    private static final String ACTION_OTP_INPUT_SOURCE_CHANGE = "droidlogic.tv.action.OTP_INPUT_SOURCE_CHANGED";
 
     private static DroidLogicHdmiCecManager mInstance;
 
@@ -101,6 +112,31 @@ public class DroidLogicHdmiCecManager {
     private int mKeyCodeMediaPlayPauseCount;
     private int mKeyCodeMedia;
 
+    private String mOneTouchPlayInput;
+
+    private final BroadcastReceiver mInputSourceChangeReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            if (!ACTION_OTP_INPUT_SOURCE_CHANGE.equals(intent.getAction())) {
+                return;
+            }
+            Bundle extras = intent.getExtras();
+            if (null == extras) {
+                return;
+            }
+            String inputId = extras.getString(TvInputInfo.EXTRA_INPUT_ID);
+            Log.d(TAG, "Receive new active input:" + inputId);
+            if (TextUtils.isEmpty(inputId)) {
+                return;
+            }
+            if (mOneTouchPlayInput != null) {
+                // No more protection for the none boot scenarios.
+                return;
+            }
+            mOneTouchPlayInput = inputId;
+            mHandler.sendEmptyMessageDelayed(MSG_ONE_TOUCH_PLAY_END, ONE_TOUCH_PLAY_PROTECTION_TIME);
+        }
+    };
+
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -119,6 +155,10 @@ public class DroidLogicHdmiCecManager {
                     break;
                 case MSG_SWITCH_SELECT:
                     mSwitchClient.selectPort(mCurrentSelect.getPortId(), mSelectListener);
+                    break;
+                case MSG_ONE_TOUCH_PLAY_END:
+                    mOneTouchPlayInput = null;
+                    Log.d(TAG, "One touch play protection ends.");
                     break;
                 default:
                     break;
@@ -203,6 +243,11 @@ public class DroidLogicHdmiCecManager {
         });
 
         InputChangeAdapter.getInstance(mContext);
+
+        Log.d(TAG, "register input source receiver");
+        final IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_OTP_INPUT_SOURCE_CHANGE);
+        mContext.registerReceiver(mInputSourceChangeReceiver, filter);
     }
 
     /**
@@ -230,7 +275,7 @@ public class DroidLogicHdmiCecManager {
             Log.v(TAG, "onSetMain no cec then no need.");
             return;
         }
-
+        Log.d(TAG, "onSetMain " + isMain + " " + inputId);
         mSelectingDevice = new SelectDeviceInfo(inputId, deviceId, sessionId);
 
         if (mTvClient == null) {
@@ -310,6 +355,11 @@ public class DroidLogicHdmiCecManager {
     */
     private void deviceSelect() {
         Log.d(TAG, "deviceSelect " + mCurrentSelect);
+
+        if (handleOneTouchPlayProtection()) {
+            return;
+        }
+
         removePreviousMessages();
         mHandler.sendMessage(mHandler.obtainMessage(MSG_DEVICE_SELECT));
 
@@ -343,6 +393,19 @@ public class DroidLogicHdmiCecManager {
 
         mInSelectProtection = true;
         mHandler.sendEmptyMessageDelayed(MSG_SELECT_PROTECTION, DEVICE_SELECT_PROTECTION_TIME);
+    }
+
+    private boolean handleOneTouchPlayProtection() {
+        if (mOneTouchPlayInput != null
+            && (!mCurrentSelect.getInputId().equals(mOneTouchPlayInput))) {
+            Log.w(TAG, "device select a none one touch play input after booting!");
+            switchToTvInput(mOneTouchPlayInput);
+            mOneTouchPlayInput = null;
+            return true;
+        }
+        // reset boot one touch play intent;
+        mOneTouchPlayInput = null;
+        return false;
     }
 
     /**
@@ -453,6 +516,17 @@ public class DroidLogicHdmiCecManager {
         return true;
     }
 
+    private void switchToTvInput(String inputId) {
+        Log.d(TAG, "switchToTvInput " + inputId);
+        try {
+            mContext.startActivity(new Intent(Intent.ACTION_VIEW,
+                    TvContract.buildChannelUriForPassthroughInput(inputId))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        } catch (ActivityNotFoundException e) {
+            Log.e(TAG, "Can't find activity to switch to " + inputId, e);
+        }
+    }
+
     private class SelectDeviceInfo {
         String inputId = "";
         int deviceId;
@@ -511,4 +585,5 @@ public class DroidLogicHdmiCecManager {
             return sb.toString();
         }
     }
+
 }
