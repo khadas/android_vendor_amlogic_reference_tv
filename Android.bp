@@ -11,8 +11,6 @@ package {
 // 'apply every license found to every target'. While this makes sure we respect
 // every license restriction, it may not be entirely correct.
 //
-// e.g. GPL in an MIT project might only apply to the contrib/ directory.
-//
 // Please consider splitting the single license below into multiple licenses,
 // taking care not to lose any license_kind information, and overriding the
 // default license using the 'licenses: [...]' property on targets as needed.
@@ -27,10 +25,6 @@ license {
     license_kinds: [
         "SPDX-license-identifier-Apache-2.0",
         "SPDX-license-identifier-BSD",
-        "SPDX-license-identifier-FTL",
-        "SPDX-license-identifier-GPL",
-        "SPDX-license-identifier-LGPL-2.1",
-        "SPDX-license-identifier-MIT",
         "legacy_by_exception_only", // by exception only
         "legacy_notice",
     ],
