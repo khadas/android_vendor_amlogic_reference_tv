@@ -674,10 +674,10 @@ public class DroidLogicTvUtils
             String curCountry = getCountry(mContext);
             if (isDtvContainsAtscByCountry(curCountry)) {
                 mode = TV_SEARCH_ATV_DTV;
+            } else if (TvScanConfig.GetTvAtvSupport(curCountry)) {
+                mode = TV_SEARCH_ATV;
             } else if (TvScanConfig.GetTvDtvSupport(curCountry)) {
                 mode = TV_SEARCH_DTV;
-            } else if (TvScanConfig.GetTvDtvSupport(curCountry)) {
-                mode = TV_SEARCH_ATV;
             } else {
                 mode = TV_SEARCH_ATV;
                 Log.e(TAG, "getAtvDtvModeFlag invalid scene, curCountry:" + curCountry + ", not support atv and dtv! set default ATV.");
