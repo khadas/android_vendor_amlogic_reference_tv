@@ -32,6 +32,7 @@ public class ChannelInfo {
     private static final String TAG = "ChannelInfo";
     private static final boolean DEBUG = false;
 
+    public static final String COLUMN_ATSC_TYPE = Channels.COLUMN_INTERNAL_PROVIDER_FLAG1;
     public static final String COLUMN_LCN = Channels.COLUMN_INTERNAL_PROVIDER_FLAG2;
     public static final String COLUMN_LCN1 = Channels.COLUMN_INTERNAL_PROVIDER_FLAG3;
     public static final String COLUMN_LCN2 = Channels.COLUMN_INTERNAL_PROVIDER_FLAG4;
@@ -1632,7 +1633,8 @@ public class ChannelInfo {
                 && a.getOriginalNetworkId() == mOriginalNetworkId
                 && a.getTransportStreamId() == mTransportStreamId
                 && a.getFrequency() == mFrequency
-                && TextUtils.equals(a.getDisplayName(), mDisplayName);
+                && TextUtils.equals(a.getDisplayName(), mDisplayName)
+                && TextUtils.equals(a.getSignalType(), mSignalType);
     }
 
     public void print () {

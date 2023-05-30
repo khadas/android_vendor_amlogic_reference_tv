@@ -89,12 +89,20 @@ public class TvDataBaseManager {
     }
 
     public void deleteChannels(String inputId, String type) {
+        deleteChannels(inputId, type, null);
+    }
+
+    public void deleteChannels(String inputId, String type, String where) {
         Uri channelsUri = TvContract.buildChannelsUriForInput(inputId);
+        String extra = "";
+        if (where != null) {
+            extra = " and " + where;
+        }
         try {
             if (type == null)
-                mContentResolver.delete(channelsUri, Channels._ID + "!=-1", null);
+                mContentResolver.delete(channelsUri, Channels._ID + "!=-1" + extra, null);
             else
-                mContentResolver.delete(channelsUri, Channels._ID + "!=-1 and " + Channels.COLUMN_TYPE + "='" + type +"'", null);
+                mContentResolver.delete(channelsUri, Channels._ID + "!=-1 and " + Channels.COLUMN_TYPE + "='" + type +"'" + extra, null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -727,7 +735,6 @@ public class TvDataBaseManager {
         if (!TextUtils.isEmpty(channel.getFavouriteInfo())) {
             map.put(ChannelInfo.KEY_FAVOURITE_INFO, channel.getFavouriteInfo());
         }
-
         String output = DroidLogicTvUtils.mapToJson(map);
         values.put(TvContract.Channels.COLUMN_INTERNAL_PROVIDER_DATA, output);
 
@@ -746,7 +753,15 @@ public class TvDataBaseManager {
         values.put(Channels.COLUMN_TYPE, channel.getType());
         values.put(Channels.COLUMN_BROWSABLE, channel.isBrowsable() ? 1 : 0);
         values.put(Channels.COLUMN_SERVICE_TYPE, channel.getServiceType());
-
+        if (channel.getSignalType().contains("ATSC")) {
+            if (TvContract.Channels.TYPE_ATSC_T.equals(channel.getSignalType())) {
+                // ATSC-T ATV
+                values.put(ChannelInfo.COLUMN_ATSC_TYPE, "0");
+            } else {
+                // ATSC-C ATV
+                values.put(ChannelInfo.COLUMN_ATSC_TYPE, "1");
+            }
+        }
         String output = DroidLogicTvUtils.mapToJson(buildAtvChannelMap(channel));
         values.put(TvContract.Channels.COLUMN_INTERNAL_PROVIDER_DATA, output);
 
@@ -1216,6 +1231,7 @@ public class TvDataBaseManager {
                         && transportStreamId == channel.getTransportStreamId()
                         && frequency == channel.getFrequency())
                             || (channel.isAnalogChannel()
+                                && TextUtils.equals(signalType, channel.getSignalType())
                                 && frequency == channel.getFrequency()
                                 && videostd == channel.getVideoStd()
                                 && audiostd == channel.getAudioStd()
