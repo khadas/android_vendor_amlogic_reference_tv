@@ -6890,4 +6890,28 @@ public class TvControlManager {
         }
         return ret;
     }
+
+    public int SetAudioMute(int mute) {
+        int ret = 0;
+        String tmp = request("ADTV.AudioSetMute", "{\"ATV_mute\":" + mute + ",\"DTV_mute\":" + mute + "}");
+        try {
+            JSONObject data = new JSONObject(tmp);
+            ret = data.optInt("ret", 0);
+        } catch (JSONException e) {
+        }
+        return ret;
+    }
+
+    public int GetAudioMute() {
+        int ret = 0;
+        String tmp = request("ADTV.GetAudioMute", "");
+        try {
+            JSONObject data = new JSONObject(tmp);
+            int ATV_mute = data.optInt("ATV_mute", 0);
+            int DTV_mute = data.optInt("DTV_mute", 0);
+            ret = DTV_mute;//current only dtv need,so only return dtv mute status
+        } catch (JSONException e) {
+        }
+        return ret;
+    }
 }
