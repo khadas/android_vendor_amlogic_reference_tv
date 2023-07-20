@@ -247,7 +247,8 @@ public class DroidLogicHdmiCecManager {
         Log.d(TAG, "register input source receiver");
         final IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_OTP_INPUT_SOURCE_CHANGE);
-        mContext.registerReceiver(mInputSourceChangeReceiver, filter);
+        mContext.registerReceiver(mInputSourceChangeReceiver, filter,
+            Context.RECEIVER_EXPORTED | Context.RECEIVER_VISIBLE_TO_INSTANT_APPS);
     }
 
     /**
