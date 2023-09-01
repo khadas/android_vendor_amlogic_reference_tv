@@ -296,7 +296,7 @@ public class DroidLogicHdmiCecManager {
                 // For projects like Amazon Fireos, it should directly only use the HdmiDeviceInfo
                 // In the TvInputInfo to do deviceSelect, as to solve the auto jump issue.
                 HdmiDeviceInfo hdmiDevice = info.getHdmiDeviceInfo();
-                if (hdmiDevice == null) {
+                if (hdmiDevice == null || !hdmiDevice.isCecDevice()) {
                     hdmiDevice = getHdmiDeviceInfo(inputId);
                 }
 
@@ -424,9 +424,11 @@ public class DroidLogicHdmiCecManager {
 
     public HdmiDeviceInfo getHdmiDeviceInfo(String iputId) {
         List<TvInputInfo> tvInputList = mTvInputManager.getTvInputList();
+
         for (TvInputInfo info : tvInputList) {
             HdmiDeviceInfo hdmiDeviceInfo = info.getHdmiDeviceInfo();
-            if (hdmiDeviceInfo != null) {
+            Log.d(TAG, "getHdmiDeviceInfo input:" + iputId + " " + hdmiDeviceInfo);
+            if (hdmiDeviceInfo != null && hdmiDeviceInfo.isCecDevice()) {
                 if (iputId.equals(info.getId()) || iputId.equals(info.getParentId())) {
                     return hdmiDeviceInfo;
                 }
