@@ -372,6 +372,10 @@ public class DroidLogicTvUtils
     public static final String TV_KEY_AD_SWITCH = "ad_switch";
     public static final String TV_KEY_AD_MIX = "ad_mix_level";
     public static final String TV_KEY_AD_TRACK = "ad_track";
+    public static final String TV_KEY_SUB_DEFAULT_LANGUAGE = "dtv_sub_first_language";
+    public static final String TV_KEY_SUB_SECOND_LANGUAGE = "dtv_sub_second_language";
+    public static final String TV_KEY_AUD_DEFAULT_LANGUAGE = "dtv_aud_default_language";
+    public static final String TV_KEY_AUD_SECOND_LANGUAGE = "dtv_aud_second_language";
 
     public static final String TV_CURRENT_DEVICE_ID = "tv_current_device_id";
     public static final String TV_ATV_CHANNEL_INDEX = "tv_atv_channel_index";
@@ -446,6 +450,12 @@ public class DroidLogicTvUtils
     public static final int TV_ATSC_MODE_AUTO = 3;
 
     public static final int VIDEO_UNAVAILABLE_REASON_NODATA = 5;
+
+    //preferred language
+    public static final int PREFERRED_SUB_DEFAULT       = 0;//sub
+    public static final int PREFERRED_SUB_SECONDARY     = 1;//sub
+    public static final int PREFERRED_AUD_DEFAULT       = 2;//audio
+    public static final int PREFERRED_AUD_SECONDARY     = 3;//audio
 
     private static final UriMatcher sUriMatcher;
     public static final int NO_MATCH = UriMatcher.NO_MATCH;

@@ -62,6 +62,8 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.util.Objects;
+
 //import android.hidl.manager.V1_0.IServiceManager;
 //import android.hidl.manager.V1_0.IServiceNotification;
 import vendor.amlogic.hardware.tvserver.V1_0.ITvServer;
@@ -6914,4 +6916,95 @@ public class TvControlManager {
         }
         return ret;
     }
-}
+
+    //Preferred language settings
+    public interface PreferredChangedListener {
+        void onEvent(int type, String language);
+    };
+
+    private PreferredChangedListener mPreferredChangedListener = null;
+    private String[] languageTable = {"chi", "eng", "chs", "none"};
+    private List<String> mLanguageList = Arrays.asList(languageTable);
+
+    public void SetPreferredChangedListener(PreferredChangedListener l) {
+        mPreferredChangedListener = l;
+    }
+
+    public void SetPreferredLanguage(Context context, int type, String language) {
+        String id = getPreferredIdFromType(type);
+        if (TextUtils.isEmpty(id)) {
+            Log.w(TAG, "Set preferred language with wrong type.");
+        } else {
+            String current = TvControlDataManager.getInstance(context).
+                getStringValue(context, id, null);
+            if (!Objects.equals(current, language)) {
+                TvControlDataManager.getInstance(context).
+                    putStringValue(context, id, (language == null) ? "none" : language);
+                if (mPreferredChangedListener != null) {
+                    mPreferredChangedListener.onEvent(type, language);
+                }
+            } else {
+                Log.d(TAG, "Skip set the same preferred language.");
+            }
+        }
+    }
+
+    public void setPreferredLanguageWithSelection(Context context, int type, int selection) {
+        if (selection < 0 || selection > mLanguageList.size() -1) {
+            Log.w(TAG, "Set preferred language out of index.");
+            return;
+        }
+        String lan = mLanguageList.get(selection);
+        SetPreferredLanguage(context, type, lan);
+    }
+
+    public String GetPreferredLanguage(Context context, int type) {
+        String ret = "none";
+        String id = getPreferredIdFromType(type);
+        if (TextUtils.isEmpty(id)) {
+            Log.w(TAG, "Get preferred language with wrong type.");
+        } else {
+            ret = TvControlDataManager.getInstance(context).
+               getStringValue(context, id, null);
+            if (ret == null) {
+                if (type == DroidLogicTvUtils.PREFERRED_SUB_DEFAULT
+                    || type == DroidLogicTvUtils.PREFERRED_AUD_DEFAULT)
+                    ret = mLanguageList.get(0);
+                else
+                    ret = mLanguageList.get(1);
+            } else if (!mLanguageList.contains(ret)) {
+                ret = "none";
+            }
+        }
+        return ret;
+    }
+
+    public int getCurrentPreferredSelection(Context context, int type) {
+        String lan = GetPreferredLanguage(context, type);
+        int ret = mLanguageList.indexOf(lan);
+        if (ret == -1) {
+            ret = mLanguageList.size() - 1;
+        }
+        return ret;
+    }
+
+    private String getPreferredIdFromType(int type) {
+        String id = null;
+        switch (type) {
+            case DroidLogicTvUtils.PREFERRED_SUB_DEFAULT:
+                id = DroidLogicTvUtils.TV_KEY_SUB_DEFAULT_LANGUAGE;
+                break;
+            case DroidLogicTvUtils.PREFERRED_SUB_SECONDARY:
+                id = DroidLogicTvUtils.TV_KEY_SUB_SECOND_LANGUAGE;
+                break;
+            case DroidLogicTvUtils.PREFERRED_AUD_DEFAULT:
+                id = DroidLogicTvUtils.TV_KEY_AUD_DEFAULT_LANGUAGE;
+                break;
+            case DroidLogicTvUtils.PREFERRED_AUD_SECONDARY:
+                id = DroidLogicTvUtils.TV_KEY_AUD_SECOND_LANGUAGE;
+                break;
+        }
+        return id;
+    }
+    //Preferred language settings end
+ }
