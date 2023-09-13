@@ -326,7 +326,11 @@ public abstract class TvStoreManager {
         String type = TvContract.Channels.TYPE_PAL;
         switch (event.videoStd) {
             case TvControlManager.ATV_VIDEO_STD_PAL:
-                type = TvContract.Channels.TYPE_PAL;
+                if ((event.vfmt & TvControlManager.V4L2_STD_PAL_M) != 0 ||
+                    (event.vfmt & TvControlManager.V4L2_STD_PAL_60) != 0)
+                    type = TvContract.Channels.TYPE_NTSC;
+                else
+                    type = TvContract.Channels.TYPE_PAL;
                 break;
             case TvControlManager.ATV_VIDEO_STD_NTSC:
                 type = TvContract.Channels.TYPE_NTSC;
