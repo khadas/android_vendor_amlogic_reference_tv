@@ -14,7 +14,10 @@ import android.content.Intent;
 import android.media.tv.TvContract;
 import android.os.Environment;
 import android.os.IBinder;
+import android.text.TextUtils;
 import android.util.Log;
+
+import com.droidlogic.app.FileListManager;
 
 import java.io.*;
 import java.util.*;
@@ -24,7 +27,7 @@ public class PrebuiltChannelsManager {
     private static final boolean DEBUG = true;
 
     protected TvDataBaseManager mTvDataBaseManager;
-    private static final String FILE_PATH_TV_PRESET_CHANNEL_TABLE = Environment.getExternalStorageDirectory()
+    private String FILE_PATH_TV_PRESET_CHANNEL_TABLE = Environment.getExternalStorageDirectory()
             + "/tv_preset_channel_table.cfg";
     public static final int RETURN_VALUE_SUCCESS                        = 0;
     public static final int RETURN_VALUE_FAILED                         = -1;
@@ -110,6 +113,17 @@ public class PrebuiltChannelsManager {
 
     public PrebuiltChannelsManager(Context context) {
         mContext = context;
+    }
+
+    public PrebuiltChannelsManager(Context context, String path) {
+        mContext = context;
+        if (!TextUtils.isEmpty(path)) {
+            FILE_PATH_TV_PRESET_CHANNEL_TABLE = path + "/tv_preset_channel_table.cfg";
+        }
+    }
+
+    public String getChannelFilePath() {
+        return FILE_PATH_TV_PRESET_CHANNEL_TABLE;
     }
 
     private int writeChannelInfoToFile(ChannelInfo channel, int number) {
