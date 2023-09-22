@@ -17,6 +17,8 @@ import android.os.IBinder;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
+import java.util.ArrayList;
+
 
 import com.droidlogic.tvinput.services.ITvScanService;
 import com.droidlogic.tvinput.services.IUpdateUiCallbackListener;
@@ -34,16 +36,30 @@ public class TvScanManager {
     private int RETRY_MAX = 10;
 
     private ITvScanService mService = null;
-    private ScannerMessageListener mMessageListener = null;
+    private ArrayList<ScannerMessageListener> mMessageListeners;
     private Context mContext;
     private Intent intent;
 
+    private static volatile TvScanManager sInstance;
+
     private RemoteCallbackList<IUpdateUiCallbackListener> mListenerList = new RemoteCallbackList<>();
 
-    public TvScanManager(Context context, Intent intent) {
+    private TvScanManager(Context context, Intent intent) {
         mContext = context;
         this.intent = intent;
+        mMessageListeners = new ArrayList<ScannerMessageListener>();
         getService();
+    }
+
+    public static TvScanManager getInstance(Context context, Intent intent) {
+        if (sInstance == null) {
+            synchronized(TvScanManager.class) {
+                if (sInstance == null) {
+                    sInstance = new TvScanManager(context, intent);
+                }
+            }
+        }
+        return sInstance;
     }
 
     private void LOGI(String msg) {
@@ -54,8 +70,12 @@ public class TvScanManager {
         @Override
         public void onRespond(TvMessage msg) throws RemoteException {
             Log.d(TAG, "=====receive message from TvScanService");
-            if (mMessageListener != null)
-                mMessageListener.onMessage(msg);
+            if (!mMessageListeners.isEmpty()) {
+                for (ScannerMessageListener l : mMessageListeners) {
+                    l.onMessage(msg);
+                }
+            }
+
         }
     };
 
@@ -200,7 +220,7 @@ public class TvScanManager {
             mService.unregisterListener(mListener);
             mService.release();
             mService = null;
-            mMessageListener = null;
+            mMessageListeners.clear();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -215,7 +235,7 @@ public class TvScanManager {
     }
 
     public void setMessageListener(ScannerMessageListener l) {
-        mMessageListener = l;
+        mMessageListeners.add(l);
     }
 
     public interface ScannerMessageListener {
