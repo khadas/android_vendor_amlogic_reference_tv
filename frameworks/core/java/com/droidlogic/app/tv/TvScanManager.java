@@ -129,7 +129,8 @@ public class TvScanManager {
     };
 
     public void unBindService() {
-        mContext.unbindService(serConn);
+        LOGI("unBindService");
+        //mContext.unbindService(serConn);
     }
 
     public boolean isConnected() {
@@ -216,10 +217,11 @@ public class TvScanManager {
     }
 
     public void release() {
+        LOGI("=====[release]");
         try {
-            mService.unregisterListener(mListener);
+            //mService.unregisterListener(mListener);
             mService.release();
-            mService = null;
+            //mService = null;
             mMessageListeners.clear();
         } catch (RemoteException e) {
             e.printStackTrace();
