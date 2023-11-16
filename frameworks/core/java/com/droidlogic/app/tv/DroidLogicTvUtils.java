@@ -450,6 +450,7 @@ public class DroidLogicTvUtils
     public static final int TV_ATSC_MODE_AUTO = 3;
 
     public static final int VIDEO_UNAVAILABLE_REASON_NODATA = 5;
+    public static final int VIDEO_UNAVAILABLE_NOT_SUPPORT = 6;
 
     //preferred language
     public static final int PREFERRED_SUB_DEFAULT       = 0;//sub
