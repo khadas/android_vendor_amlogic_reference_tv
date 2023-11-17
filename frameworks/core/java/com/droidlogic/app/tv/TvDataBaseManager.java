@@ -722,6 +722,7 @@ public class TvDataBaseManager {
         map.put(ChannelInfo.KEY_EITV, Arrays.toString(channel.getEitVersions()));
         map.put(ChannelInfo.KEY_PROGRAMS_IN_PAT, String.valueOf(channel.getProgramsInPat()));
         map.put(ChannelInfo.KEY_PAT_TS_ID, String.valueOf(channel.getPatTsId()));
+        map.put(ChannelInfo.KEY_SET_HIDDEN, String.valueOf(channel.getSetHidden()));
 
         if (!TextUtils.isEmpty(channel.getFavouriteInfo())) {
             map.put(ChannelInfo.KEY_FAVOURITE_INFO, channel.getFavouriteInfo());
@@ -1193,7 +1194,6 @@ public class TvDataBaseManager {
                     int serviceId = cursor.getInt(findPosition(projection, Channels.COLUMN_SERVICE_ID));
                     int originalNetworkId = cursor.getInt(findPosition(projection, Channels.COLUMN_ORIGINAL_NETWORK_ID));
                     int transportStreamId = cursor.getInt(findPosition(projection, Channels.COLUMN_TRANSPORT_STREAM_ID));
-                    String name = cursor.getString(findPosition(projection, Channels.COLUMN_DISPLAY_NAME));
                     int frequency = 0;
                     int videostd = 0;
                     int audiostd = 0;
@@ -1214,8 +1214,7 @@ public class TvDataBaseManager {
                         && (serviceId == channel.getServiceId()
                         && originalNetworkId == channel.getOriginalNetworkId()
                         && transportStreamId == channel.getTransportStreamId()
-                        && frequency == channel.getFrequency()
-                        && TextUtils.equals(name, channel.getDisplayName()))
+                        && frequency == channel.getFrequency())
                             || (channel.isAnalogChannel()
                                 && frequency == channel.getFrequency()
                                 && videostd == channel.getVideoStd()
