@@ -30,6 +30,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings.Global;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputHardwareInfo;
 import android.media.tv.TvInputManager;
@@ -85,6 +86,8 @@ public class DroidLogicHdmiCecManager {
     /*          DROIDLOGIC specified KEYEVENTS END                                 */
 
     private static final String ACTION_OTP_INPUT_SOURCE_CHANGE = "droidlogic.tv.action.OTP_INPUT_SOURCE_CHANGED";
+
+    private static final String DROIDLOGIC_LAUNCHER_FOREGROUND = "droidlogic_launcher_foreground";
 
     private static DroidLogicHdmiCecManager mInstance;
 
@@ -287,6 +290,11 @@ public class DroidLogicHdmiCecManager {
 
         if (isHdmiDeviceId(deviceId)) { // Hdmi device
             if (isMain) {
+                if (isLauncherPipForeground()) {
+                    // For android cts HdmiCecInvalidMessagesTest#cect_IgnoreBroadcastedFromSameSource etc.
+                    Log.w(TAG, "onSetMain ignore routing control if droidlogic launcher pip is foreground");
+                    return;
+                }
                 TvInputInfo info = mTvInputManager.getTvInputInfo(inputId);
                 if (info == null) {
                     Log.e(TAG, "onSetMain can't get tv input info!");
@@ -326,6 +334,10 @@ public class DroidLogicHdmiCecManager {
             mCurrentSelect = INTERNAL_DEVICE;
             deviceSelect();
         }
+    }
+
+    private boolean isLauncherPipForeground() {
+        return Global.getInt(mContext.getContentResolver(), DROIDLOGIC_LAUNCHER_FOREGROUND, 0) == ENABLED;
     }
 
     private void onSetMainForSoundbar(boolean isMain, String inputId, int deviceId, int sessionId) {
