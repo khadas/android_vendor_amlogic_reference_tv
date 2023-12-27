@@ -1915,13 +1915,18 @@ public class TvDataBaseManager {
             Program newProgram = newPrograms.get(newProgramsIndex);
             boolean addNewProgram = false;
             boolean foundMatchEid = false;
-            for (oldProgramsIndex = oldProgramStartIndex; oldProgramsIndex < oldPrograms.size();oldProgramsIndex++) {
+            for (oldProgramsIndex = oldProgramStartIndex; oldProgramsIndex < oldPrograms.size(); oldProgramsIndex++) {
                 Program oldProgram = oldPrograms.get(oldProgramsIndex);
-                    if (oldProgram == null) {
+                if (oldProgram == null) {
                     oldProgramsIndex ++;
                     continue;
                 }
-                if (oldProgram.getProgramId() == newProgram.getProgramId()) {
+                if (!TextUtils.equals(oldProgram.getVersion(), newProgram.getVersion()) && !isATSCSpecialProgram(newProgram)) {
+                    Log.i(TAG, "clear program with old version, oldVersion = " + oldProgram.getVersion() + " newVersion = " + newProgram.getVersion());
+                    epg_ops.add(ContentProviderOperation.newDelete(
+                            TvContract.buildProgramUri(oldProgram.getId()))
+                            .build());
+                } else if (oldProgram.getProgramId() == newProgram.getProgramId()) {
                     foundMatchEid = true;
                     if (isAtsc && isATSCSpecialProgram(newProgram)) {
                         if (!TextUtils.equals(oldProgram.getDescription(), newProgram.getDescription()))
@@ -1947,7 +1952,7 @@ public class TvDataBaseManager {
                     }
                 }
             }
-            if ((foundMatchEid == false) && (!isATSCSpecialProgram(newProgram))) {
+            if (!foundMatchEid && !isATSCSpecialProgram(newProgram)) {
                 addNewProgram = true;
             }
             newProgramsIndex ++;
