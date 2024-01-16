@@ -50,6 +50,12 @@ public class InputChangeAdapter {
 
     private InputChangeAdapter(Context context) {
         mContext = context;
+        TvInputManager manager = (TvInputManager) context.getSystemService(Context.TV_INPUT_SERVICE);
+        if (null == manager) {
+            Log.e(TAG, "InputChangeAdapter but TvInputManager is null!");
+            return;
+        }
+
         if (SystemProperties.getBoolean(PROP_OTP_INPUT_CHANGE, true)) {
             registerInputChangeListener(context);
         }

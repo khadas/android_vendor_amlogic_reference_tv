@@ -117,6 +117,9 @@ public class DroidLogicHdmiCecManager {
 
     private String mOneTouchPlayInput;
 
+    // Whether it's routing after boot
+    private boolean mBootRouting = true;
+
     private final BroadcastReceiver mInputSourceChangeReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             if (!ACTION_OTP_INPUT_SOURCE_CHANGE.equals(intent.getAction())) {
@@ -193,6 +196,10 @@ public class DroidLogicHdmiCecManager {
     private DroidLogicHdmiCecManager(Context context) {
         mContext = context;
         mTvInputManager = (TvInputManager) context.getSystemService(Context.TV_INPUT_SERVICE);
+        if (mTvInputManager == null) {
+            Log.e(TAG, "Tv input service does not exist");
+            return;
+        }
         mTvControlDataManager = TvControlDataManager.getInstance(mContext);
 
         PackageManager pm = context.getPackageManager();
@@ -279,7 +286,7 @@ public class DroidLogicHdmiCecManager {
             Log.v(TAG, "onSetMain no cec then no need.");
             return;
         }
-        Log.d(TAG, "onSetMain " + isMain + " " + inputId);
+        Log.d(TAG, "onSetMain " + isMain + " " + inputId + " session:" + sessionId);
         mSelectingDevice = new SelectDeviceInfo(inputId, deviceId, sessionId);
 
         if (mTvClient == null) {
@@ -310,7 +317,12 @@ public class DroidLogicHdmiCecManager {
                 if (hdmiDevice == null || !hdmiDevice.isCecDevice()) {
                     hdmiDevice = getHdmiDeviceInfo(inputId);
                 }
-
+                if (mCurrentSelect != null
+                    && (mCurrentSelect.getSessionId() != sessionId)
+                    && mHandler.hasMessages(MSG_DEVICE_SELECT)) {
+                    Log.w(TAG, "input session changes and directly flush device select job");
+                    mTvClient.deviceSelect(mCurrentSelect.getLogicalAddress(), mSelectCallback);
+                }
                 if (hdmiDevice != null) {
                     Log.d(TAG, "onSetMain hdmi device " + hdmiDevice);
                     mSelectingDevice.setLogicalAddress(hdmiDevice.getLogicalAddress());
@@ -339,10 +351,21 @@ public class DroidLogicHdmiCecManager {
             mCurrentSelect = INTERNAL_DEVICE;
             deviceSelect();
         }
+
+        mBootRouting = false;
     }
 
     private boolean isLauncherPipForeground() {
-        return Global.getInt(mContext.getContentResolver(), DROIDLOGIC_LAUNCHER_FOREGROUND, 0) == ENABLED;
+        if (!mBootRouting) {
+            return false;
+        }
+        boolean isForground =  Global.getInt(mContext.getContentResolver(),
+                DROIDLOGIC_LAUNCHER_FOREGROUND, 0) == ENABLED;
+        if (!isForground) {
+            return false;
+        }
+        // If the first route is started by launcher pip after boot, then filter it.
+        return true;
     }
 
     private void onSetMainForSoundbar(boolean isMain, String inputId, int deviceId, int sessionId) {
@@ -440,6 +463,9 @@ public class DroidLogicHdmiCecManager {
     }
 
     public HdmiDeviceInfo getHdmiDeviceInfo(String iputId) {
+        if (mTvInputManager == null) {
+            return null;
+        }
         List<TvInputInfo> tvInputList = mTvInputManager.getTvInputList();
 
         for (TvInputInfo info : tvInputList) {
