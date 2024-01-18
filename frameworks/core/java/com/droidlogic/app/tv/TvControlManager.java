@@ -23,6 +23,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.HashMap;
@@ -179,7 +180,7 @@ public class TvControlManager {
 
     private long mNativeContext; // accessed by native methods
     private EventHandler mEventHandler;
-    private TvInSignalInfo.SigInfoChangeListener mSigInfoChangeLister = null;
+    private ArrayList<TvInSignalInfo.SigInfoChangeListener> mSigInfoChangeListener;
     private TvInSignalInfo.SigChannelSearchListener mSigChanSearchListener = null;
     private Status3DChangeListener mStatus3DChangeListener = null;
     private AdcCalibrationListener mAdcCalibrationListener = null;
@@ -187,7 +188,7 @@ public class TvControlManager {
     private ChannelSelectListener mChannelSelectListener = null;
     private SerialCommunicationListener mSerialCommunicationListener = null;
     private CloseCaptionListener mCloseCaptionListener = null;
-    private StatusSourceConnectListener mSourceConnectChangeListener = null;
+    private ArrayList<StatusSourceConnectListener> mSourceConnectChangeListener;
     private HDMIRxCECListener mHDMIRxCECListener = null;
     private UpgradeFBCListener mUpgradeFBCListener  = null;
     private SubtitleUpdateListener mSubtitleListener = null;
@@ -453,11 +454,13 @@ public class TvControlManager {
                     }
                     break;
                 case SOURCE_CONNECT_CALLBACK:
-                    if (mSourceConnectChangeListener != null) {
+                    if (!mSourceConnectChangeListener.isEmpty()) {
                         int source = parcel.bodyInt.get(0);
                         int connectedState = parcel.bodyInt.get(1);
                         if (source > 0) {
-                            mSourceConnectChangeListener.onSourceConnectChange(SourceInput.values()[source], connectedState);
+                            for (StatusSourceConnectListener l : mSourceConnectChangeListener) {
+                                l.onSourceConnectChange(SourceInput.values()[source], connectedState);
+                            }
                         }
                     }
                     break;
@@ -550,14 +553,16 @@ public class TvControlManager {
                     }
                     break;
                 case SIGNAL_DETECT_CALLBACK:
-                    if (mSigInfoChangeLister != null) {
+                    if (!mSigInfoChangeListener.isEmpty()) {
                         TvInSignalInfo sigInfo = new TvInSignalInfo();
                         sigInfo.transFmt = TvInSignalInfo.TransFmt.values()[parcel.bodyInt.get(0)];
                         sigInfo.sigFmt = TvInSignalInfo.SignalFmt.valueOf(parcel.bodyInt.get(1));
                         sigInfo.sigStatus = TvInSignalInfo.SignalStatus.values()[parcel.bodyInt.get(2)];
                         sigInfo.reserved = parcel.bodyInt.get(3);
                         sigInfo.isPiP = parcel.bodyInt.get(4);
-                        mSigInfoChangeLister.onSigChange(sigInfo);
+                        for (TvInSignalInfo.SigInfoChangeListener l : mSigInfoChangeListener) {
+                            l.onSigChange(sigInfo);
+                        }
                         Log.e(TAG,"---SIGNAL_DETECT_CALLBACK-----------------");
                     }
                     break;
@@ -695,6 +700,8 @@ public class TvControlManager {
             Log.e(TAG, "looper is null, so can not do anything");
         }
         mHALCallback = new HALCallback(this);
+        mSourceConnectChangeListener = new ArrayList<StatusSourceConnectListener>();
+        mSigInfoChangeListener = new ArrayList<TvInSignalInfo.SigInfoChangeListener>();
         //native_setup(new WeakReference<TvControlManager>(this));
 
         /*
@@ -6369,7 +6376,20 @@ public class TvControlManager {
 
     public void SetSigInfoChangeListener(TvInSignalInfo.SigInfoChangeListener l) {
         libtv_log_open();
-        mSigInfoChangeLister = l;
+        if (!mSigInfoChangeListener.contains(l)) {
+            mSigInfoChangeListener.add(l);
+        }
+    }
+
+    public void removeSigInfoChangeListener(TvInSignalInfo.SigInfoChangeListener l) {
+        libtv_log_open();
+        Iterator<TvInSignalInfo.SigInfoChangeListener> iterator = mSigInfoChangeListener.iterator();
+        while (iterator.hasNext()) {
+            TvInSignalInfo.SigInfoChangeListener listener = iterator.next();
+            if (listener.equals(l)) {
+                iterator.remove();
+            }
+        }
     }
 
     public void SetSigChannelSearchListener(TvInSignalInfo.SigChannelSearchListener l) {
@@ -6387,7 +6407,20 @@ public class TvControlManager {
 
     public void SetSourceConnectListener(StatusSourceConnectListener l) {
         libtv_log_open();
-        mSourceConnectChangeListener = l;
+        if (!mSourceConnectChangeListener.contains(l)) {
+            mSourceConnectChangeListener.add(l);
+        }
+    }
+
+    public void removeSourceConnectListener(StatusSourceConnectListener l) {
+        libtv_log_open();
+        Iterator<StatusSourceConnectListener> iterator = mSourceConnectChangeListener.iterator();
+        while (iterator.hasNext()) {
+            StatusSourceConnectListener listener = iterator.next();
+            if (listener.equals(l)) {
+                iterator.remove();
+            }
+        }
     }
 
     public interface HDMIRxCECListener {
