@@ -301,7 +301,11 @@ public class TvInSignalInfo {
         TVIN_SIG_FMT_HDMI_5120X2880                     (0x463),
         TVIN_SIG_FMT_HDMI_2560X2880                     (0x464),
         TVIN_SIG_FMT_HDMI_720X240                       (0x465),
-        TVIN_SIG_FMT_HDMI_MAX                           (0x466),
+        TVIN_SIG_FMT_HDMI_360X480I                      (0x466),
+        TVIN_SIG_FMT_HDMI_360X576I                      (0x467),
+        TVIN_SIG_FMT_HDMI_360X480P                      (0x468),
+        TVIN_SIG_FMT_HDMI_360X576P                      (0x469),
+        TVIN_SIG_FMT_HDMI_MAX                           (0x470),
         TVIN_SIG_FMT_HDMI_THRESHOLD                     (0x600),
         //Video Formats
         TVIN_SIG_FMT_CVBS_NTSC_M                        (0x601),
