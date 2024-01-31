@@ -837,7 +837,7 @@ public abstract class TvStoreManager {
         for (int i = 0; i < list.size(); i++) {
             for (int j = 0; j < mChannelsAll.size(); j++) {
                 ChannelInfo tempch = mChannelsAll.get(j);
-                if (tempch != null && TextUtils.equals(tempch.getDisplayNumber(), list.get(i).getDisplayNumber()) && tempch.getFrequency() == list.get(i).getFrequency()) {
+                if (tempch != null && tempch.isSameChannel(list.get(i))) {
                     ChannelInfo updateinfo = list.get(i);
                     if (tempch.getId() > -1) {
                         updateinfo.setId(tempch.getId());

@@ -4659,7 +4659,7 @@ public class TvControlManager {
         }
 
         public int getDTVMode() {
-            return (scanMode & 0xFFFF);
+            return (scanMode & 0xFF);
         }
 
         public boolean isDTVManulScan() {
