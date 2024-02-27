@@ -471,13 +471,18 @@ public class DroidLogicHdmiCecManager {
         for (TvInputInfo info : tvInputList) {
             HdmiDeviceInfo hdmiDeviceInfo = info.getHdmiDeviceInfo();
             Log.d(TAG, "getHdmiDeviceInfo input:" + iputId + " " + hdmiDeviceInfo);
-            if (hdmiDeviceInfo != null && hdmiDeviceInfo.isCecDevice()) {
+            if (hdmiDeviceInfo != null && hdmiDeviceInfo.isCecDevice()
+                    && isAdjacent(hdmiDeviceInfo.getPhysicalAddress())) {
                 if (iputId.equals(info.getId()) || iputId.equals(info.getParentId())) {
                     return hdmiDeviceInfo;
                 }
             }
         }
         return null;
+    }
+
+    private boolean isAdjacent(int physicalAddress) {
+        return (physicalAddress & 0xFFF) == 0;
     }
 
     public void setDeviceIdForCec(int deviceId){
