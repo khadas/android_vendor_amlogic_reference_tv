@@ -6959,21 +6959,21 @@ public class TvControlManager {
         SetPreferredLanguage(context, type, lan);
     }
 
-    public String GetPreferredLanguage(Context context, int type) {
+    public String GetPreferredLanguage(Context context, int type, String def) {
         String ret = "none";
         String id = getPreferredIdFromType(type);
         if (TextUtils.isEmpty(id)) {
             Log.w(TAG, "Get preferred language with wrong type.");
         } else {
             ret = TvControlDataManager.getInstance(context).
-               getStringValue(context, id, null);
+               getStringValue(context, id, def);
             if (ret == null) {
                 if (type == DroidLogicTvUtils.PREFERRED_SUB_DEFAULT
                     || type == DroidLogicTvUtils.PREFERRED_AUD_DEFAULT)
                     ret = mLanguageList.get(0);
                 else
                     ret = mLanguageList.get(1);
-            } else if (!mLanguageList.contains(ret)) {
+            } else if (type <= DroidLogicTvUtils.PREFERRED_AUD_SECONDARY && !mLanguageList.contains(ret)) {
                 ret = "none";
             }
         }
@@ -6981,7 +6981,7 @@ public class TvControlManager {
     }
 
     public int getCurrentPreferredSelection(Context context, int type) {
-        String lan = GetPreferredLanguage(context, type);
+        String lan = GetPreferredLanguage(context, type, null);
         int ret = mLanguageList.indexOf(lan);
         if (ret == -1) {
             ret = mLanguageList.size() - 1;
@@ -7003,6 +7003,12 @@ public class TvControlManager {
                 break;
             case DroidLogicTvUtils.PREFERRED_AUD_SECONDARY:
                 id = DroidLogicTvUtils.TV_KEY_AUD_SECOND_LANGUAGE;
+                break;
+            case DroidLogicTvUtils.PREFERRED_ATSC_AUD_DEFAULT:
+                id = DroidLogicTvUtils.TV_KEY_ATSC_AUD_PREFERRED_LANGUAGE;
+                break;
+            case DroidLogicTvUtils.PREFERRED_ATSC_AUD_SECONDARY:
+                id = DroidLogicTvUtils.TV_KEY_ATSC_AUD_SECOND_LANGUAGE;
                 break;
         }
         return id;
