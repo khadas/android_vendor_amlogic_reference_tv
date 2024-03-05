@@ -556,6 +556,7 @@ public class TvControlManager {
                         sigInfo.sigFmt = TvInSignalInfo.SignalFmt.valueOf(parcel.bodyInt.get(1));
                         sigInfo.sigStatus = TvInSignalInfo.SignalStatus.values()[parcel.bodyInt.get(2)];
                         sigInfo.reserved = parcel.bodyInt.get(3);
+                        sigInfo.isPiP = parcel.bodyInt.get(4);
                         mSigInfoChangeLister.onSigChange(sigInfo);
                         Log.e(TAG,"---SIGNAL_DETECT_CALLBACK-----------------");
                     }

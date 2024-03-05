@@ -359,7 +359,7 @@ public class TvInSignalInfo {
     //signal status
     public SignalStatus sigStatus;
     public int reserved;
-
+    public int isPiP;
     public TvInSignalInfo() {
     }
 
