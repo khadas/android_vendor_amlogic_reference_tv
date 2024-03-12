@@ -208,8 +208,13 @@ public class DroidLogicHdmiCecManager {
         if (!mHasCecFeature) {
             return;
         }
+        try {
+            mHdmiControlManager = (HdmiControlManager) context.getSystemService(Context.HDMI_CONTROL_SERVICE);
+        } catch (Exception e) {
+            Log.e(TAG, "failed to get hdmi control manager:" + e);
+            return;
+        }
 
-        mHdmiControlManager = (HdmiControlManager) context.getSystemService(Context.HDMI_CONTROL_SERVICE);
         mTvClient = mHdmiControlManager.getTvClient();
         mSwitchClient = mHdmiControlManager.getSwitchClient();
         if (mTvClient != null) {
@@ -282,7 +287,7 @@ public class DroidLogicHdmiCecManager {
      *    new one has been called onSetMain true, we should abort calling internal address.
      */
     public void onSetMain(boolean isMain, String inputId, int deviceId, int sessionId) {
-        if (!mHasCecFeature) {
+        if (!mHasCecFeature || mHdmiControlManager == null) {
             Log.v(TAG, "onSetMain no cec then no need.");
             return;
         }
@@ -535,7 +540,7 @@ public class DroidLogicHdmiCecManager {
             Log.d(TAG, "no send droidlogic key:" + keyCode);
             return false;
         }
-        if (!mHasCecFeature) {
+        if (!mHasCecFeature || mHdmiControlManager == null) {
             Log.v(TAG, "sendKeyEvent no cec feature");
             return false;
         }

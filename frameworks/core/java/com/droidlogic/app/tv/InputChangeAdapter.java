@@ -70,7 +70,13 @@ public class InputChangeAdapter {
     }
 
     private void registerInputChangeListener(Context context) {
-        HdmiControlManager hdmiControlManager = (HdmiControlManager) context.getSystemService(Context.HDMI_CONTROL_SERVICE);
+        HdmiControlManager hdmiControlManager = null;
+        try {
+            hdmiControlManager = (HdmiControlManager) context.getSystemService(Context.HDMI_CONTROL_SERVICE);
+        } catch (Exception e) {
+            Log.e(TAG, "get hdmi control manager error " + e);
+            return;
+        }
         if (null == hdmiControlManager) {
             Log.e(TAG, "failed to get HdmiControlManager");
             return;
