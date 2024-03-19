@@ -272,6 +272,7 @@ public interface TvControlCommand {
     int EAS_EVENT_CALLBACK = 549;
     int AUDIO_EVENT_CALLBACK = 550;
     int RES_ONPREEMT_CALLBACK = 551;
+    int QMS_EVENT_CALLBACK = 552;
     // CALLBACK END
 
     // SSM

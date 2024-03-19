@@ -201,7 +201,7 @@ public class TvControlManager {
     private PlayerInstanceNoListener mPlayerInstanceNoListener = null;
     private EasEventListener mEasListener = null;
     private AudioEventListener mAudioListener = null;
-
+    private QmsEventListener mQmsEventListener = null;
     private int rrt5XmlLoadStatus = 0;
     public static  int EVENT_RRT_SCAN_START          = 1;
     public static  int EVENT_RRT_SCAN_END            = 3;
@@ -663,6 +663,15 @@ public class TvControlManager {
                         mAudioListener.HandleAudioEvent(cmd, param1, param2);
                     }
                     break;
+                case QMS_EVENT_CALLBACK:
+                    Log.i(TAG,"get QMS_EVENT_CALLBACK");
+                    if (mQmsEventListener != null) {
+                        QmsEvent ev = new QmsEvent();
+                        ev.qms_en = parcel.bodyInt.get(0);
+                        ev.qms_fps = parcel.bodyInt.get(1);
+                        ev.qms_base_fps = parcel.bodyInt.get(2);
+                        mQmsEventListener.onEvent(ev);
+                    }
                  default:
                      Log.e(TAG, "Unknown message type " + msg.what);
                      break;
@@ -4807,6 +4816,21 @@ public class TvControlManager {
     }
     public interface EasEventListener {
         void processDetailsChannelAlert(EasEvent ev);
+    }
+
+    public class QmsEvent {
+        public int qms_en;
+        public int qms_fps;//fps
+        public int qms_base_fps;//base fps
+
+    }
+
+    public void setQmsListener(QmsEventListener l) {
+        mQmsEventListener = l;
+    }
+
+    public interface QmsEventListener {
+        void onEvent(QmsEvent ev);
     }
 
     public class VFrameEvent{
