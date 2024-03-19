@@ -22,6 +22,7 @@ import android.media.tv.TvInputManager;
 import android.util.Log;
 import android.os.Handler;
 import android.os.SystemProperties;
+import android.provider.Settings;
 import android.text.TextUtils;
 
 import java.util.List;
@@ -116,6 +117,11 @@ public class InputChangeAdapter {
                     return;
                 }
 
+                if (!isUserSetupComplete(mContext)) {
+                    Log.d(TAG, "Boot wizard not completed");
+                    return;
+                }
+
                 String currentSelectInput = DroidLogicHdmiCecManager.getInstance(context).getCurrentInput();
 
                 Log.d(TAG, "input id:" + inputId + " parent:" + parentInputId + " current:" + currentSelectInput);
@@ -188,4 +194,11 @@ public class InputChangeAdapter {
         }
         return false;
     }
+
+    public static boolean isUserSetupComplete(Context context) {
+        int userSetupComplete = Settings.Secure.getInt(context.getContentResolver(),
+                "user_setup_complete", 0);
+        return userSetupComplete != 0;
+    }
+
 }
