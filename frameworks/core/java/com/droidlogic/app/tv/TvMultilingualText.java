@@ -163,10 +163,12 @@ public class TvMultilingualText{
         String lang;
         Locale defaultLocale = Locale.getDefault();
         /* recover lang by the current local Android language */
-        if (defaultLocale.equals(Locale.SIMPLIFIED_CHINESE)) {
+        if (defaultLocale.toString().contains(
+                Locale.SIMPLIFIED_CHINESE.toString())) {
             lang = "chs";
-        }else if (defaultLocale.equals(Locale.TRADITIONAL_CHINESE) ||
-            defaultLocale.equals(HK_LOCAL)) {
+        }else if (defaultLocale.toString().contains(
+                Locale.TRADITIONAL_CHINESE.toString()) ||
+            defaultLocale.toString().contains(HK_LOCAL.toString())) {
             lang = "chi";
         }else{
             lang = Locale.getDefault().getISO3Language();

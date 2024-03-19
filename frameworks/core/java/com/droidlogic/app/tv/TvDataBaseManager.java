@@ -2036,11 +2036,12 @@ public class TvDataBaseManager {
         if (oldProgram.getTitle()== null ||oldProgram.getTitle().isEmpty()) {
             return false;
         }else {
-            return oldProgram.getTitle().equals(newProgram.getTitle())
+            return (!oldProgram.getTitle().equals(newProgram.getTitle()))
+                || (oldProgram.getTitle().equals(newProgram.getTitle())
                 && !(oldProgram.getStartTimeUtcMillis() == newProgram.getStartTimeUtcMillis()
                     && oldProgram.getEndTimeUtcMillis() == newProgram.getEndTimeUtcMillis())
                 && oldProgram.getStartTimeUtcMillis() < newProgram.getEndTimeUtcMillis()
-                && newProgram.getStartTimeUtcMillis() < oldProgram.getEndTimeUtcMillis();
+                && newProgram.getStartTimeUtcMillis() < oldProgram.getEndTimeUtcMillis());
         }
     }
 
