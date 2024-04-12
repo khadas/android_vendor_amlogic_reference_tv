@@ -320,7 +320,7 @@ public class DroidLogicHdmiCecManager {
                 // In the TvInputInfo to do deviceSelect, as to solve the auto jump issue.
                 HdmiDeviceInfo hdmiDevice = info.getHdmiDeviceInfo();
                 if (hdmiDevice == null || !hdmiDevice.isCecDevice()) {
-                    hdmiDevice = getHdmiDeviceInfo(inputId);
+                    hdmiDevice = getHdmiDeviceInfoAdjacent(inputId);
                 }
                 if (mCurrentSelect != null
                     && (mCurrentSelect.getSessionId() != sessionId)
@@ -476,6 +476,24 @@ public class DroidLogicHdmiCecManager {
         for (TvInputInfo info : tvInputList) {
             HdmiDeviceInfo hdmiDeviceInfo = info.getHdmiDeviceInfo();
             Log.d(TAG, "getHdmiDeviceInfo input:" + iputId + " " + hdmiDeviceInfo);
+            if (hdmiDeviceInfo != null && hdmiDeviceInfo.isCecDevice()) {
+                if (iputId.equals(info.getId()) || iputId.equals(info.getParentId())) {
+                    return hdmiDeviceInfo;
+                }
+            }
+        }
+        return null;
+    }
+
+    public HdmiDeviceInfo getHdmiDeviceInfoAdjacent(String iputId) {
+        if (mTvInputManager == null) {
+            return null;
+        }
+        List<TvInputInfo> tvInputList = mTvInputManager.getTvInputList();
+
+        for (TvInputInfo info : tvInputList) {
+            HdmiDeviceInfo hdmiDeviceInfo = info.getHdmiDeviceInfo();
+            Log.d(TAG, "getHdmiDeviceInfo input:" + iputId + " " + hdmiDeviceInfo);
             if (hdmiDeviceInfo != null && hdmiDeviceInfo.isCecDevice()
                     && isAdjacent(hdmiDeviceInfo.getPhysicalAddress())) {
                 if (iputId.equals(info.getId()) || iputId.equals(info.getParentId())) {
@@ -485,6 +503,7 @@ public class DroidLogicHdmiCecManager {
         }
         return null;
     }
+
 
     private boolean isAdjacent(int physicalAddress) {
         return (physicalAddress & 0xFFF) == 0;
