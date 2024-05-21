@@ -4840,6 +4840,61 @@ public class TvControlManager {
         void onEvent(QmsEvent ev);
     }
 
+    /**
+     * @Function: IsSupportQMS.
+     * @Description: get if support QMS func.
+     * @Return: true or false.
+     */
+    public boolean IsSupportQMS() {
+          boolean ret = false;
+          String tmp = request("Get.SupportQms","");
+           try {
+               JSONObject data = new JSONObject(tmp);
+               int callRet = data.optInt("ret", 0);
+               if (callRet == 0) {
+                   ret = data.optBoolean("support", false);
+               }
+           } catch (JSONException e) {
+           }
+           return ret;
+    }
+
+    /**
+     * @Function: SetQMSEnable
+     * @Description: control QMS func open/close
+     * @Param: 1:ENABLE,0:DISABLE
+     * @Return: 0 success, -1 fail
+     */
+    public int SetQMSEnable(int isEnable) {
+         int ret = 0;
+         String tmp = request("Set.TV_SetQMSEnable","{\"enable\":"+ isEnable + "}");
+         try {
+             JSONObject data = new JSONObject(tmp);
+             ret = data.optInt("ret", 0);
+         } catch (JSONException e) {
+         }
+         return ret;
+    }
+
+        /**
+     * @Function: GetQMSEnable
+     * @Description: get QMS status
+     * @Return: true:enable, false: disable
+     */
+    public boolean GetQMSEnable() {
+        boolean ret = false;
+        String tmp = request("Get.TV_GetQMSEnable","");
+         try {
+             JSONObject data = new JSONObject(tmp);
+             int callRet = data.optInt("ret", 0);
+             if (callRet == 0) {
+                 ret = data.optBoolean("enabled", false);
+             }
+         } catch (JSONException e) {
+         }
+         return ret;
+    }
+
     public class VFrameEvent{
         public int FrameNum;
         public int FrameSize;
